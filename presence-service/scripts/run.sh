@@ -10,7 +10,7 @@ running
 
 case $1 in 
 	start)
-		echo "Starting presence-service at port 24026"
+		echo "Starting presence-service at port 24028"
 	  setsid java -jar ./presence-service.jar \
 	  -Xmx 256m \
 	  > /dev/null 2>&1 < /dev/null &
