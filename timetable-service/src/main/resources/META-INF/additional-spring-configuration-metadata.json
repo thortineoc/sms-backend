@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "haproxy.url",
+      "type": "java.lang.String",
+      "description": "URL of HAProxy."
+    }
+  ]
+}
