@@ -1,4 +1,4 @@
-package com.sms.infrastructure;
+package com.sms.clients;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;

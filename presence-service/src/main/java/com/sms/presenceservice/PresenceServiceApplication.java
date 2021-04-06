@@ -3,7 +3,7 @@ package com.sms.presenceservice;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.sms")
 public class PresenceServiceApplication {
 
     public static void main(String[] args) {

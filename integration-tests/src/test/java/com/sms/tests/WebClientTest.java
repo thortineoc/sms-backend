@@ -1,7 +1,7 @@
 package com.sms.tests;
 
 import com.google.common.base.Strings;
-import com.sms.infrastructure.WebClient;
+import com.sms.clients.WebClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

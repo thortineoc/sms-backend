@@ -1,4 +1,4 @@
-package com.sms.infrastructure;
+package com.sms.clients;
 
 
 public enum Environment {
