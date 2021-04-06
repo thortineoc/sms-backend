@@ -3,7 +3,7 @@ package com.sms.homeworkservice;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.sms")
 public class HomeworkServiceApplication {
 
     public static void main(String[] args) {
