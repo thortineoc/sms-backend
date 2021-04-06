@@ -15,7 +15,14 @@
     <properties>
         <java.version>1.8</java.version>
     </properties>
-
+    <dependencies>
+        <!--        internal -->
+        <dependency>
+            <groupId>com.sms</groupId>
+            <artifactId>api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
     <build>
         <plugins>
             <plugin>

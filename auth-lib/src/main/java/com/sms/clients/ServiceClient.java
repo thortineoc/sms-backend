@@ -33,8 +33,12 @@ public class ServiceClient {
     public class ServiceTarget {
         private WebTarget target;
 
-        public ServiceTarget(String serviceName) {
+        ServiceTarget(String serviceName) {
             this.target = client.target(haproxyUrl).path(serviceName);
+        }
+
+        public WebTarget getWebTarget() {
+            return target;
         }
 
         public ServiceTarget path(String path) {

@@ -28,11 +28,13 @@ public class WebClient {
     public RequestSpecification request() {
         return RestAssured.given()
                 .auth().oauth2(authToken)
-                .when().baseUri(ENV.haproxyUrl);
+                .when();
     }
 
     public RequestSpecification request(String serviceName) {
-        return request().basePath(serviceName);
+        return request()
+                .baseUri(ENV.localServices.getOrDefault(serviceName, ENV.haproxyUrl))
+                .basePath(serviceName);
     }
 
     public String getAccessToken() {
