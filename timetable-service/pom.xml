@@ -11,7 +11,7 @@
     <groupId>com.sms</groupId>
     <artifactId>timetable-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>presence-service</name>
+    <name>timetable-service</name>
     <description>Spring microservice for managing timetables</description>
     <properties>
         <java.version>1.8</java.version>
