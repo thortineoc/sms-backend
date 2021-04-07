@@ -52,3 +52,31 @@ Entries to add to `pom.xml`:
     </dependencies>
 </dependencyManagement>
 ```
+
+#### User context injection:
+
+Injecting user context into a spring bean:
+
+```java
+public class MyClass {
+
+    ... code ...
+
+    @Autowired
+    UserContext userContext;
+    
+    ... more code ...
+}
+```
+
+Using the user context:
+
+```java
+@GetMapping("/test")
+public String test() {
+    return "ID: " + userContext.getUserId() + "\n"
+        + "Username: " + userContext.getUserName() + "\n"
+        + "Roles: " + userContext.getRoles() + "\n"
+        + "Bearer token: " + userContext.getToken() + "\n";
+}
+```
