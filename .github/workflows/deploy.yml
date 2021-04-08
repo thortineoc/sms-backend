@@ -19,9 +19,14 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build with Maven
+        run: mvn -B package -P build
+      
       - name: ssh deploy
-        # You may pin to the exact commit or the version.
-        # uses: easingthemes/ssh-deploy@9ab39935552e9fe6706e9c9bf2a70a3328a4a5e6
         uses: easingthemes/ssh-deploy@v2.1.6
         with:
           # Private Key
