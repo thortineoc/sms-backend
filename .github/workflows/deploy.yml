@@ -25,15 +25,29 @@ jobs:
           java-version: 1.8
       - name: Build with Maven
         run: mvn -B package -P build
-      
-      - name: ssh deploy
-        uses: easingthemes/ssh-deploy@v2.1.6
+        
+      - name: Create jar backup
+        # You may pin to the exact commit or the version.
+        # uses: fifsky/ssh-action@fa50349180a5075f907d645b221b9bcb80ed19cb
+        uses: fifsky/ssh-action@v0.0.5
         with:
-          # Private Key
-          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }} 
-          # Remote host
-          REMOTE_HOST: 52.142.201.18
-          # Remote user
-          REMOTE_USER: SMS
-          # Target directory
-          TARGET: /home/SMS/deploytest
+          # Command to execute on the remote server.
+          command: scripts/services-jar-backup.sh
+          # Hostname or IP address of the server.
+          host: 52.142.201.18
+          # Username for authentication.
+          user: SMS
+          # String that contains a private key for either key-based or hostbased user authentication (OpenSSH format)
+          key: ${{ secrets.SERVER_SSH_KEY }} 
+      
+#      - name: ssh deploy
+#        uses: easingthemes/ssh-deploy@v2.1.6
+#        with:
+#          # Private Key
+#          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }} 
+#          # Remote host
+#          REMOTE_HOST: 52.142.201.18
+#          # Remote user
+#          REMOTE_USER: SMS
+#          # Target directory
+#          TARGET: /home/SMS/deploytest
