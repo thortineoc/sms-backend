@@ -27,18 +27,12 @@ jobs:
       #  run: mvn -B package -P build
         
       - name: Create jar backup
-        # You may pin to the exact commit or the version.
-        # uses: fifsky/ssh-action@fa50349180a5075f907d645b221b9bcb80ed19cb
-        uses: fifsky/ssh-action@v0.0.5
+        uses: garygrossgarten/github-action-ssh@v0.6.3
         with:
-          # Command to execute on the remote server.
           command: ./scripts/services-jar-backup.sh
-          # Hostname or IP address of the server.
           host: 52.142.201.18
-          # Username for authentication.
-          user: SMS
-          # String that contains a private key for either key-based or hostbased user authentication (OpenSSH format)
-          key: ${{ secrets.SERVER_SSH_KEY }} 
+          username: SMS
+          privateKey: ${{ secrets.SERVER_SSH_KEY }} 
       
 #      - name: ssh deploy
 #        uses: easingthemes/ssh-deploy@v2.1.6
