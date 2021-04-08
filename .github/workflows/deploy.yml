@@ -18,13 +18,17 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+      
+      - name: ssh deploy
+        # You may pin to the exact commit or the version.
+        # uses: easingthemes/ssh-deploy@9ab39935552e9fe6706e9c9bf2a70a3328a4a5e6
+        uses: easingthemes/ssh-deploy@v2.1.6
+        with:
+          # Private Key
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }} 
+          # Remote host
+          REMOTE_HOST: 52.142.201.18
+          # Remote user
+          REMOTE_USER: SMS
+          # Target directory
+          TARGET: /home/SMS/deploytest
