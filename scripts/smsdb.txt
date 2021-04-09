@@ -1,0 +1,69 @@
+CREATE TYPE presence_type AS ENUM (
+	'present',
+	'absent',
+	'late',
+	'excused'
+);
+
+
+
+CREATE TABLE Users (
+	id 		SERIAL PRIMARY KEY,
+	kc_id 		varchar(80)	NOT NULL,
+	firstName	varchar(31)	NOT NULL,
+	secondName 	varchar(31),
+	surName 	varchar(31)	NOT NULL
+);
+
+CREATE TABLE Subjects (
+	id 		SERIAL PRIMARY KEY,
+	name 		varchar(63) 	NOT NULL
+);
+
+CREATE TABLE Classes (
+	id 		SERIAL PRIMARY KEY,
+	subject_id 	int 		NOT NULL,
+	teacher_id 	int		NOT NULL,
+	weekday 	int		NOT NULL,
+	room 		int		NOT NULL,
+	beginDate 	date		NOT NULL,
+	endDate		date		NOT NULL,
+	lesson		int		NOT NULL
+);
+
+CREATE TABLE Grades (
+	id 		SERIAL PRIMARY KEY,
+	subject_id 	int 		NOT NULL,
+	student_id 	int 		NOT NULL,
+	description 	TEXT,
+	weight 		int 		DEFAULT 1
+);
+
+CREATE TABLE Homeworks (
+	id		SERIAL PRIMARY KEY,
+	title		varchar(255)	NOT NULL,
+	description	TEXT,
+	deadline	timestamp	NOT NULL,
+	file 		bytea
+);
+
+CREATE TABLE Presences (
+	id		SERIAL PRIMARY KEY,
+	student_id	int		NOT NULL,
+	class_id	int		NOT NULL,
+	day		date		NOT NULL,
+	type		presence_type	DEFAULT 'present'
+);
+
+CREATE TABLE Answers (
+	id 		SERIAL PRIMARY KEY,
+	homework_id	int		NOT NULL,
+	student_id	int		NOT NULL,
+	review		TEXT,
+	file		bytea
+);
+
+CREATE TABLE Parent_Child (
+	parent_id	int		NOT NULL,
+	child_id	int		NOT NULL
+);
