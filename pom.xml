@@ -43,7 +43,8 @@
             <modules>
                 <module>homework-service</module>
                 <module>presence-service</module>
-                <module>timetable-service</module>
+		<module>timetable-service</module>
+		<module>grades-service</module>
                 <module>api</module>
                 <module>auth-lib</module>
             </modules>
