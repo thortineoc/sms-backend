@@ -1,0 +1,5 @@
+/home/aronika/sms-backend/auth-lib/src/main/java/com/sms/clients/ServiceClient.java
+/home/aronika/sms-backend/auth-lib/src/main/java/com/sms/context/UserAuthInterceptor.java
+/home/aronika/sms-backend/auth-lib/src/main/java/com/sms/context/UserContext.java
+/home/aronika/sms-backend/auth-lib/src/main/java/com/sms/clients/KeycloakClient.java
+/home/aronika/sms-backend/auth-lib/src/main/java/com/sms/context/InterceptorConfig.java

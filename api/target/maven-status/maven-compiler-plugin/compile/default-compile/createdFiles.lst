@@ -1,0 +1,4 @@
+com/sms/authlib/UserDTO.class
+com/sms/authlib/ImmutableUserDTO.class
+com/sms/authlib/ImmutableUserDTO$Builder.class
+com/sms/authlib/ImmutableUserDTO$1.class
