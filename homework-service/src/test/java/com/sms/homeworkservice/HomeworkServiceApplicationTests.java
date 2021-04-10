@@ -1,4 +1,3 @@
-/*
 package com.sms.homeworkservice;
 
 import org.junit.jupiter.api.Test;
@@ -10,6 +9,4 @@ class HomeworkServiceApplicationTests {
     @Test
     void contextLoads() {
     }
-
 }
-*/
