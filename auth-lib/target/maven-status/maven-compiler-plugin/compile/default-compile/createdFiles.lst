@@ -1,6 +1,0 @@
-com/sms/clients/ServiceClient$ServiceTarget.class
-com/sms/context/InterceptorConfig.class
-com/sms/context/UserAuthInterceptor.class
-com/sms/context/UserContext.class
-com/sms/clients/KeycloakClient.class
-com/sms/clients/ServiceClient.class
