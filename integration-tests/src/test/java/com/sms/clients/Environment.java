@@ -21,6 +21,7 @@ public enum Environment {
 //        put("presence-service", "http://localhost:24028");
 //        put("timetable-service", "http://localhost:24030");
 //        put("usermanagement-service", "http://localhost:24034");
+//        put("grades-service", "http://localhost:24032");
     }};
 
     Environment() {

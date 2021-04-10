@@ -43,6 +43,7 @@
                 <module>presence-service</module>
                 <module>timetable-service</module>
                 <module>usermanagement-service</module>
+		<module>grades-service</module>
                 <module>api</module>
                 <module>auth-lib</module>
             </modules>
