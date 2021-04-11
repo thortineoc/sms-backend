@@ -19,7 +19,7 @@ jobs:
       GRADES_SERVICE_VERSION: 0.0.1-SNAPSHOT
       PRESENCE_SERVICE_VERSION: 0.0.1-SNAPSHOT
       TIMETABLE_SERVICE_VERSION: 0.0.1-SNAPSHOT
-      USERMANAGEMENT_SERVICE_VERSION: 0.0.1-SNAPSHOT.jar
+      USERMANAGEMENT_SERVICE_VERSION: 0.0.1-SNAPSHOT
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
