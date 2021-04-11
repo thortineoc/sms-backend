@@ -19,18 +19,18 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
         
-      - name: Create jar backup
-        uses: garygrossgarten/github-action-ssh@v0.6.3
-        with:
-          command: ./scripts/services-jar-backup.sh
-          host: 52.142.201.18
-          username: SMS
-          privateKey: ${{ secrets.SERVER_SSH_KEY }} 
-          
       - name: Stop all services
         uses: garygrossgarten/github-action-ssh@v0.6.3
         with:
           command: ./scripts/all-service-runner.sh stop
+          host: 52.142.201.18
+          username: SMS
+          privateKey: ${{ secrets.SERVER_SSH_KEY }} 
+        
+      - name: Create jar backup
+        uses: garygrossgarten/github-action-ssh@v0.6.3
+        with:
+          command: ./scripts/services-jar-backup.sh
           host: 52.142.201.18
           username: SMS
           privateKey: ${{ secrets.SERVER_SSH_KEY }} 
