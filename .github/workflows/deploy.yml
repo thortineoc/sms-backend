@@ -66,7 +66,7 @@ jobs:
           REMOTE_HOST: 52.142.201.18
           # Remote user
           REMOTE_USER: SMS
-          SOURCE: grades-service/target/grades-service-0.0.1-SNAPSHOT.jar
+          SOURCE: grades-service/target/grades-service-*
           # Target directory
           TARGET: /home/SMS/subsystems/backend/grades-service/grades-service.jar
 
@@ -79,7 +79,7 @@ jobs:
           REMOTE_HOST: 52.142.201.18
           # Remote user
           REMOTE_USER: SMS
-          SOURCE: presence-service/target/presence-service-0.0.1-SNAPSHOT.jar
+          SOURCE: presence-service/target/presence-service-*
           # Target directory
           TARGET: /home/SMS/subsystems/backend/presence-service/presence-service.jar
           
@@ -92,7 +92,7 @@ jobs:
           REMOTE_HOST: 52.142.201.18
           # Remote user
           REMOTE_USER: SMS
-          SOURCE: timetable-service/target/timetable-service-0.0.1-SNAPSHOT.jar
+          SOURCE: timetable-service/target/timetable-service-*
           # Target directory
           TARGET: /home/SMS/subsystems/backend/timetable-service/timetable-service.jar
           
@@ -105,7 +105,7 @@ jobs:
 #          REMOTE_HOST: 52.142.201.18
 #          # Remote user
 #          REMOTE_USER: SMS
-#          SOURCE: usermanagement-service/target/usermanagement-service-0.0.1-SNAPSHOT.jar
+#          SOURCE: usermanagement-service/target/usermanagement-service-*
 #          # Target directory
 #          TARGET: /home/SMS/subsystems/backend/usermanagement-service/usermanagement-service.jar
           
