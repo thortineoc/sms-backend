@@ -34,19 +34,6 @@ jobs:
           host: 52.142.201.18
           username: SMS
           privateKey: ${{ secrets.SERVER_SSH_KEY }} 
-          
-      - name: SSH deploy grades service 
-        uses: easingthemes/ssh-deploy@v2.1.6
-        with:
-          # Private Key
-          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }} 
-          # Remote host
-          REMOTE_HOST: 52.142.201.18
-          # Remote user
-          REMOTE_USER: SMS
-          SOURCE: grades-service/target/grades-service-0.0.1-SNAPSHOT.jar
-          # Target directory
-          TARGET: /home/SMS/subsystems/backend/grades-service/grades-service.jar
       
       - name: SSH deploy homework service 
         uses: easingthemes/ssh-deploy@v2.1.6
@@ -60,6 +47,19 @@ jobs:
           SOURCE: homework-service/target/homework-service-0.0.1-SNAPSHOT.jar
           # Target directory
           TARGET: /home/SMS/subsystems/backend/homework-service/homework-service.jar
+
+      - name: SSH deploy grades service 
+        uses: easingthemes/ssh-deploy@v2.1.6
+        with:
+          # Private Key
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }} 
+          # Remote host
+          REMOTE_HOST: 52.142.201.18
+          # Remote user
+          REMOTE_USER: SMS
+          SOURCE: grades-service/target/grades-service-0.0.1-SNAPSHOT.jar
+          # Target directory
+          TARGET: /home/SMS/subsystems/backend/grades-service/grades-service.jar
 
       - name: SSH deploy presence service 
         uses: easingthemes/ssh-deploy@v2.1.6
