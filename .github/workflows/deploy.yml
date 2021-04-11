@@ -138,7 +138,7 @@ jobs:
         if: ${{ failure() }}
         uses: garygrossgarten/github-action-ssh@v0.6.3
         with:
-          command: ./scripts/all-service-runner.sh stop
+          command: ./scripts/all-service-runner.sh start
           host: 52.142.201.18
           username: SMS
           privateKey: ${{ secrets.SERVER_SSH_KEY }}
