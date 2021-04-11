@@ -83,7 +83,7 @@ jobs:
           REMOTE_HOST: 52.142.201.18
           # Remote user
           REMOTE_USER: SMS
-          SOURCE: presence-service/target/timetable-service-0.0.1-SNAPSHOT.jar
+          SOURCE: timetable-service/target/timetable-service-0.0.1-SNAPSHOT.jar
           # Target directory
           TARGET: /home/SMS/subsystems/backend/timetable-service/timetable-service.jar
           
