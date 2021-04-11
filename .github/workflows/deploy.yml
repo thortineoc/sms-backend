@@ -119,7 +119,7 @@ jobs:
           privateKey: ${{ secrets.SERVER_SSH_KEY }}
           
       - name: Wait 5s for services
-        run: sleep 5
+        run: sleep 30
           
       - name: Run integration tests
         run: mvn -B install -P integration-tests
