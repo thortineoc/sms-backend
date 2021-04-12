@@ -18,6 +18,7 @@ public class WebClientTest {
         client.request("homework-service").get("health").then().statusCode(200);
         client.request("timetable-service").get("health").then().statusCode(200);
         client.request("presence-service").get("health").then().statusCode(200);
+        client.request("usermanagement-service").get("health").then().statusCode(200);
         client.request("grades-service").get("health").then().statusCode(200);
     }
 }
