@@ -1,4 +1,4 @@
-package com.sms.homeworkservice.test;
+package com.sms.homeworkservice.test.boundary;
 
 import com.sms.authlib.UserDTO;
 import com.sms.clients.ServiceClient;
