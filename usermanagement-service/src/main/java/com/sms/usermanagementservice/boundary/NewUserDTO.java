@@ -23,6 +23,8 @@ public interface NewUserDTO {
 
     String getUserSurname();
 
+    String getGroup();
+
     String getToken();
 
 }
