@@ -1,11 +1,11 @@
 DROP TABLE IF EXISTS grades;
 DROP TABLE IF EXISTS parent_child;
 DROP TABLE IF EXISTS Answers;
-DROP TABLE IF EXISTS class_student;
 DROP TABLE IF EXISTS Presences;
 DROP TABLE IF EXISTS Homeworks;
 DROP TABLE IF EXISTS Classes;
 DROP TABLE IF EXISTS Subjects;
+DROP TABLE IF EXISTS Groups;
 DROP TABLE IF EXISTS users;
 DROP TYPE IF EXISTS presence_type;
 
@@ -25,7 +25,8 @@ CREATE TABLE Users (
                        kc_id 		varchar(80)	NOT NULL,
                        firstName	varchar(31)	NOT NULL,
                        secondName 	varchar(31),
-                       surName 	varchar(31)	NOT NULL
+                       surName 	varchar(31)	NOT NULL,
+		       group_id int
 );
 
 CREATE TABLE Subjects (
@@ -33,13 +34,14 @@ CREATE TABLE Subjects (
                           name 		varchar(63) 	NOT NULL
 );
 
-CREATE TABLE Class_Student (
-                               class_id int NOT NULL,
-                               student_id int NOT NULL
+CREATE TABLE Groups (
+	id	SERIAL PRIMARY KEY,
+	name 	varchar(10)	NOT NULL
 );
 
 CREATE TABLE Classes (
                          id 		SERIAL PRIMARY KEY,
+			 group_id 	int		NOT NULL,
                          subject_id 	int 		NOT NULL,
                          teacher_id 	int		NOT NULL,
                          weekday 	int		NOT NULL,
@@ -123,6 +125,12 @@ ALTER TABLE Classes
     ADD CONSTRAINT fk_classes_subject_id
         FOREIGN KEY(subject_id)
             REFERENCES Subjects(id)
+            ON DELETE CASCADE;
+
+ALTER TABLE Classes
+    ADD CONSTRAINT fk_classes_group_id
+        FOREIGN KEY(group_id)
+            REFERENCES Groups(id)
             ON DELETE CASCADE;
 
 ALTER TABLE Class_Student

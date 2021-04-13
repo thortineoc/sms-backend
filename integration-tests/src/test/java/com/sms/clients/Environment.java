@@ -3,12 +3,13 @@ package com.sms.clients;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public enum Environment {
     ENV;
 
     public final String authClientId = "frontend";
-    public final String authClientSecret = "ec78c6bb-8339-4bed-9b1b-e973d27107dc";
+    public final String authClientSecret = UUID.randomUUID().toString();
 
     public final String testUsername = "testbackenduser";
     public final String testUserPassword = "testbackenduser";
