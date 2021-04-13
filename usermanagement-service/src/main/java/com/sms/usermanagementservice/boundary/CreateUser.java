@@ -6,7 +6,7 @@ import java.lang.reflect.Member;
 import java.util.List;
 
 @RestController
-@RequestMapping("/create-user")
+@RequestMapping("/create")
 public class CreateUser {
 
     @PostMapping(path = "/new-user")
@@ -16,14 +16,14 @@ public class CreateUser {
 
     @PostMapping(path = "/new-users")
     public String newUsers(@RequestBody NewUsersDTO data) {
-        String output = "";
+        StringBuilder output = new StringBuilder();
         for(NewUserDTO user : data.getAllUsers()){
             String str = "Hello " + user.getUserFirstName() + " " + user.getUserSecondName() + " " + user.getUserSurname() + " " + user.getToken();
-            output += str;
-            output += "\n";
+            output.append(str);
+            output.append("\n");
         }
 
-        return output;
+        return output.toString();
     }
 
 }
