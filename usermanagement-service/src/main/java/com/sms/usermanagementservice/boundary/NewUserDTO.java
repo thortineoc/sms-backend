@@ -10,17 +10,18 @@ import java.util.Set;
 @Value.Style(builder = "new")
 @JsonSerialize(as = ImmutableNewUserDTO.class)
 @JsonDeserialize(as = ImmutableNewUserDTO.class, builder = ImmutableNewUserDTO.Builder.class)
+
 public interface NewUserDTO {
 
     static ImmutableNewUserDTO.Builder builder() {
         return new ImmutableNewUserDTO.Builder();
     }
 
-    String getUserName();
+    String getUserFirstName();
+
+    String getUserSecondName();
 
     String getUserSurname();
-
-    String getUserId();
 
     String getToken();
 

@@ -10,7 +10,7 @@ public class CreateUser {
 
     @PostMapping(path = "/new-user")
     public String postBody(@RequestBody NewUserDTO data) {
-        return "Hello " + data.getUserName();
+        return "Hello " + data.getUserFirstName() + data.getUserSecondName() + data.getUserSurname() + data.getToken();
     }
 
 }
