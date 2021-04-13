@@ -133,18 +133,6 @@ ALTER TABLE Classes
             REFERENCES Groups(id)
             ON DELETE CASCADE;
 
-ALTER TABLE Class_Student
-    ADD CONSTRAINT fk_cs_student_id
-        FOREIGN KEY(student_id)
-            REFERENCES Users(id)
-            ON DELETE CASCADE;
-
-ALTER TABLE Class_Student
-    ADD CONSTRAINT fk_cs_class_id
-        FOREIGN KEY(class_id)
-            REFERENCES Classes(id)
-            ON DELETE CASCADE;
-
 ALTER TABLE Presences
     ADD CONSTRAINT fk_presences_class_id
         FOREIGN KEY(class_id)
