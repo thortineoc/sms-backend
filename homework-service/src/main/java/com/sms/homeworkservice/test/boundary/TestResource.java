@@ -16,13 +16,9 @@ public class TestResource {
     @Autowired
     ServiceClient client;
 
-    @Value("${haproxy.url}")
-    String haproxyUrl;
-
     @GetMapping(path = "/test/service-client-send")
     public ResponseEntity<UserDTO> testServiceClient() {
-        UserDTO user = client.haproxyUrl(haproxyUrl)
-                .target("presence-service")
+        UserDTO user = client.target("presence-service")
                 .path("test")
                 .path("service-client-receive")
                 .request(MediaType.APPLICATION_JSON_TYPE)
