@@ -1,130 +1,89 @@
 package com.sms.clients.entity;
 
 import javax.ws.rs.client.WebTarget;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UserSearchParams {
 
-    private final Boolean briefRepresentation;
-    private final String email;
-    private final Integer first;
-    private final String firstName;
-    private final String lastName;
-    private final Integer max;
-    private final String search;
-    private final String username;
+    private final Map<String, Object> params = new HashMap<>();
 
-    public static Builder builder() {
-        return new Builder();
+    public Boolean getBriefRepresentation() {
+        return (Boolean) params.get("briefRepresentation");
     }
 
-    public Optional<Boolean> getBriefRepresentation() {
-        return Optional.ofNullable(briefRepresentation);
+    public String getEmail() {
+        return (String) params.get("email");
     }
 
-    public Optional<String> getEmail() {
-        return Optional.ofNullable(email);
+    public Integer getFirst() {
+        return (Integer) params.get("first");
     }
 
-    public Optional<Integer> getFirst() {
-        return Optional.ofNullable(first);
+    public String getFirstName() {
+        return (String) params.get("firstName");
     }
 
-    public Optional<String> getFirstName() {
-        return Optional.ofNullable(firstName);
+    public String getLastName() {
+        return (String) params.get("lastName");
     }
 
-    public Optional<String> getLastName() {
-        return Optional.ofNullable(lastName);
+    public Integer getMax() {
+        return (Integer) params.get("max");
     }
 
-    public Optional<Integer> getMax() {
-        return Optional.ofNullable(max);
+    public String getSearch() {
+        return (String) params.get("search");
     }
 
-    public Optional<String> getSearch() {
-        return Optional.ofNullable(search);
+    public String getUsername() {
+        return (String) params.get("username");
     }
 
-    public Optional<String> getUsername() {
-        return Optional.ofNullable(username);
+    public UserSearchParams briefRepresentation(Boolean value) {
+        params.put("briefRepresentation", value);
+        return this;
+    }
+
+    public UserSearchParams email(String value) {
+        params.put("email", value);
+        return this;
+    }
+
+    public UserSearchParams first(Integer value) {
+        params.put("first", value);
+        return this;
+    }
+
+    public UserSearchParams firstName(String value) {
+        params.put("firstName", value);
+        return this;
+    }
+
+    public UserSearchParams lastName(String value) {
+        params.put("lastName", value);
+        return this;
+    }
+
+    public UserSearchParams max(Integer value) {
+        params.put("max", value);
+        return this;
+    }
+
+    public UserSearchParams search(String value) {
+        params.put("search", value);
+        return this;
+    }
+
+    public UserSearchParams username(String value) {
+        params.put("username", value);
+        return this;
     }
 
     public WebTarget addParams(WebTarget target) {
-        getUsername().ifPresent(p -> target.queryParam("username", p));
-        getSearch().ifPresent(p -> target.queryParam("search", p));
-        getFirst().ifPresent(p -> target.queryParam("first", p));
-        getFirstName().ifPresent(p -> target.queryParam("firstName", p));
-        getLastName().ifPresent(p -> target.queryParam("lastName", p));
-        getMax().ifPresent(p -> target.queryParam("max", p));
-        getEmail().ifPresent(p -> target.queryParam("email", p));
-        getBriefRepresentation().ifPresent(p -> target.queryParam("briefRepresentation", p));
+        for (Map.Entry<String, Object> param : params.entrySet()) {
+            target = target.queryParam(param.getKey(), param.getValue());
+        }
         return target;
-    }
-
-    private UserSearchParams(Builder builder) {
-        this.briefRepresentation = builder.briefRepresentation;
-        this.email = builder.email;
-        this.first = builder.first;
-        this.firstName = builder.firstName;
-        this.lastName = builder.lastName;
-        this.max = builder.max;
-        this.search = builder.search;
-        this.username = builder.username;
-    }
-
-    public static class Builder {
-        private Boolean briefRepresentation;
-        private String email;
-        private Integer first;
-        private String firstName;
-        private String lastName;
-        private Integer max;
-        private String search;
-        private String username;
-
-        public Builder briefRepresentation(Boolean briefRepresentation) {
-            this.briefRepresentation = briefRepresentation;
-            return this;
-        }
-
-        public Builder email(String email) {
-            this.email = email;
-            return this;
-        }
-
-        public Builder first(Integer first) {
-            this.first = first;
-            return this;
-        }
-
-        public Builder firstName(String firstName) {
-            this.firstName = firstName;
-            return this;
-        }
-
-        public Builder lastName(String lastName) {
-            this.lastName = lastName;
-            return this;
-        }
-
-        public Builder max(Integer max) {
-            this.max = max;
-            return this;
-        }
-
-        public Builder search(String search) {
-            this.search = search;
-            return this;
-        }
-
-        public Builder username(String username) {
-            this.username = username;
-            return this;
-        }
-
-        public UserSearchParams build() {
-            return new UserSearchParams(this);
-        }
     }
 }

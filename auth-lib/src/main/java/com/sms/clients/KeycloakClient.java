@@ -17,6 +17,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -54,6 +55,14 @@ public class KeycloakClient {
                     .request(MediaType.APPLICATION_JSON)
                     .header("Authorization", "Bearer " + adminToken.getAccessToken())
                     .post(Entity.entity(user, MediaType.APPLICATION_JSON));
+            if (!isResponseSuccessful(response)) {
+                return false;
+            }
+
+            //NOTE: due to a bug in keycloak we have to assign the roles separately, after creating the user
+            if (!assignRolesByUsername(user)) {
+                return false;
+            }
 
             return isResponseSuccessful(response);
         }
@@ -64,16 +73,56 @@ public class KeycloakClient {
                     .header("Authorization", "Bearer " + adminToken.getAccessToken())
                     .put(Entity.entity(user, MediaType.APPLICATION_JSON));
 
+            //NOTE: due to a bug in keycloak we have to assign the roles separately, after creating the user
+            if (!user.getRealmRoles().isEmpty()) {
+
+                // TODO: this can be optimized, query only for the sum of the set of old and new roles
+                List<RoleRepresentation> oldRoles = getRoleDetails(getUserRoles(userId));
+                List<RoleRepresentation> newRoles = getRoleDetails(user.getRealmRoles());
+                if (!unassignRoles(userId, oldRoles)) {
+                    return false;
+                }
+                if (!assignRoles(userId, newRoles)) {
+                    return false;
+                }
+            }
             return isResponseSuccessful(response);
         }
 
-        public UserRepresentation getUser(String userId) {
+        private boolean assignRolesByUsername(UserRepresentation user) {
+            if (user.getRealmRoles() == null || user.getRealmRoles().isEmpty()) {
+                return true;
+            }
+
+            Optional<UserRepresentation> savedUser = getUsers(new UserSearchParams().username(user.getUsername()))
+                    .stream().findFirst();
+            if (!savedUser.isPresent()) {
+                return false;
+            }
+
+            // TODO: this queries roles one by one, find out if there's API for getting multiple roles
+            List<RoleRepresentation> roles = getRoleDetails(user.getRealmRoles());
+            return assignRoles(savedUser.get().getId(), roles);
+        }
+
+        private List<RoleRepresentation> getRoleDetails(List<String> roles) {
+            return roles.stream()
+                    .map(this::getRole)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toList());
+        }
+
+        public Optional<UserRepresentation> getUser(String userId) {
             Response response = client.target(KEYCLOAK_ADMIN_URL + "/users/" + userId)
                     .request(MediaType.APPLICATION_JSON)
                     .header("Authorization", "Bearer " + adminToken.getAccessToken())
                     .get();
-
-            return response.readEntity(UserRepresentation.class);
+            if (isResponseSuccessful(response)) {
+                return Optional.of(response.readEntity(UserRepresentation.class));
+            } else {
+                return Optional.empty();
+            }
         }
 
         public boolean deleteUser(String userId) {
@@ -113,19 +162,39 @@ public class KeycloakClient {
                     .request(MediaType.APPLICATION_JSON)
                     .header("Authorization", "Bearer " + adminToken.getAccessToken())
                     .delete();
+
             return isResponseSuccessful(response);
         }
 
-        public boolean removeRolesFromUser(String userId, List<String> roles) {
-            String url = String.format(KEYCLOAK_ADMIN_URL + "/users/%s/role-mappings/realm", userId);
+        public Optional<RoleRepresentation> getRole(String name) {
+            Response response = client.target(KEYCLOAK_ADMIN_URL + "/roles/" + name)
+                    .request(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + adminToken.getAccessToken())
+                    .get();
+            if (isResponseSuccessful(response)) {
+                return Optional.of(response.readEntity(RoleRepresentation.class));
+            } else {
+                return Optional.empty();
+            }
+        }
 
-            List<RoleRepresentation> roleRepresentations = getRoleRepresentations(roles);
+        public List<RoleRepresentation> getRoles() {
+            Response response = client.target(KEYCLOAK_ADMIN_URL + "/roles")
+                    .request(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + adminToken.getAccessToken())
+                    .get();
+
+            return Arrays.asList(response.readEntity(RoleRepresentation[].class));
+        }
+
+        public boolean unassignRoles(String userId, List<RoleRepresentation> roles) {
+            String url = String.format(KEYCLOAK_ADMIN_URL + "/users/%s/role-mappings/realm", userId);
 
             // TODO: this is a hack, DELETE cannot have any content by http specifications
             Response response = client.target(url)
                     .request(MediaType.APPLICATION_JSON)
                     .header("Authorization", "Bearer " + adminToken.getAccessToken())
-                    .method("DELETE", Entity.entity(roleRepresentations, MediaType.APPLICATION_JSON));
+                    .method("DELETE", Entity.entity(roles, MediaType.APPLICATION_JSON));
 
             return isResponseSuccessful(response);
         }
@@ -143,22 +212,14 @@ public class KeycloakClient {
                     .collect(Collectors.toList());
         }
 
-        public boolean assignRoles(String userId, List<String> roles) {
+        public boolean assignRoles(String userId, List<RoleRepresentation> roles) {
             String url = String.format(KEYCLOAK_ADMIN_URL + "/users/%s/role-mappings/realm", userId);
-
-            List<RoleRepresentation> roleRepresentations = getRoleRepresentations(roles);
 
             Response response = client.target(url)
                     .request(MediaType.APPLICATION_JSON)
                     .header("Authorization", "Bearer " + adminToken.getAccessToken())
-                    .post(Entity.entity(roleRepresentations, MediaType.APPLICATION_JSON));
+                    .post(Entity.entity(roles, MediaType.APPLICATION_JSON));
             return isResponseSuccessful(response);
-        }
-
-        private List<RoleRepresentation> getRoleRepresentations(List<String> roleNames) {
-            return roleNames.stream()
-                    .map(role -> new RoleRepresentation(role, role, false))
-                    .collect(Collectors.toList());
         }
     }
 
