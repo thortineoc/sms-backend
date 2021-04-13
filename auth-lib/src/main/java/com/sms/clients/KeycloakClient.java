@@ -1,9 +1,11 @@
 package com.sms.clients;
 
 import com.sms.authlib.TokenDTO;
+import com.sms.clients.entity.UserSearchParams;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +13,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.*;
 import java.util.Arrays;
 import java.util.List;
@@ -44,12 +47,79 @@ public class KeycloakClient {
             checkToken();
         }
 
-        public boolean removeRoles(String userId, List<String> roles) {
+        // ################### USER API ###################
+
+        public boolean createUser(UserRepresentation user) {
+            Response response = client.target(KEYCLOAK_ADMIN_URL + "/users")
+                    .request(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + adminToken.getAccessToken())
+                    .post(Entity.entity(user, MediaType.APPLICATION_JSON));
+
+            return isResponseSuccessful(response);
+        }
+
+        public boolean updateUser(String userId, UserRepresentation user) {
+            Response response = client.target(KEYCLOAK_ADMIN_URL + "/users/" + userId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + adminToken.getAccessToken())
+                    .put(Entity.entity(user, MediaType.APPLICATION_JSON));
+
+            return isResponseSuccessful(response);
+        }
+
+        public UserRepresentation getUser(String userId) {
+            Response response = client.target(KEYCLOAK_ADMIN_URL + "/users/" + userId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + adminToken.getAccessToken())
+                    .get();
+
+            return response.readEntity(UserRepresentation.class);
+        }
+
+        public boolean deleteUser(String userId) {
+            Response response = client.target(KEYCLOAK_ADMIN_URL + "/users/" + userId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + adminToken.getAccessToken())
+                    .delete();
+
+            return isResponseSuccessful(response);
+        }
+
+        public List<UserRepresentation> getUsers(UserSearchParams searchParams) {
+            WebTarget target = searchParams.addParams(client.target(KEYCLOAK_ADMIN_URL + "/users"));
+
+            Response response = target.request(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + adminToken.getAccessToken())
+                    .get();
+
+            return Arrays.asList(response.readEntity(UserRepresentation[].class));
+        }
+
+        // ################### ROLES API ###################
+
+        public boolean createRole(String name) {
+            RoleRepresentation role = new RoleRepresentation(name, name, false);
+
+            Response response = client.target(KEYCLOAK_ADMIN_URL + "/roles")
+                    .request(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + adminToken.getAccessToken())
+                    .post(Entity.entity(role, MediaType.APPLICATION_JSON));
+
+            return isResponseSuccessful(response);
+        }
+
+        public boolean deleteRole(String name) {
+            Response response = client.target(KEYCLOAK_ADMIN_URL + "/roles/" + name)
+                    .request(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + adminToken.getAccessToken())
+                    .delete();
+            return isResponseSuccessful(response);
+        }
+
+        public boolean removeRolesFromUser(String userId, List<String> roles) {
             String url = String.format(KEYCLOAK_ADMIN_URL + "/users/%s/role-mappings/realm", userId);
 
-            List<RoleRepresentation> roleRepresentations = roles.stream()
-                    .map(role -> new RoleRepresentation(role, role, false))
-                    .collect(Collectors.toList());
+            List<RoleRepresentation> roleRepresentations = getRoleRepresentations(roles);
 
             // TODO: this is a hack, DELETE cannot have any content by http specifications
             Response response = client.target(url)
@@ -60,7 +130,7 @@ public class KeycloakClient {
             return isResponseSuccessful(response);
         }
 
-        public List<String> getRoles(String userId) {
+        public List<String> getUserRoles(String userId) {
             String url = String.format(KEYCLOAK_ADMIN_URL + "/users/%s/role-mappings/realm", userId);
 
             List<RoleRepresentation> roleRepresentations = Arrays.asList(client.target(url)
@@ -73,18 +143,22 @@ public class KeycloakClient {
                     .collect(Collectors.toList());
         }
 
-        public boolean addRoles(String userId, List<String> roles) {
+        public boolean assignRoles(String userId, List<String> roles) {
             String url = String.format(KEYCLOAK_ADMIN_URL + "/users/%s/role-mappings/realm", userId);
 
-            List<RoleRepresentation> roleRepresentations = roles.stream()
-                    .map(role -> new RoleRepresentation(role, role, false))
-                    .collect(Collectors.toList());
+            List<RoleRepresentation> roleRepresentations = getRoleRepresentations(roles);
 
             Response response = client.target(url)
                     .request(MediaType.APPLICATION_JSON)
                     .header("Authorization", "Bearer " + adminToken.getAccessToken())
                     .post(Entity.entity(roleRepresentations, MediaType.APPLICATION_JSON));
             return isResponseSuccessful(response);
+        }
+
+        private List<RoleRepresentation> getRoleRepresentations(List<String> roleNames) {
+            return roleNames.stream()
+                    .map(role -> new RoleRepresentation(role, role, false))
+                    .collect(Collectors.toList());
         }
     }
 

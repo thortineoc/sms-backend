@@ -36,7 +36,7 @@ public class KeycloakClientTest {
     @Test
     void shouldGetRoleMappingsForTestUser() {
         // WHEN
-        List<String> roles = CLIENT.request().getRoles(TEST_USER_ID);
+        List<String> roles = CLIENT.request().getUserRoles(TEST_USER_ID);
 
         // THEN
         Assertions.assertTrue(roles.contains("STUDENT"));
