@@ -1,6 +1,6 @@
 package com.sms.context;
 
-import com.sms.authlib.UserDTO;
+import com.sms.authlib.UserAuthDTO;
 import org.keycloak.KeycloakPrincipal;
 import org.springframework.stereotype.Component;
 
@@ -49,8 +49,8 @@ public class UserContext {
         return roles;
     }
 
-    public UserDTO toUserDTO() {
-        return UserDTO.builder()
+    public UserAuthDTO toUserDTO() {
+        return UserAuthDTO.builder()
                 .roles(roles)
                 .userId(userId)
                 .userName(userName)

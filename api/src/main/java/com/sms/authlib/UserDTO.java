@@ -18,10 +18,14 @@ public interface UserDTO {
 
     String getUserName();
 
-    String getUserId();
+    String getFirstName();
 
-    String getToken();
+    String getLastName();
 
     Set<String> getRoles();
+
+    String getEmail();
+
+    String getGroup();
 
 }

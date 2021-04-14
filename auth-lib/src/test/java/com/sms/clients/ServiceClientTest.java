@@ -11,7 +11,8 @@ public class ServiceClientTest {
         ServiceClient client = new ServiceClient();
 
         // WHEN
-        ServiceClient.ServiceTarget target = client.haproxyUrl("http://localhost:8080").target("homework-service")
+        ServiceClient.ServiceTarget target = client.overrideHaproxyUrl("http://localhost:8080")
+                .target("homework-service")
                 .path("first")
                 .path("second")
                 .queryParam("key", "value");

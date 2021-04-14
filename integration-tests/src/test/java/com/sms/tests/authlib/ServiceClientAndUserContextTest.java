@@ -1,6 +1,6 @@
 package com.sms.tests.authlib;
 
-import com.sms.authlib.UserDTO;
+import com.sms.authlib.UserAuthDTO;
 import com.sms.clients.WebClient;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
@@ -15,7 +15,7 @@ public class ServiceClientAndUserContextTest {
         // WHEN
         Response response = CLIENT.request("homework-service")
                 .get("test/service-client-send");
-        UserDTO user = response.getBody().as(UserDTO.class);
+        UserAuthDTO user = response.getBody().as(UserAuthDTO.class);
 
         // THEN
         Assertions.assertEquals("testbackenduser", user.getUserName());
