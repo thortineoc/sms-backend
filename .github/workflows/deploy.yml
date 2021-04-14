@@ -110,8 +110,8 @@ jobs:
           # Remote user
           REMOTE_USER: SMS
           SOURCE: usermanagement-service/target/usermanagement-service-${{ env.USERMANAGEMENT_SERVICE_VERSION }}.jar
-#          # Target directory
-#          TARGET: /home/SMS/subsystems/backend/usermanagement-service/usermanagement-service.jar
+          # Target directory
+          TARGET: /home/SMS/subsystems/backend/usermanagement-service/usermanagement-service.jar
           
       - name: Start all services
         uses: garygrossgarten/github-action-ssh@v0.6.3
