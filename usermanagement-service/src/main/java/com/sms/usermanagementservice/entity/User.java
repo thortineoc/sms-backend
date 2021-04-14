@@ -1,19 +1,18 @@
 package com.sms.usermanagementservice.entity;
 
-import java.util.Set;
+import com.sms.usermanagement.UserDTO;
+
+import java.util.Map;
+import java.util.Optional;
 
 public class User {
 
     private final String firstName;
     private final String lastName;
-    private final String email;
     private final String username;
-    private final Set<String> roles;
-    private final String group;
-
-    public String getEmail() {
-        return email;
-    }
+    private final UserDTO.Role role;
+    private final Map<String, String> userAttributes;
+    private final Optional<String> email;
 
     public String getFirstName() {
         return firstName;
@@ -27,12 +26,16 @@ public class User {
         return username;
     }
 
-    public String getGroup() {
-        return group;
+    public Map<String, String> getUserAttributes() {
+        return userAttributes;
     }
 
-    public Set<String> getRoles() {
-        return roles;
+    public UserDTO.Role getRole() {
+        return role;
+    }
+
+    public Optional<String> getEmail() {
+        return email;
     }
 
     public static Builder builder() {
@@ -42,19 +45,19 @@ public class User {
     private User(Builder builder) {
         this.firstName = builder.firstName;
         this.lastName = builder.lastName;
-        this.email = builder.email;
         this.username = builder.username;
-        this.roles = builder.roles;
-        this.group = builder.group;
+        this.role = builder.role;
+        this.userAttributes = builder.userAttributes;
+        this.email = builder.email;
     }
 
     public static class Builder {
         private String firstName;
         private String lastName;
-        private String email;
         private String username;
-        private Set<String> roles;
-        private String group;
+        private UserDTO.Role role;
+        private Map<String, String> userAttributes;
+        private Optional<String> email = Optional.empty();
 
         public Builder firstName(String firstName) {
             this.firstName = firstName;
@@ -66,23 +69,23 @@ public class User {
             return this;
         }
 
-        public Builder email(String email) {
-            this.email = email;
-            return this;
-        }
-
         public Builder username(String username) {
             this.username = username;
             return this;
         }
 
-        public Builder roles(Set<String> roles) {
-            this.roles = roles;
+        public Builder role(UserDTO.Role role) {
+            this.role = role;
             return this;
         }
 
-        public Builder group(String group) {
-            this.group = group;
+        public Builder userAttributes(Map<String, String> userAttributes) {
+            this.userAttributes = userAttributes;
+            return this;
+        }
+
+        public Builder email(Optional<String> email) {
+            this.email = email;
             return this;
         }
 

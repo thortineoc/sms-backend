@@ -6,7 +6,7 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ServiceClientAndUserContextTest {
+class ServiceClientAndUserContextTest {
 
     private final static WebClient CLIENT = new WebClient();
 
