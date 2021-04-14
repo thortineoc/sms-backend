@@ -6,12 +6,14 @@ import com.sms.usermanagementservice.control.UserMapper;
 import com.sms.usermanagementservice.entity.User;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
+@Scope("request")
 public class UsersResource {
 
     @Autowired
@@ -26,9 +28,9 @@ public class UsersResource {
         UserRepresentation userRepresentation = UserMapper.toUserRepresentation(user, usersService.calculatePassword(user));
 
         if(keycloakClient.createUser(userRepresentation)){
-            return ResponseEntity.noContent().build();
+            return new ResponseEntity<>("User Created!", HttpStatus.NO_CONTENT);
         }
 
-        return ResponseEntity.badRequest().build();
+        return new ResponseEntity<>("Cannot create user!", HttpStatus.BAD_REQUEST);
     }
 }
