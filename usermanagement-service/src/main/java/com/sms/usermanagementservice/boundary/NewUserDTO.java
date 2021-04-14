@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
+import java.util.Optional;
 import java.util.Set;
 
 @Value.Immutable
@@ -23,7 +24,7 @@ public interface NewUserDTO {
 
     String getUserSurname();
 
-    String getGroup();
+    Optional<String> getGroup();
 
     String getToken();
 

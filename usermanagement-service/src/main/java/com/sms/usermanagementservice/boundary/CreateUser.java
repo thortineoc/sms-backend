@@ -2,9 +2,6 @@ package com.sms.usermanagementservice.boundary;
 
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.Member;
-import java.util.List;
-
 @RestController
 @RequestMapping("/create")
 public class CreateUser {
@@ -18,8 +15,11 @@ public class CreateUser {
     public String newUsers(@RequestBody NewUsersDTO data) {
         StringBuilder output = new StringBuilder();
         for(NewUserDTO user : data.getAllUsers()){
-            String str = "Hello " + user.getUserFirstName() + " " + user.getUserSecondName() + " " + user.getUserSurname() + " " + user.getToken();
+            String str = "Hello " + user.getUserFirstName() + " " + user.getUserSecondName() + " " + user.getUserSurname() + " " + user.getToken() + " ";
             output.append(str);
+            if(user.getGroup().isPresent()){
+                output.append(user.getGroup().orElse(""));
+            }
             output.append("\n");
         }
 
