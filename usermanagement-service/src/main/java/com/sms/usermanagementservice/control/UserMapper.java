@@ -79,6 +79,22 @@ public class UserMapper {
         return userRep;
     }
 
+    public static UserRepresentation toUserRepresentation(UserDTO user, String password) {
+        UserRepresentation userRep = new UserRepresentation();
+        userRep.setUsername(user.getUserName());
+        userRep.setFirstName(user.getFirstName());
+        userRep.setLastName(user.getLastName());
+        user.getEmail().ifPresent(userRep::setEmail);
+        userRep.setCredentials(Collections.singletonList(getPasswordCredential(password)));
+
+        Map<String, String> attributes = mapUserAttributes(user);
+        attributes.put("role", user.getRole().toString());
+
+        return userRep;
+    }
+
+
+
     private static CredentialRepresentation getPasswordCredential(String password) {
         CredentialRepresentation credential = new CredentialRepresentation();
         credential.setType("password");
