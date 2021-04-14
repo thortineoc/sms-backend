@@ -15,6 +15,6 @@ public class TestResource {
 
     @GetMapping(path = "test/service-client-receive")
     public ResponseEntity<UserAuthDTO> testServiceClient() {
-        return ResponseEntity.ok(userContext.toUserDTO());
+        return ResponseEntity.ok(userContext.toUserAuthDTO());
     }
 }
