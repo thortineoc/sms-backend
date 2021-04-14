@@ -1,6 +1,6 @@
 package com.sms.presenceservice.test;
 
-import com.sms.authlib.UserDTO;
+import com.sms.authlib.UserAuthDTO;
 import com.sms.context.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +14,7 @@ public class TestResource {
     UserContext userContext;
 
     @GetMapping(path = "test/service-client-receive")
-    public ResponseEntity<UserDTO> testServiceClient() {
-        return ResponseEntity.ok(userContext.toUserDTO());
+    public ResponseEntity<UserAuthDTO> testServiceClient() {
+        return ResponseEntity.ok(userContext.toUserAuthDTO());
     }
 }

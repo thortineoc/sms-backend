@@ -1,10 +1,10 @@
-package com.sms.authlib;
+package com.sms.usermanagement;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
-import java.util.Set;
+import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -16,12 +16,24 @@ public interface UserDTO {
         return new ImmutableUserDTO.Builder();
     }
 
+    CustomAttributesDTO getCustomAttributes();
+
+    String getId();
+
     String getUserName();
 
-    String getUserId();
+    String getFirstName();
 
-    String getToken();
+    String getLastName();
 
-    Set<String> getRoles();
+    Role getRole();
 
+    Optional<String> getEmail();
+
+    enum Role {
+        TEACHER,
+        STUDENT,
+        PARENT,
+        ADMIN
+    }
 }

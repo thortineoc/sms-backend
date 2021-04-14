@@ -15,7 +15,9 @@ import javax.ws.rs.core.MediaType;
 @Scope("prototype")
 public class ServiceClient {
 
-    private String haproxyUrl;
+    private static final String DEFAULT_HAPROXY_URL = "http://52.142.201.18:24020";
+    private static String HAPROXY_URL = DEFAULT_HAPROXY_URL;
+
     private final Client client = ClientBuilder.newClient();
 
     @Autowired
@@ -25,8 +27,8 @@ public class ServiceClient {
         return new ServiceTarget(serviceName);
     }
 
-    public ServiceClient haproxyUrl(String haproxyUrl) {
-        this.haproxyUrl = haproxyUrl;
+    public ServiceClient overrideHaproxyUrl(String haproxyUrl) {
+        ServiceClient.HAPROXY_URL = haproxyUrl;
         return this;
     }
 
@@ -34,7 +36,7 @@ public class ServiceClient {
         private WebTarget target;
 
         ServiceTarget(String serviceName) {
-            this.target = client.target(haproxyUrl).path(serviceName);
+            this.target = client.target(HAPROXY_URL).path(serviceName);
         }
 
         public WebTarget getWebTarget() {
@@ -52,6 +54,9 @@ public class ServiceClient {
         }
 
         public Invocation.Builder request(MediaType mediaType) {
+            // reset haproxy url after a single request
+            HAPROXY_URL = DEFAULT_HAPROXY_URL;
+
             return this.target.request(mediaType).header("Authorization", "Bearer " + userContext.getToken());
         }
     }

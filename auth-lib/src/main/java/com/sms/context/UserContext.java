@@ -1,10 +1,11 @@
 package com.sms.context;
 
-import com.sms.authlib.UserDTO;
+import com.sms.authlib.UserAuthDTO;
 import org.keycloak.KeycloakPrincipal;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 import java.util.Set;
 
 @Component
@@ -13,15 +14,21 @@ public class UserContext {
     private String userId;
     private String userName;
     private String token;
-    private Set<String> roles;
+    private Set<String> kcRoles;
+    private String smsRole;
+    private Map<String, Object> customAttributes;
 
     void fromHttpRequest(HttpServletRequest request) {
         if ("KEYCLOAK".equals(request.getAuthType())) {
             KeycloakPrincipal<?> keycloakPrincipal = (KeycloakPrincipal<?>) request.getUserPrincipal();
 
+            this.customAttributes = keycloakPrincipal.getKeycloakSecurityContext().getToken().getOtherClaims();
+            if (customAttributes.containsKey("role")) {
+                this.smsRole = customAttributes.get("role").toString();
+            }
             this.userId = keycloakPrincipal.getName();
             this.token = keycloakPrincipal.getKeycloakSecurityContext().getTokenString();
-            this.roles = keycloakPrincipal.getKeycloakSecurityContext().getToken().getRealmAccess().getRoles();
+            this.kcRoles = keycloakPrincipal.getKeycloakSecurityContext().getToken().getRealmAccess().getRoles();
             this.userName = keycloakPrincipal.getKeycloakSecurityContext().getToken().getPreferredUsername();
         }
     }
@@ -30,7 +37,13 @@ public class UserContext {
         this.userId = null;
         this.userName = null;
         this.token = null;
-        this.roles = null;
+        this.kcRoles = null;
+        this.smsRole = null;
+        this.customAttributes = null;
+    }
+
+    public String getSmsRole() {
+        return smsRole;
     }
 
     public String getToken() {
@@ -45,13 +58,18 @@ public class UserContext {
         return userName;
     }
 
-    public Set<String> getRoles() {
-        return roles;
+    public Set<String> getKcRoles() {
+        return kcRoles;
     }
 
-    public UserDTO toUserDTO() {
-        return UserDTO.builder()
-                .roles(roles)
+    public Map<String, Object> getCustomAttributes() {
+        return customAttributes;
+    }
+
+    public UserAuthDTO toUserAuthDTO() {
+        return UserAuthDTO.builder()
+                .smsRole(smsRole)
+                .roles(kcRoles)
                 .userId(userId)
                 .userName(userName)
                 .token(token)
