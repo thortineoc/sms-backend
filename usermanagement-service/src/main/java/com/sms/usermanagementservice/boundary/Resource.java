@@ -22,10 +22,11 @@ public class Resource {
         usersService.getUser(id);
     }
 
-    @GetMapping("/usersid") //endpoint na wszytskie wartości id/ewentualnie potem tego gówna String
+   /* @GetMapping("/usersid") //endpoint na wszytskie wartości id/ewentualnie potem tego gówna String
     public void allUsersId(){
         usersService.getAllUsersId();
     }
+*/ //to raczej nie ma sesnu
 
     @GetMapping("/group/{groupID}")
     @ResponseBody
@@ -42,6 +43,12 @@ public class Resource {
     @ResponseBody
     public void teacher(@PathVariable("id") short id){
         usersService.getTeacher(id);
+    }
+
+    @GetMapping("role/{rola}")
+    @ResponseBody
+    public void role)(@PathVariable("rola") String rola="users"){
+        usersService.getUsersByRole(rola);
     }
 
 }
