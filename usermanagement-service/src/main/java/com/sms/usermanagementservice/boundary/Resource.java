@@ -41,14 +41,21 @@ public class Resource {
 
     @GetMapping("/teachers/{id}")
     @ResponseBody
-    public void teacher(@PathVariable("id") short id){
+    public void teacher(@PathVariable("id") long id){
         usersService.getTeacher(id);
     }
 
-    @GetMapping("role/{rola}")
+    @GetMapping("/{role}")
     @ResponseBody
-    public void role)(@PathVariable("rola") String rola="users"){
-        usersService.getUsersByRole(rola);
+    public void role(@PathVariable("role") String role){
+        usersService.getUsersByRole(role);
     }
+
+    @GetMapping("/{role}/{number}")
+    @ResponseBody
+    public void getNUsersByRole(@PathVariable("role") String role, @PathVariable("number") int number){
+        usersService.getNUsersByRole(role, number);
+    }
+
 
 }
