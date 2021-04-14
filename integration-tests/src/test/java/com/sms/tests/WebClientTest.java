@@ -4,7 +4,7 @@ import com.sms.clients.WebClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class WebClientTest {
+class WebClientTest {
 
     private static WebClient client;
 

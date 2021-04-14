@@ -24,4 +24,6 @@ public interface UserAuthDTO {
 
     Set<String> getRoles();
 
+    String getSmsRole();
+
 }
