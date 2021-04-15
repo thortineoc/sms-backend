@@ -64,15 +64,14 @@ public class UsersResource {
         UserSearchParams params = new UserSearchParams();
         params.username(data.getUserName());
         List<UserRepresentation> out = keycloakClient.getUsers(params);
-        System.out.print(out.get(0).getId());
-        UserRepresentation parentRepresentation = new UserRepresentation();
+        String studentID = out.get(0).getId();
 
+        UserRepresentation parentRepresentation = new UserRepresentation();
         parentRepresentation.setUsername(data.getUserName() + "_parent");
         parentRepresentation.setFirstName("Parent");
         parentRepresentation.setLastName(data.getLastName());
-
         Map<String, List<String>> attributes = new HashMap<>();
-        attributes.put("relatedUser", Arrays.asList(out.get(0).getId()));
+        attributes.put("relatedUser", Arrays.asList(studentID));
         attributes.put("role", Arrays.asList("PARENT"));
         parentRepresentation.setAttributes(attributes);
 
