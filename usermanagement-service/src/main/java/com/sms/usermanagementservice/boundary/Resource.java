@@ -1,7 +1,6 @@
 package com.sms.usermanagementservice.boundary;
 
 import com.sms.usermanagementservice.control.UsersService;
-import com.sms.usermanagementservice.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,10 +24,6 @@ public class Resource {
         UsersService.getGroup(groupID);
     }
 
-    @GetMapping("/teachers")
-    public void teachers(){
-        UsersService.getTeachers();
-    }
 
     @GetMapping("role/{rola}")
     @ResponseBody
@@ -36,10 +31,10 @@ public class Resource {
         UsersService.getUsersByRole(rola);
     }
 
-    @GetMapping("/teachers/{id}")
+    @GetMapping("/search/{object}")
     @ResponseBody
-    public void teacher(@PathVariable("id") String id){
-        UsersService.getTeacher(id);
+    public void searchUser(@PathVariable("object") String object){
+        UsersService.searchUser(object);
     }
 
 }
