@@ -100,18 +100,18 @@ jobs:
           # Target directory
           TARGET: /home/SMS/subsystems/backend/timetable-service/timetable-service.jar
           
-#      - name: SSH deploy usermanagement service 
-#        uses: easingthemes/ssh-deploy@v2.1.6
-#        with:
-#          # Private Key
-#          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }} 
-#          # Remote host
-#          REMOTE_HOST: 52.142.201.18
-#          # Remote user
-#          REMOTE_USER: SMS
-#          SOURCE: usermanagement-service/target/usermanagement-service-${{ env.USERMANAGEMENT_SERVICE_VERSION }}.jar
-#          # Target directory
-#          TARGET: /home/SMS/subsystems/backend/usermanagement-service/usermanagement-service.jar
+      - name: SSH deploy usermanagement service 
+        uses: easingthemes/ssh-deploy@v2.1.6
+        with:
+          # Private Key
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }} 
+          # Remote host
+          REMOTE_HOST: 52.142.201.18
+          # Remote user
+          REMOTE_USER: SMS
+          SOURCE: usermanagement-service/target/usermanagement-service-${{ env.USERMANAGEMENT_SERVICE_VERSION }}.jar
+          # Target directory
+          TARGET: /home/SMS/subsystems/backend/usermanagement-service/usermanagement-service.jar
           
       - name: Start all services
         uses: garygrossgarten/github-action-ssh@v0.6.3
@@ -122,7 +122,7 @@ jobs:
           privateKey: ${{ secrets.SERVER_SSH_KEY }}
           
       - name: Wait for services and haproxy
-        run: sleep 90
+        run: sleep 120
           
       - name: Run integration tests
         run: mvn -B install -P integration-tests
