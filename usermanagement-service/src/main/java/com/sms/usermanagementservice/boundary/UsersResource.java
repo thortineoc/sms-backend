@@ -81,8 +81,6 @@ public class UsersResource {
         }
 
         return ResponseEntity.ok().build();
-
-
     }
 
     @PostMapping("/new-teacher")
