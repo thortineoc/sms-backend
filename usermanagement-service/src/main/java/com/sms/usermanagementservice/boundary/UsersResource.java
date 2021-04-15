@@ -4,6 +4,7 @@ import com.sms.clients.KeycloakClient;
 import com.sms.context.UserContext;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagementservice.control.UserMapper;
+import com.sms.usermanagementservice.entity.User;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -27,17 +28,23 @@ public class UsersResource {
     @Autowired
     private UserContext userContext;
 
-    @PostMapping("/new-user")
+    @PostMapping("/new-student")
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
 
-        //TODO check if admin
+        if(!userContext.getSmsRole().equals("ADMIN")){
+            return ResponseEntity.status(403).build();
+        }
+
+        if(data.getRole() != UserDTO.Role.STUDENT){
+            return ResponseEntity.badRequest().build();
+        }
 
         UserRepresentation userRepresentation = UserMapper.toUserRepresentation(data, usersService.calculatePassword(data.getFirstName(), data.getLastName()));
 
         if(keycloakClient.createUser(userRepresentation)){
-            return new ResponseEntity<>("User Created!", HttpStatus.NO_CONTENT);
+            return ResponseEntity.ok().build();
         }
 
-        return new ResponseEntity<>("Cannot create user!", HttpStatus.BAD_REQUEST);
+        return ResponseEntity.badRequest().build();
     }
 }

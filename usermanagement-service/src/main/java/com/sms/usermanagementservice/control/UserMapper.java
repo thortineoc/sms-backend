@@ -71,7 +71,7 @@ public class UserMapper {
         Map<String, String> attributes = new HashMap<>(user.getUserAttributes());
         attributes.put("role", user.getRole().toString());
 
-        Map<String, List<String>> customAttributes = user.getUserAttributes().entrySet()
+        Map<String, List<String>> customAttributes = attributes.entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.singletonList(e.getValue())));
 
@@ -89,6 +89,12 @@ public class UserMapper {
 
         Map<String, String> attributes = mapUserAttributes(user);
         attributes.put("role", user.getRole().toString());
+
+        Map<String, List<String>> customAttributes = attributes.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.singletonList(e.getValue())));
+
+        userRep.setAttributes(customAttributes);
 
         return userRep;
     }
