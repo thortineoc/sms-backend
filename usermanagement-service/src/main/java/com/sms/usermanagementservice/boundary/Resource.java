@@ -1,6 +1,7 @@
 package com.sms.usermanagementservice.boundary;
 
 import com.sms.usermanagementservice.control.UsersService;
+import com.sms.usermanagementservice.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,46 +10,36 @@ import org.springframework.web.bind.annotation.*;
 public class Resource {
 
     @Autowired
-    UsersService usersService;
+    UsersService userService ;
 
-    @GetMapping("/")
-    public void allUsers(){
-        usersService.getAllUsers();
-    }
 
     @GetMapping("/user/{id}")
     @ResponseBody
-    public void user(@PathVariable("id") long id){
-        usersService.getUser(id);
+    public void user(@PathVariable("id") String id){
+        UsersService.getUserById(id);
     }
-
-   /* @GetMapping("/usersid") //endpoint na wszytskie wartości id/ewentualnie potem tego gówna String
-    public void allUsersId(){
-        usersService.getAllUsersId();
-    }
-*/ //to raczej nie ma sesnu
 
     @GetMapping("/group/{groupID}")
     @ResponseBody
-    public void group(@PathVariable("groupID") short groupID){
-        usersService.getGroup(groupID);
+    public void group(@PathVariable("groupID") String groupID){
+        UsersService.getGroup(groupID);
     }
 
     @GetMapping("/teachers")
     public void teachers(){
-        usersService.getTeachers();
-    }
-
-    @GetMapping("/teachers/{id}")
-    @ResponseBody
-    public void teacher(@PathVariable("id") short id){
-        usersService.getTeacher(id);
+        UsersService.getTeachers();
     }
 
     @GetMapping("role/{rola}")
     @ResponseBody
-    public void role)(@PathVariable("rola") String rola="users"){
-        usersService.getUsersByRole(rola);
+    public void role(@PathVariable("rola") String rola){
+        UsersService.getUsersByRole(rola);
+    }
+
+    @GetMapping("/teachers/{id}")
+    @ResponseBody
+    public void teacher(@PathVariable("id") String id){
+        UsersService.getTeacher(id);
     }
 
 }
