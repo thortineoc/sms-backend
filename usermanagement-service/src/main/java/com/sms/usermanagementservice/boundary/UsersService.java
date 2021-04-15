@@ -1,5 +1,6 @@
 package com.sms.usermanagementservice.boundary;
 
+import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagementservice.entity.User;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -8,8 +9,8 @@ import org.springframework.stereotype.Component;
 @Scope("request")
 public class UsersService {
 
-    public String calculatePassword(User user){
-        return user.getFirstName().substring(0, Math.min(user.getFirstName().length(), 4)) +
-                user.getLastName().substring(0, Math.min(user.getLastName().length(), 4));
+    public String calculatePassword(String firstName, String lastName){
+        return firstName.substring(0, Math.min(firstName.length(), 4)) +
+                lastName.substring(0, Math.min(lastName.length(), 4));
     }
 }
