@@ -54,6 +54,38 @@ public class UsersResource {
         return ResponseEntity.badRequest().build();
     }
 
+    @PostMapping("/new-parent")
+    public ResponseEntity<String> newParent(@RequestBody UserDTO data) {
+
+        if(!userContext.getSmsRole().equals("ADMIN")){
+            System.out.print("USER IS NOT AN ADMIN");
+            return ResponseEntity.status(403).build();
+        }
+
+        if(data.getRole() != UserDTO.Role.PARENT){
+            System.out.print("REQUEST DOES NOT CONTAINING STUDENT");
+            return ResponseEntity.badRequest().build();
+        }
+
+        if(!data.getCustomAttributes().getSubjects().isEmpty()){
+            System.out.print("DATA CONTAINING SUBJECTS");
+            return ResponseEntity.badRequest().build();
+        }
+
+        if(data.getCustomAttributes().getGroup().isPresent()){
+            System.out.print("DATA CONTAINING GROUP");
+            return ResponseEntity.badRequest().build();
+        }
+
+        UserRepresentation userRepresentation = UserMapper.toUserRepresentation(data, usersService.calculatePassword(data.getFirstName(), data.getLastName()));
+        if(keycloakClient.createUser(userRepresentation)){
+            return ResponseEntity.ok().build();
+        }
+
+        System.out.print("THERE WAS AN ERROR WHILE CREATING USER");
+        return ResponseEntity.badRequest().build();
+    }
+
     @PostMapping("/new-teacher")
     public ResponseEntity<String> newTeacher(@RequestBody UserDTO data) {
 
