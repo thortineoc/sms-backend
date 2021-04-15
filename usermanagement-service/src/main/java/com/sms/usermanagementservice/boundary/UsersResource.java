@@ -1,6 +1,7 @@
 package com.sms.usermanagementservice.boundary;
 
 import com.sms.clients.KeycloakClient;
+import com.sms.clients.entity.UserSearchParams;
 import com.sms.context.UserContext;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagementservice.control.UserMapper;
@@ -10,6 +11,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -44,46 +49,41 @@ public class UsersResource {
             return ResponseEntity.badRequest().build();
         }
 
-        UserRepresentation userRepresentation = UserMapper.toUserRepresentation(data, usersService.calculatePassword(data.getFirstName(), data.getLastName()));
-        //todo create parent
-        if(keycloakClient.createUser(userRepresentation)){
-            return ResponseEntity.ok().build();
-        }
-
-        System.out.print("THERE WAS AN ERROR WHILE CREATING USER");
-        return ResponseEntity.badRequest().build();
-    }
-
-    @PostMapping("/new-parent")
-    public ResponseEntity<String> newParent(@RequestBody UserDTO data) {
-
-        if(!userContext.getSmsRole().equals("ADMIN")){
-            System.out.print("USER IS NOT AN ADMIN");
-            return ResponseEntity.status(403).build();
-        }
-
-        if(data.getRole() != UserDTO.Role.PARENT){
-            System.out.print("REQUEST DOES NOT CONTAINING STUDENT");
-            return ResponseEntity.badRequest().build();
-        }
-
-        if(!data.getCustomAttributes().getSubjects().isEmpty()){
-            System.out.print("DATA CONTAINING SUBJECTS");
-            return ResponseEntity.badRequest().build();
-        }
-
-        if(data.getCustomAttributes().getGroup().isPresent()){
-            System.out.print("DATA CONTAINING GROUP");
+        if(data.getCustomAttributes().getRelatedUser().isPresent()){
+            System.out.print("DATA CONTAINING RELATED USER");
             return ResponseEntity.badRequest().build();
         }
 
         UserRepresentation userRepresentation = UserMapper.toUserRepresentation(data, usersService.calculatePassword(data.getFirstName(), data.getLastName()));
-        if(keycloakClient.createUser(userRepresentation)){
-            return ResponseEntity.ok().build();
+
+        if(!keycloakClient.createUser(userRepresentation)){
+            System.out.print("THERE WAS AN ERROR WHILE CREATING USER");
+            return ResponseEntity.badRequest().build();
         }
 
-        System.out.print("THERE WAS AN ERROR WHILE CREATING USER");
-        return ResponseEntity.badRequest().build();
+        UserSearchParams params = new UserSearchParams();
+        params.username(data.getUserName());
+        List<UserRepresentation> out = keycloakClient.getUsers(params);
+        System.out.print(out.get(0).getId());
+        UserRepresentation parentRepresentation = new UserRepresentation();
+
+        parentRepresentation.setUsername(data.getUserName() + "_parent");
+        parentRepresentation.setFirstName("Parent");
+        parentRepresentation.setLastName(data.getLastName());
+
+        Map<String, List<String>> attributes = new HashMap<>();
+        attributes.put("relatedUser", Arrays.asList(out.get(0).getId()));
+        attributes.put("role", Arrays.asList("PARENT"));
+        parentRepresentation.setAttributes(attributes);
+
+        if(!keycloakClient.createUser(parentRepresentation)){
+            System.out.print("THERE WAS AN ERROR WHILE CREATING USER");
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok().build();
+
+
     }
 
     @PostMapping("/new-teacher")
