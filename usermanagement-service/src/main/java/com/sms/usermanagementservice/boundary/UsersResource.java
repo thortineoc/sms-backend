@@ -1,22 +1,14 @@
 package com.sms.usermanagementservice.boundary;
 
-import com.sms.clients.KeycloakClient;
-import com.sms.clients.entity.UserSearchParams;
 import com.sms.context.UserContext;
 import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagementservice.control.UserMapper;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
+import com.sms.usermanagementservice.control.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import javax.ws.rs.ForbiddenException;
-import java.nio.file.AccessDeniedException;
-import java.util.*;
 
 
 @RestController

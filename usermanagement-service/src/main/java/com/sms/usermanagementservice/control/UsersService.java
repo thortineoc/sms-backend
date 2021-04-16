@@ -1,4 +1,4 @@
-package com.sms.usermanagementservice.boundary;
+package com.sms.usermanagementservice.control;
 
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
