@@ -25,11 +25,7 @@ public class UsersService {
     public void createStudentWithParent(UserDTO user) {
         createUser(user);
 
-        if (!keycloakClient.createUser(student)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
-        }
-
-        UserSearchParams params = new UserSearchParams().username(calculateStudentUsername(user));
+        UserSearchParams params = new UserSearchParams().username(calculateUsername(user));
         UserRepresentation createdStudent = keycloakClient.getUsers(params)
                 .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
 
