@@ -142,27 +142,25 @@ public class UserMapper {
         return userRep;
     }
 
-    private static Map<String, String> mapParentAttributes(UserDTO user) {
+    private static Map<String, String> mapParentAttributesFromStudent(UserDTO user) {
         Map<String, String> userAttributes = new HashMap<>();
         CustomAttributesDTO customAttributes = user.getCustomAttributes();
         customAttributes.getMiddleName().ifPresent(p -> userAttributes.put("middleName", p));
         customAttributes.getPhoneNumber().ifPresent(p -> userAttributes.put("phoneNumber", p));
         customAttributes.getRelatedUser().ifPresent(p -> userAttributes.put("relatedUser", p));
-        userAttributes.put("pesel", user.getCustomAttributes().getPesel());
+        userAttributes.put("pesel", "parent_" + user.getCustomAttributes().getPesel());
 
         return userAttributes;
     }
 
-    public static UserRepresentation toParentRepresentation(UserDTO user, String password) {
+    public static UserRepresentation toParentRepresentationFromStudent(UserDTO user, String password) {
         UserRepresentation userRep = new UserRepresentation();
-        userRep.setUsername(user.getUserName());
-        userRep.setFirstName(user.getFirstName());
+        userRep.setFirstName("Parent");
         userRep.setLastName(user.getLastName());
-        user.getEmail().ifPresent(userRep::setEmail);
         userRep.setCredentials(Collections.singletonList(getPasswordCredential(password)));
 
-        Map<String, String> attributes = mapParentAttributes(user);
-        attributes.put("role", user.getRole().toString());
+        Map<String, String> attributes = mapParentAttributesFromStudent(user);
+        attributes.put("role", UserDTO.Role.PARENT.toString());
 
         Map<String, List<String>> customAttributes = attributes.entrySet()
                 .stream()

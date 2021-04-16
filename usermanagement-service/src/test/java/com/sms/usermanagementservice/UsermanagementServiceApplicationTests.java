@@ -12,20 +12,4 @@ class UsermanagementServiceApplicationTests {
     void contextLoads() {
     }
 
-    @Test
-    void calculatePassword(){
-
-        String firstName = "UserFirstName";
-        String lastName = "LastName";
-
-        UsersService usersService = new UsersService();
-
-        Assertions.assertEquals(usersService.calculatePassword(firstName, lastName), "UserLast");
-
-        firstName = "Us";
-        lastName = "L";
-
-        Assertions.assertEquals(usersService.calculatePassword(firstName, lastName), "UsL");
-    }
-
 }
