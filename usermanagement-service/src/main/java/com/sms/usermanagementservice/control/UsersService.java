@@ -101,7 +101,7 @@ public class UsersService {
 
         UserRepresentation parent = UserMapper.toParentRepresentationFromStudent(user, parentUsername, password);
 
-        Map<String, List<String>> parentAttributes = new HashMap<>();
+        Map<String, List<String>> parentAttributes = parent.getAttributes();
         parentAttributes.put("relatedUser", Collections.singletonList(createdStudent.getId()));
         parent.setAttributes(parentAttributes);
 
