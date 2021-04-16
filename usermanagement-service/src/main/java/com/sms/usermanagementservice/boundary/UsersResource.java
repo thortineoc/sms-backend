@@ -42,7 +42,6 @@ public class UsersResource {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-
         return ResponseEntity.ok().build();
     }
 

@@ -144,10 +144,6 @@ public class UserMapper {
 
     private static Map<String, String> mapParentAttributesFromStudent(UserDTO user) {
         Map<String, String> userAttributes = new HashMap<>();
-        CustomAttributesDTO customAttributes = user.getCustomAttributes();
-        customAttributes.getMiddleName().ifPresent(p -> userAttributes.put("middleName", p));
-        customAttributes.getPhoneNumber().ifPresent(p -> userAttributes.put("phoneNumber", p));
-        customAttributes.getRelatedUser().ifPresent(p -> userAttributes.put("relatedUser", p));
         userAttributes.put("pesel", "parent_" + user.getCustomAttributes().getPesel());
 
         return userAttributes;

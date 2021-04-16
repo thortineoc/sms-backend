@@ -37,26 +37,34 @@ public class UsersService {
     }
 
     public boolean createStudentWithParent(UserDTO user) {
+
         if (!user.getRole().equals(UserDTO.Role.STUDENT)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        UserRepresentation student = UserMapper.toStudentRepresentation(user, calculatePassword(user));
-        student.setUsername(calculateStudentUsername(user));
-        keycloakClient.createUser(student);
+        String password = calculatePassword(user);
+        String student_username = calculateStudentUsername(user);
+        String parent_username = calculateParentUsername(user);
+
+        UserRepresentation student = UserMapper.toStudentRepresentation(user, password);
+        student.setUsername(student_username);
+
+        if(!keycloakClient.createUser(student)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
 
         UserSearchParams params = new UserSearchParams().username(calculateStudentUsername(user));
         UserRepresentation created_student = keycloakClient.getUsers(params).stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
 
-
-        UserRepresentation parent = UserMapper.toParentRepresentationFromStudent(user, calculatePassword(user));
-        parent.setUsername(calculateParentUsername(user));
-
+        UserRepresentation parent = UserMapper.toParentRepresentationFromStudent(user, password);
+        parent.setUsername(parent_username);
         Map<String, List<String>> parent_attributes = new HashMap<>();
         parent_attributes.put("relatedUser", Collections.singletonList(created_student.getId()));
         parent.setAttributes(parent_attributes);
 
-        keycloakClient.createUser(parent);
+        if(!keycloakClient.createUser(parent)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
 
         params = new UserSearchParams().username(calculateParentUsername(user));
         UserRepresentation created_parent = keycloakClient.getUsers(params).stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
@@ -65,7 +73,9 @@ public class UsersService {
         student_attributes.put("relatedUser", Collections.singletonList(created_parent.getId()));
         parent.setAttributes(student_attributes);
 
-        keycloakClient.updateUser(created_student.getId(), created_student);
+        if(!keycloakClient.updateUser(created_student.getId(), created_student)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
 
         return true;
     }
