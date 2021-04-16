@@ -63,6 +63,7 @@ public class UsersService {
         parent.setAttributes(parent_attributes);
 
         if(!keycloakClient.createUser(parent)){
+            keycloakClient.deleteUser(created_student.getId());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
@@ -74,6 +75,8 @@ public class UsersService {
         parent.setAttributes(student_attributes);
 
         if(!keycloakClient.updateUser(created_student.getId(), created_student)){
+            keycloakClient.deleteUser(created_student.getId());
+            keycloakClient.deleteUser(created_parent.getId());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
