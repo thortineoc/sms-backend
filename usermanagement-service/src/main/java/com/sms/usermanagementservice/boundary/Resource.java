@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.*;
 public class Resource {
 
     @Autowired
-    UsersService userService ;
-
+    UsersService userService;
+/*
 
     @GetMapping("/{id}")
     @ResponseBody
@@ -35,6 +35,6 @@ public class Resource {
     public void searchUser(@PathVariable("object") String object){
         UsersService.getUser(object);
     }
-
+*/
 
 }

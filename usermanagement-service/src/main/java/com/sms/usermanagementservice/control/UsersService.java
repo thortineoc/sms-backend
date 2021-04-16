@@ -3,7 +3,6 @@ package com.sms.usermanagementservice.control;
 
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
-import com.sms.context.UserContext;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagementservice.entity.User;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -22,16 +21,21 @@ import static com.sms.usermanagementservice.control.UserMapper.toDTO;
 public class UsersService {
 
     @Autowired
-    static UserContext userContext;
+    private KeycloakClient keycloakclient;
 
-    private static List<UserDTO> UsersDTO = new ArrayList<>();
-    private static Map<String, List<String>> Atributes;
-    private final static KeycloakClient CLIENT = new KeycloakClient();
-    private final static String SMSROLE = "SMSrole";
-    private final static String SMSGROUP = "SMSrole";
+    private List<UserDTO> DTOs = new ArrayList<>();
+    private  Map<String, List<String>> Atributes;
+    private final static String SMSROLE = "role";
+    private final static String SMSGROUP = "group";
+    private final static String SMSPHONENUMBER = "phoneNumber";
+    private final static String SMSSUBJECTS = "subjects";
+    private final static String SMSPESEL = "pesel";
+    private final static String SMSRELATED = "realatedUser";
+    private final static String SMSMIDDLENAME = "middleName";
 
-    public static void getUserById(String id) {
-        Optional<UserRepresentation> user = CLIENT.getUser(id);
+
+    public  void getUserById(String id) {
+        Optional<UserRepresentation> user = keycloakclient.getUser(id);
         if (user.isPresent()) {
             User USER = new User.Builder()
                     .firstName(user.get().getFirstName())
@@ -45,8 +49,8 @@ public class UsersService {
         }
     }
 
-    public static void getGroup(String ID) {
-        List<UserRepresentation> users = CLIENT.getAllUsers();
+    public  void getGroup(String ID) {
+        List<UserRepresentation> users = keycloakclient.getAllUsers();
         if (!users.isEmpty()) {
             for (UserRepresentation user : users) {
                 Map<String, List<String>> UserAtribs=user.getAttributes();
@@ -61,10 +65,10 @@ public class UsersService {
     }
 
 
-        public static void getUser(String object){
+        public void getUser(String object){
             UserSearchParams params = new UserSearchParams();
             params.search(object);
-            List<UserRepresentation> users = CLIENT.getUsers(params);
+            List<UserRepresentation> users = keycloakclient.getUsers(params);
             if (!users.isEmpty()) {
                 for (UserRepresentation user : users) {
                     User USER = new User.Builder()
@@ -74,14 +78,14 @@ public class UsersService {
                             .userAttributes(Collections.emptyMap()) //bez dodatkowych póki co
                             .email(Optional.ofNullable(user.getEmail()))
                             .build();
-                    UsersDTO.add(toDTO(USER));
+                    DTOs.add(toDTO(USER));
                 }
             }
         }
 
 
-    public static void getRole(String object){
-        List<UserRepresentation> users = CLIENT.getAllUsers();
+    public void getRole(String object){
+        List<UserRepresentation> users = keycloakclient.getAllUsers();
         if (!users.isEmpty()) {
             for (UserRepresentation user : users) {
                 Map<String, List<String>> UserAtribs=user.getAttributes();
@@ -95,8 +99,8 @@ public class UsersService {
         }
     }
 
+    private  void BuildUser(UserRepresentation user, UserDTO.Role ROLE, String GROUP){
 
-    private static void BuildUser(UserRepresentation user, UserDTO.Role ROLE, String GROUP){
         User USER = new User.Builder()
                 .firstName(user.getFirstName())
                 .username(user.getUsername())
@@ -104,8 +108,51 @@ public class UsersService {
                 .userAttributes(Collections.emptyMap()) //bez dodatkowych póki co
                 .email(Optional.ofNullable(user.getEmail()))
                 .build();
-        UsersDTO.add(toDTO(USER));
+        DTOs.add(toDTO(USER));
     }
+
+    private UserDTO.Role getRole(Map<String, List<String>> Attributes){
+        List<String> tmp=Attributes.get(SMSROLE);
+        if(tmp.contains("STUDENT")) return UserDTO.Role.STUDENT;
+        if(tmp.contains("TEACHER")) return UserDTO.Role.TEACHER;
+        if(tmp.contains("PARENT"))  return UserDTO.Role.PARENT;
+        else
+            return UserDTO.Role.ADMIN;
+    }
+
+    private String getGroup(Map<String, List<String>> Attributes){
+        return Attributes.get(SMSGROUP).get(0);
+    }
+
+    private String getPhoneNumber(Map<String, List<String>> Attributes){
+        return Attributes.get(SMSPHONENUMBER).get(0);
+    }
+
+    private String getSubject(Map<String, List<String>> Attributes){
+        return Attributes.get(SMSSUBJECTS).get(0);
+    }
+
+    private String getMiddleName(Map<String, List<String>> Attributes){
+        return Attributes.get(SMSMIDDLENAME).get(0);
+    }
+
+    private String getRelated(Map<String, List<String>>Attributes){
+        return Attributes.get(SMSRELATED).get(0);
+    }
+    private String getPesel(Map<String, List<String>> Attributes){
+        return Attributes.get(SMSPESEL).get(0);
+    }
+
+    private Map<String, String> MapUserAttributes(Map<String, List<String>> Attributes){
+        Map<String, String> userAttrib= new HashMap<>();
+        userAttrib.put(SMSPESEL, getPesel(Attributes));
+        userAttrib.put(SMSPHONENUMBER, getPhoneNumber(Attributes));
+        userAttrib.put(SMSRELATED, getPesel(Attributes));
+        userAttrib.put(SMSMIDDLENAME, getMiddleName(Attributes));
+        userAttrib.put(SMSSUBJECTS, getSubject(Attributes));
+        return userAttrib;
+    }
+
 
 
     }
