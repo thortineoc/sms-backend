@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
-import java.util.HashMap;   // ← nieużywana hashmapa?
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,66 +21,50 @@ public class UsersService {
 
     @Autowired
     private KeycloakClient keycloakClient;
-    // ja bym ogólnie zrobił żeby to void zwracało i tylko rzucał wyjątek jak coś nie pójdzie
-    public boolean createStudentWithParent(UserDTO user) {
-        // te calculate bym wrzucił do UserMapper.toUserRepresentation(user, calculateUsername(), calculatePassword())
-        // bo są dość proste
-        String password = calculatePassword(user);
-        String studentUsername = calculateStudentUsername(user);
 
-        UserRepresentation student = UserMapper.toUserRepresentation(user, studentUsername, password);
+    public void createStudentWithParent(UserDTO user) {
 
-        if(!keycloakClient.createUser(student)){
+        UserRepresentation student = UserMapper.toUserRepresentation(user, calculateStudentUsername(user), calculatePassword(user));
+
+        if (!keycloakClient.createUser(student)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        UserSearchParams params = new UserSearchParams().username(studentUsername);
+        UserSearchParams params = new UserSearchParams().username(calculateStudentUsername(user));
         UserRepresentation createdStudent = keycloakClient.getUsers(params)
                 .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
-        //↓ tutaj jak naciśniesz ctrl alt L to ci zrobi spację
-        if(!createParent(user, createdStudent)){
-            keycloakClient.deleteUser(createdStudent.getId());
-            return false;
-        }
 
-        return true;
+        createParent(user, createdStudent);
+
     }
 
-    public boolean createAdmin(UserDTO user) {
-        // wrzuciłbym wywołania tych metod do username i password prosto do .toUserRepresentation chyba, nie może się
-        // w nich nic zepsuć i będzie czytelniej tak chyba, 5 czy 6 linijek zostanie no nie
-        String password = calculatePassword(user);
-        String adminUsername = calculateAdminUsername(user);
+    public void createAdmin(UserDTO user) {
 
-        UserRepresentation admin = UserMapper.toUserRepresentation(user, adminUsername, password);
+        UserRepresentation admin = UserMapper.
+                toUserRepresentation(user, calculateAdminUsername(user), calculatePassword(user));
 
-        if(!keycloakClient.createUser(admin)){
-            // tu też można rzucać wyjątek od razu a nie zwracać false, zwłaszcza że w metodzie wyżej jest create user
-            // też i jest rzucany wyjątek
-            return false;
+        if (!keycloakClient.createUser(admin)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
 
-        return true;
     }
 
-    public boolean createTeacher(UserDTO user) {
-        // to co wyżej
-        String password = calculatePassword(user);
-        String teacherUsername = calculateTeacherUsername(user);
+    public void createTeacher(UserDTO user) {
 
-        UserRepresentation teacher = UserMapper.toUserRepresentation(user, teacherUsername, password);
+        UserRepresentation teacher = UserMapper.
+                toUserRepresentation(user, calculateTeacherUsername(user), calculatePassword(user));
 
-        if(!keycloakClient.createUser(teacher)){
-            return false;
+        if (!keycloakClient.createUser(teacher)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
 
-        return true;
     }
 
     private String calculatePassword(UserDTO user) {
         return user.getFirstName().substring(0, Math.min(user.getFirstName().length(), 4)) +
                 user.getLastName().substring(0, Math.min(user.getLastName().length(), 4));
     }
+
     // to tutaj mi trochę przeszkadza, może wrzuć pesel do UserDTO a nie CustomAttributesDTO, będzie wtedy user.getPesel() ładnie
     private String calculateStudentUsername(UserDTO user) {
         return "s_" + user.getCustomAttributes().getPesel();
@@ -98,46 +82,37 @@ public class UsersService {
         return "p_" + user.getCustomAttributes().getPesel();
     }
 
-    private boolean createParent(UserDTO user, UserRepresentation createdStudent){
-        // to co wyżej do wywołania mappera wrzuć może bo to proste metodki są
-        String parentUsername = calculateParentUsername(user);
-        String password = calculatePassword(user);
+    private void createParent(UserDTO user, UserRepresentation createdStudent) {
 
-        UserRepresentation parent = UserMapper.toParentRepresentationFromStudent(user, parentUsername, password);
-
-        Map<String, List<String>> parentAttributes = parent.getAttributes();
+        UserRepresentation parent = UserMapper.toParentRepresentationFromStudent(user, calculateParentUsername(user), calculatePassword(user));
+        Map<String, List<String>> parentAttributes = new HashMap<>(parent.getAttributes());
         parentAttributes.put("relatedUser", Collections.singletonList(createdStudent.getId()));
         parent.setAttributes(parentAttributes);
 
-        if(!keycloakClient.createUser(parent)){
-            return false;
+        if (!keycloakClient.createUser(parent)) {
+            keycloakClient.deleteUser(createdStudent.getId());
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
 
-        if(!updateStudentRelatedUser(createdStudent, parentUsername)){
-            return false;
-        }
+        updateStudentRelatedUser(createdStudent, calculateParentUsername(user));
 
-        return true;
     }
 
-    private boolean updateStudentRelatedUser(UserRepresentation createdStudent, String parentUsername){
+    private void updateStudentRelatedUser(UserRepresentation createdStudent, String parentUsername) {
 
         UserSearchParams params = new UserSearchParams().username(parentUsername);
         UserRepresentation createdParent = keycloakClient.getUsers(params)
                 .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
-        // tu nie ufam tej mapie z getAttributes, weź zrób
-        // Map<String, List<String>> studentAttributes = new HashMap<>(createdStudent.getAttributes())
-        Map<String, List<String>> studentAttributes = createdStudent.getAttributes();
+
+        Map<String, List<String>> studentAttributes = new HashMap<>(createdStudent.getAttributes());
         studentAttributes.put("relatedUser", Collections.singletonList(createdParent.getId()));
         createdStudent.setAttributes(studentAttributes);
 
-        if(!keycloakClient.updateUser(createdStudent.getId(), createdStudent)){
-            // czyli jak się nie uda update to nie usuwamy też tego studenta? czemu?
-            // coś z nim jest nie tak jak się update nie udał chyba
+        if (!keycloakClient.updateUser(createdStudent.getId(), createdStudent)) {
+            keycloakClient.deleteUser(createdStudent.getId());
             keycloakClient.deleteUser(createdParent.getId());
-            return false;
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
 
-        return true;
     }
 }

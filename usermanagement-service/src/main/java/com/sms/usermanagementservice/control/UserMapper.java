@@ -34,26 +34,6 @@ public class UserMapper {
                 .role(user.getRole())
                 .build();
     }
-    // do usunięcia
-    public static UserRepresentation toUserRepresentation(User user, String password) {
-        UserRepresentation userRep = new UserRepresentation();
-        userRep.setUsername(user.getUsername());
-        userRep.setFirstName(user.getFirstName());
-        userRep.setLastName(user.getLastName());
-        user.getEmail().ifPresent(userRep::setEmail);
-        userRep.setCredentials(Collections.singletonList(getPasswordCredential(password)));
-
-        // NOTE: due to a bug in keycloak we have to put the role in custom attributes to avoid unnecessary API calls
-        Map<String, String> attributes = new HashMap<>(user.getUserAttributes());
-        attributes.put("role", user.getRole().toString());
-
-        Map<String, List<String>> customAttributes = attributes.entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.singletonList(e.getValue())));
-
-        userRep.setAttributes(customAttributes);
-        return userRep;
-    }
 
     public static UserRepresentation toUserRepresentation(UserDTO user, String username, String password) {
         UserRepresentation userRep = new UserRepresentation();
@@ -63,15 +43,7 @@ public class UserMapper {
         user.getEmail().ifPresent(userRep::setEmail);
         userRep.setCredentials(Collections.singletonList(getPasswordCredential(password)));
 
-        Map<String, String> attributes = mapUserAttributes(user, user.getRole());
-
-        // --- to bym wyrzucił do metody i wywołał ją w mapUserAttributes, podobnie w metodzie niżej bo się powtarza te 5 linijek
-        Map<String, List<String>> customAttributes = attributes.entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.singletonList(e.getValue())));
-
-        userRep.setAttributes(customAttributes);
-        // wtedy by było userRep.setAttributes(mapUserAttributes(user);
+        userRep.setAttributes(mapCustomAttributes(user));
 
         return userRep;
     }
@@ -83,39 +55,32 @@ public class UserMapper {
         userRep.setLastName(user.getLastName());
         userRep.setCredentials(Collections.singletonList(getPasswordCredential(password)));
 
-        Map<String, String> attributes = mapParentAttributesFromStudent(user);
-        attributes.put("role", UserDTO.Role.PARENT.toString()); // <- to może iść do metody mapParentAttributesFromStudent no nie?
-
-        Map<String, List<String>> customAttributes = attributes.entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.singletonList(e.getValue())));
-
-        userRep.setAttributes(customAttributes);
+        userRep.setAttributes(mapCustomParentFromStudentAttributes(user));
 
         return userRep;
     }
-    //                 tu nie mamy co przekazywać "role" jak jest już w "user" no nie ↓
-    private static Map<String, String> mapUserAttributes(UserDTO user, UserDTO.Role role) {
+
+    private static Map<String, String> mapUserAttributes(UserDTO user) {
         Map<String, String> userAttributes = new HashMap<>();
         CustomAttributesDTO customAttributes = user.getCustomAttributes();
         userAttributes.put("pesel", user.getCustomAttributes().getPesel());
-        userAttributes.put("role", role.toString());
+        userAttributes.put("role", user.getRole().toString());
         customAttributes.getMiddleName().ifPresent(p -> userAttributes.put("middleName", p));
         customAttributes.getPhoneNumber().ifPresent(p -> userAttributes.put("phoneNumber", p));
 
-        switch (role){
-            // nie trzeba robić { jak nie ma potrzeby raczej
-            case STUDENT: {
+        switch (user.getRole()) {
+
+            case STUDENT:
                 customAttributes.getGroup().ifPresent(p -> userAttributes.put("group", p));
                 customAttributes.getRelatedUser().ifPresent(p -> userAttributes.put("relatedUser", p));
                 break;
-            }
-            case TEACHER:{
+
+            case TEACHER:
                 if (customAttributes.getSubjects() != null && !customAttributes.getSubjects().isEmpty()) {
                     userAttributes.put("subjects", String.join(",", customAttributes.getSubjects()));
                 }
                 break;
-            }
+
             case ADMIN:
                 break;
             case PARENT:
@@ -128,6 +93,7 @@ public class UserMapper {
     private static Map<String, String> mapParentAttributesFromStudent(UserDTO user) {
         Map<String, String> userAttributes = new HashMap<>();
         userAttributes.put("pesel", "parent_" + user.getCustomAttributes().getPesel());
+        userAttributes.put("role", UserDTO.Role.PARENT.toString());
 
         return userAttributes;
     }
@@ -150,18 +116,18 @@ public class UserMapper {
                 .build();
     }
 
-    private static Map<String, String> mapUserAttributes(UserDTO user) {
-        Map<String, String> userAttributes = new HashMap<>();
-        CustomAttributesDTO customAttributes = user.getCustomAttributes();
-        customAttributes.getMiddleName().ifPresent(p -> userAttributes.put("middleName", p));
-        customAttributes.getPhoneNumber().ifPresent(p -> userAttributes.put("phoneNumber", p));
-        customAttributes.getGroup().ifPresent(p -> userAttributes.put("group", p));
-        customAttributes.getRelatedUser().ifPresent(p -> userAttributes.put("relatedUser", p));
-        if (customAttributes.getSubjects() != null && !customAttributes.getSubjects().isEmpty()) {
-            userAttributes.put("subjects", String.join(",", customAttributes.getSubjects()));
-        }
+    private static Map<String, List<String>> mapCustomAttributes(UserDTO user) {
+        Map<String, String> attributes = mapUserAttributes(user);
+        return attributes.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.singletonList(e.getValue())));
+    }
 
-        return userAttributes;
+    private static Map<String, List<String>> mapCustomParentFromStudentAttributes(UserDTO user) {
+        Map<String, String> attributes = mapParentAttributesFromStudent(user);
+        return attributes.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.singletonList(e.getValue())));
     }
 
 }
