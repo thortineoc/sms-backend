@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashMap;   // ← nieużywana hashmapa?
 import java.util.List;
 import java.util.Map;
 
@@ -21,9 +21,10 @@ public class UsersService {
 
     @Autowired
     private KeycloakClient keycloakClient;
-
+    // ja bym ogólnie zrobił żeby to void zwracało i tylko rzucał wyjątek jak coś nie pójdzie
     public boolean createStudentWithParent(UserDTO user) {
-
+        // te calculate bym wrzucił do UserMapper.toUserRepresentation(user, calculateUsername(), calculatePassword())
+        // bo są dość proste
         String password = calculatePassword(user);
         String studentUsername = calculateStudentUsername(user);
 
@@ -36,7 +37,7 @@ public class UsersService {
         UserSearchParams params = new UserSearchParams().username(studentUsername);
         UserRepresentation createdStudent = keycloakClient.getUsers(params)
                 .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
-
+        //↓ tutaj jak naciśniesz ctrl alt L to ci zrobi spację
         if(!createParent(user, createdStudent)){
             keycloakClient.deleteUser(createdStudent.getId());
             return false;
@@ -46,13 +47,16 @@ public class UsersService {
     }
 
     public boolean createAdmin(UserDTO user) {
-
+        // wrzuciłbym wywołania tych metod do username i password prosto do .toUserRepresentation chyba, nie może się
+        // w nich nic zepsuć i będzie czytelniej tak chyba, 5 czy 6 linijek zostanie no nie
         String password = calculatePassword(user);
         String adminUsername = calculateAdminUsername(user);
 
         UserRepresentation admin = UserMapper.toUserRepresentation(user, adminUsername, password);
 
         if(!keycloakClient.createUser(admin)){
+            // tu też można rzucać wyjątek od razu a nie zwracać false, zwłaszcza że w metodzie wyżej jest create user
+            // też i jest rzucany wyjątek
             return false;
         }
 
@@ -60,7 +64,7 @@ public class UsersService {
     }
 
     public boolean createTeacher(UserDTO user) {
-
+        // to co wyżej
         String password = calculatePassword(user);
         String teacherUsername = calculateTeacherUsername(user);
 
@@ -77,7 +81,7 @@ public class UsersService {
         return user.getFirstName().substring(0, Math.min(user.getFirstName().length(), 4)) +
                 user.getLastName().substring(0, Math.min(user.getLastName().length(), 4));
     }
-
+    // to tutaj mi trochę przeszkadza, może wrzuć pesel do UserDTO a nie CustomAttributesDTO, będzie wtedy user.getPesel() ładnie
     private String calculateStudentUsername(UserDTO user) {
         return "s_" + user.getCustomAttributes().getPesel();
     }
@@ -95,7 +99,7 @@ public class UsersService {
     }
 
     private boolean createParent(UserDTO user, UserRepresentation createdStudent){
-
+        // to co wyżej do wywołania mappera wrzuć może bo to proste metodki są
         String parentUsername = calculateParentUsername(user);
         String password = calculatePassword(user);
 
@@ -121,12 +125,15 @@ public class UsersService {
         UserSearchParams params = new UserSearchParams().username(parentUsername);
         UserRepresentation createdParent = keycloakClient.getUsers(params)
                 .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
-
+        // tu nie ufam tej mapie z getAttributes, weź zrób
+        // Map<String, List<String>> studentAttributes = new HashMap<>(createdStudent.getAttributes())
         Map<String, List<String>> studentAttributes = createdStudent.getAttributes();
         studentAttributes.put("relatedUser", Collections.singletonList(createdParent.getId()));
         createdStudent.setAttributes(studentAttributes);
 
         if(!keycloakClient.updateUser(createdStudent.getId(), createdStudent)){
+            // czyli jak się nie uda update to nie usuwamy też tego studenta? czemu?
+            // coś z nim jest nie tak jak się update nie udał chyba
             keycloakClient.deleteUser(createdParent.getId());
             return false;
         }

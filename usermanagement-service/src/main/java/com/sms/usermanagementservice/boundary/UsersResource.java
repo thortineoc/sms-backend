@@ -28,12 +28,23 @@ public class UsersResource {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
-
+    // Postmapping nie potrzebny jak jest jeden endpoint już
     @PostMapping("/new")
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
 
         validateRole();
 
+        // troche się to rozwlekło, jak zrobisz że te metody na usersService będą tylko wyjątki rzucały to można np.
+        /*
+        * switch (data.getRole()) {
+        *   case STUDENT: usersService.createStudent...
+        *   case ADMIN: ...
+        *   case TEACHER: ...
+        *   default: throw new IllegalStateException()
+        * } */
+        // i wychodzi 5 linijek a nie jakieś 20 no nie, + nie masz obsłużonego default:, PARENT też pod to podejdzie
+        // ogólnie zwracanie booleana jest spoko jak planujemy coś zrobić z informacją że coś się nie udało,
+        // a tutaj jedyne co robimy to rzucamy wyjątek, więc można od razu rzucić wyjątek w usersService no nie
         switch (data.getRole()){
             case STUDENT: {
                 if (!usersService.createStudentWithParent(data)) {

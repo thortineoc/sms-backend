@@ -34,7 +34,7 @@ public class UserMapper {
                 .role(user.getRole())
                 .build();
     }
-
+    // do usunięcia
     public static UserRepresentation toUserRepresentation(User user, String password) {
         UserRepresentation userRep = new UserRepresentation();
         userRep.setUsername(user.getUsername());
@@ -65,11 +65,13 @@ public class UserMapper {
 
         Map<String, String> attributes = mapUserAttributes(user, user.getRole());
 
+        // --- to bym wyrzucił do metody i wywołał ją w mapUserAttributes, podobnie w metodzie niżej bo się powtarza te 5 linijek
         Map<String, List<String>> customAttributes = attributes.entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.singletonList(e.getValue())));
 
         userRep.setAttributes(customAttributes);
+        // wtedy by było userRep.setAttributes(mapUserAttributes(user);
 
         return userRep;
     }
@@ -82,7 +84,7 @@ public class UserMapper {
         userRep.setCredentials(Collections.singletonList(getPasswordCredential(password)));
 
         Map<String, String> attributes = mapParentAttributesFromStudent(user);
-        attributes.put("role", UserDTO.Role.PARENT.toString());
+        attributes.put("role", UserDTO.Role.PARENT.toString()); // <- to może iść do metody mapParentAttributesFromStudent no nie?
 
         Map<String, List<String>> customAttributes = attributes.entrySet()
                 .stream()
@@ -92,7 +94,7 @@ public class UserMapper {
 
         return userRep;
     }
-
+    //                 tu nie mamy co przekazywać "role" jak jest już w "user" no nie ↓
     private static Map<String, String> mapUserAttributes(UserDTO user, UserDTO.Role role) {
         Map<String, String> userAttributes = new HashMap<>();
         CustomAttributesDTO customAttributes = user.getCustomAttributes();
@@ -102,6 +104,7 @@ public class UserMapper {
         customAttributes.getPhoneNumber().ifPresent(p -> userAttributes.put("phoneNumber", p));
 
         switch (role){
+            // nie trzeba robić { jak nie ma potrzeby raczej
             case STUDENT: {
                 customAttributes.getGroup().ifPresent(p -> userAttributes.put("group", p));
                 customAttributes.getRelatedUser().ifPresent(p -> userAttributes.put("relatedUser", p));
