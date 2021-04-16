@@ -23,8 +23,7 @@ public class UsersService {
     private KeycloakClient keycloakClient;
 
     public void createStudentWithParent(UserDTO user) {
-
-        UserRepresentation student = UserMapper.toUserRepresentation(user, calculateStudentUsername(user), calculatePassword(user));
+        createUser(user);
 
         if (!keycloakClient.createUser(student)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
@@ -35,56 +34,21 @@ public class UsersService {
                 .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
 
         createParent(user, createdStudent);
-
     }
 
-    public void createAdmin(UserDTO user) {
+    public void createUser(UserDTO user) {
+        UserRepresentation userRep = UserMapper
+                .toUserRepresentation(user, calculateUsername(user), calculatePassword(user));
 
-        UserRepresentation admin = UserMapper.
-                toUserRepresentation(user, calculateAdminUsername(user), calculatePassword(user));
-
-        if (!keycloakClient.createUser(admin)) {
+        if (!keycloakClient.createUser(userRep)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
-
-    }
-
-    public void createTeacher(UserDTO user) {
-
-        UserRepresentation teacher = UserMapper.
-                toUserRepresentation(user, calculateTeacherUsername(user), calculatePassword(user));
-
-        if (!keycloakClient.createUser(teacher)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
-        }
-
-    }
-
-    private String calculatePassword(UserDTO user) {
-        return user.getFirstName().substring(0, Math.min(user.getFirstName().length(), 4)) +
-                user.getLastName().substring(0, Math.min(user.getLastName().length(), 4));
-    }
-
-
-    private String calculateStudentUsername(UserDTO user) {
-        return "s_" + user.getPesel();
-    }
-
-    private String calculateAdminUsername(UserDTO user) {
-        return "a_" + user.getPesel();
-    }
-
-    private String calculateTeacherUsername(UserDTO user) {
-        return "t_" + user.getPesel();
-    }
-
-    private String calculateParentUsername(UserDTO user) {
-        return "p_" + user.getPesel();
     }
 
     private void createParent(UserDTO user, UserRepresentation createdStudent) {
 
-        UserRepresentation parent = UserMapper.toParentRepresentationFromStudent(user, calculateParentUsername(user), calculatePassword(user));
+        UserRepresentation parent = UserMapper
+                .toParentRepresentationFromStudent(user, calculateUsername(user), calculatePassword(user));
         Map<String, List<String>> parentAttributes = new HashMap<>(parent.getAttributes());
         parentAttributes.put("relatedUser", Collections.singletonList(createdStudent.getId()));
         parent.setAttributes(parentAttributes);
@@ -94,8 +58,7 @@ public class UsersService {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
 
-        updateStudentRelatedUser(createdStudent, calculateParentUsername(user));
-
+        updateStudentRelatedUser(createdStudent, calculateUsername(user));
     }
 
     private void updateStudentRelatedUser(UserRepresentation createdStudent, String parentUsername) {
@@ -113,6 +76,20 @@ public class UsersService {
             keycloakClient.deleteUser(createdParent.getId());
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
+    }
 
+    private String calculatePassword(UserDTO user) {
+        return user.getFirstName().substring(0, Math.min(user.getFirstName().length(), 4)) +
+                user.getLastName().substring(0, Math.min(user.getLastName().length(), 4));
+    }
+
+    private String calculateUsername(UserDTO user) {
+        switch (user.getRole()) {
+            case STUDENT: return "s_" + user.getPesel();
+            case ADMIN: return "a_" + user.getPesel();
+            case TEACHER: return "t_" + user.getPesel();
+            case PARENT: return "p_" + user.getPesel();
+            default: throw new IllegalStateException();
+        }
     }
 }

@@ -43,7 +43,7 @@ public class UserMapper {
         user.getEmail().ifPresent(userRep::setEmail);
         userRep.setCredentials(Collections.singletonList(getPasswordCredential(password)));
 
-        userRep.setAttributes(mapCustomAttributes(user));
+        userRep.setAttributes(asMultimap(mapUserAttributes(user)));
 
         return userRep;
     }
@@ -55,7 +55,7 @@ public class UserMapper {
         userRep.setLastName(user.getLastName());
         userRep.setCredentials(Collections.singletonList(getPasswordCredential(password)));
 
-        userRep.setAttributes(mapCustomParentFromStudentAttributes(user));
+        userRep.setAttributes(asMultimap(mapParentAttributesFromStudent(user)));
 
         return userRep;
     }
@@ -69,20 +69,16 @@ public class UserMapper {
         customAttributes.getPhoneNumber().ifPresent(p -> userAttributes.put("phoneNumber", p));
 
         switch (user.getRole()) {
-
             case STUDENT:
                 customAttributes.getGroup().ifPresent(p -> userAttributes.put("group", p));
                 customAttributes.getRelatedUser().ifPresent(p -> userAttributes.put("relatedUser", p));
                 break;
-
             case TEACHER:
                 if (customAttributes.getSubjects() != null && !customAttributes.getSubjects().isEmpty()) {
                     userAttributes.put("subjects", String.join(",", customAttributes.getSubjects()));
                 }
                 break;
-
             case ADMIN:
-                break;
             case PARENT:
                 break;
         }
@@ -116,18 +112,9 @@ public class UserMapper {
                 .build();
     }
 
-    private static Map<String, List<String>> mapCustomAttributes(UserDTO user) {
-        Map<String, String> attributes = mapUserAttributes(user);
-        return attributes.entrySet()
+    private static Map<String, List<String>> asMultimap(Map<String, String> map) {
+        return map.entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.singletonList(e.getValue())));
     }
-
-    private static Map<String, List<String>> mapCustomParentFromStudentAttributes(UserDTO user) {
-        Map<String, String> attributes = mapParentAttributesFromStudent(user);
-        return attributes.entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.singletonList(e.getValue())));
-    }
-
 }

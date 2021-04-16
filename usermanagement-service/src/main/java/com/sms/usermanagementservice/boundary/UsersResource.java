@@ -23,12 +23,6 @@ public class UsersResource {
     @Autowired
     private UserContext userContext;
 
-    private void validateRole() {
-        if (!userContext.getSmsRole().equals("ADMIN")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-    }
-
     @PostMapping
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
 
@@ -39,10 +33,8 @@ public class UsersResource {
                 usersService.createStudentWithParent(data);
                 break;
             case ADMIN:
-                usersService.createAdmin(data);
-                break;
             case TEACHER:
-                usersService.createTeacher(data);
+                usersService.createUser(data);
                 break;
             default:
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -51,5 +43,9 @@ public class UsersResource {
         return ResponseEntity.ok().build();
     }
 
-
+    private void validateRole() {
+        if (!userContext.getSmsRole().equals("ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+    }
 }
