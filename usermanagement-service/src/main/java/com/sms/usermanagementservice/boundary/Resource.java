@@ -12,7 +12,7 @@ public class Resource {
     UsersService userService ;
 
 
-    @GetMapping("/user/{id}")
+    @GetMapping("/{id}")
     @ResponseBody
     public void user(@PathVariable("id") String id){
         UsersService.getUserById(id);
@@ -24,17 +24,17 @@ public class Resource {
         UsersService.getGroup(groupID);
     }
 
-
     @GetMapping("role/{rola}")
     @ResponseBody
     public void role(@PathVariable("rola") String rola){
-        UsersService.getUsersByRole(rola);
+        UsersService.getRole(rola);
     }
 
-    @GetMapping("/search/{object}")
+    @GetMapping("/search/{object}") //tylko do maila/username/first name/last name defaultowe keycloaka
     @ResponseBody
     public void searchUser(@PathVariable("object") String object){
-        UsersService.searchUser(object);
+        UsersService.getUser(object);
     }
+
 
 }
