@@ -65,21 +65,21 @@ public class UsersService {
                 user.getLastName().substring(0, Math.min(user.getLastName().length(), 4));
     }
 
-    // to tutaj mi trochę przeszkadza, może wrzuć pesel do UserDTO a nie CustomAttributesDTO, będzie wtedy user.getPesel() ładnie
+
     private String calculateStudentUsername(UserDTO user) {
-        return "s_" + user.getCustomAttributes().getPesel();
+        return "s_" + user.getPesel();
     }
 
     private String calculateAdminUsername(UserDTO user) {
-        return "a_" + user.getCustomAttributes().getPesel();
+        return "a_" + user.getPesel();
     }
 
     private String calculateTeacherUsername(UserDTO user) {
-        return "t_" + user.getCustomAttributes().getPesel();
+        return "t_" + user.getPesel();
     }
 
     private String calculateParentUsername(UserDTO user) {
-        return "p_" + user.getCustomAttributes().getPesel();
+        return "p_" + user.getPesel();
     }
 
     private void createParent(UserDTO user, UserRepresentation createdStudent) {

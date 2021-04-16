@@ -28,6 +28,8 @@ public interface UserDTO {
 
     Role getRole();
 
+    String getPesel();
+
     Optional<String> getEmail();
 
     enum Role {
