@@ -17,6 +17,8 @@ public interface CustomAttributesDTO {
         return new ImmutableCustomAttributesDTO.Builder();
     }
 
+    String getPesel();
+
     Optional<String> getGroup();
 
     List<String> getSubjects();
