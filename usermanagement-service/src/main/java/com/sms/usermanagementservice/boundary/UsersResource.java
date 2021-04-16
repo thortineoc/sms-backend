@@ -25,7 +25,6 @@ import java.util.*;
 public class UsersResource {
 
 
-
     @Autowired
     private UsersService usersService;
 
@@ -35,18 +34,17 @@ public class UsersResource {
     @PostMapping("/student")
     public ResponseEntity<String> newStudent(@RequestBody UserDTO data) {
 
-        if(!userContext.getSmsRole().equals("ADMIN")){
+        if (!userContext.getSmsRole().equals("ADMIN")) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        if (!usersService.createStudentWithParent(data)){
+        if (!usersService.createStudentWithParent(data)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
 
         return ResponseEntity.ok().build();
     }
-
 
 
 //    @PostMapping("/new-teacher")

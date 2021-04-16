@@ -4,7 +4,6 @@ import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagementservice.control.UserMapper;
-import com.sms.usermanagementservice.entity.User;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -24,21 +23,21 @@ public class UsersService {
     @Autowired
     private KeycloakClient keycloakClient;
 
-    private String calculatePassword(UserDTO user){
+    private String calculatePassword(UserDTO user) {
         return user.getFirstName().substring(0, Math.min(user.getFirstName().length(), 4)) +
                 user.getLastName().substring(0, Math.min(user.getLastName().length(), 4));
     }
 
-    private String calculateStudentUsername(UserDTO user){
+    private String calculateStudentUsername(UserDTO user) {
         return "s_" + user.getCustomAttributes().getPesel();
     }
 
-    private String calculateParentUsername(UserDTO user){
+    private String calculateParentUsername(UserDTO user) {
         return "p_" + user.getCustomAttributes().getPesel();
     }
 
-    public boolean createStudentWithParent(UserDTO user){
-        if(!user.getRole().equals(UserDTO.Role.STUDENT)){
+    public boolean createStudentWithParent(UserDTO user) {
+        if (!user.getRole().equals(UserDTO.Role.STUDENT)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
