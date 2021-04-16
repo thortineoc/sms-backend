@@ -23,15 +23,42 @@ public class UsersResource {
     @Autowired
     private UserContext userContext;
 
-    @PostMapping("/student")
-    public ResponseEntity<String> newStudent(@RequestBody UserDTO data) {
-
+    private void validateRole(){
         if (!userContext.getSmsRole().equals("ADMIN")) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
+    }
 
-        if (!usersService.createStudentWithParent(data)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    @PostMapping("/new")
+    public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
+
+        validateRole();
+
+        switch (data.getRole()){
+            case STUDENT: {
+                if (!usersService.createStudentWithParent(data)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                }
+                break;
+            }
+
+            case ADMIN: {
+                if (!usersService.createAdmin(data)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                }
+                break;
+            }
+
+            case TEACHER: {
+                if (!usersService.createTeacher(data)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                }
+                break;
+            }
+
+            case PARENT: {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            }
         }
 
         return ResponseEntity.ok().build();
