@@ -27,7 +27,7 @@ public class UsersService {
         UserRepresentation student = UserMapper.toUserRepresentation(user, calculateStudentUsername(user), calculatePassword(user));
 
         if (!keycloakClient.createUser(student)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
 
         UserSearchParams params = new UserSearchParams().username(calculateStudentUsername(user));
