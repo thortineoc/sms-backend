@@ -12,4 +12,6 @@ class UsermanagementServiceApplicationTests {
 
     }
 
+    public static class GetUsersTest {
+    }
 }

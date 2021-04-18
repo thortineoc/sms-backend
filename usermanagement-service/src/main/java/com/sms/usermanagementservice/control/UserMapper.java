@@ -25,6 +25,7 @@ public class UserMapper {
     }
 
     public static User toUser(UserDTO user) {
+
         return User.builder()
                 .username(user.getUserName())
                 .firstName(user.getFirstName())
@@ -63,7 +64,7 @@ public class UserMapper {
     private static Map<String, String> mapUserAttributes(UserDTO user) {
         Map<String, String> userAttributes = new HashMap<>();
         CustomAttributesDTO customAttributes = user.getCustomAttributes();
-        userAttributes.put("pesel", user.getPesel());
+        //userAttributes.put("pesel", user.getPesel());
         userAttributes.put("role", user.getRole().toString());
         customAttributes.getMiddleName().ifPresent(p -> userAttributes.put("middleName", p));
         customAttributes.getPhoneNumber().ifPresent(p -> userAttributes.put("phoneNumber", p));
@@ -88,7 +89,7 @@ public class UserMapper {
 
     private static Map<String, String> mapParentAttributesFromStudent(UserDTO user) {
         Map<String, String> userAttributes = new HashMap<>();
-        userAttributes.put("pesel", "parent_" + user.getPesel());
+        //userAttributes.put("pesel", "parent_" + user.getPesel());
         userAttributes.put("role", UserDTO.Role.PARENT.toString());
 
         return userAttributes;
