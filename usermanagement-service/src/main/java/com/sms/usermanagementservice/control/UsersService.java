@@ -11,20 +11,18 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static com.sms.usermanagementservice.control.UserMapper.toDTO;
 
 
 @Component
 @Scope("request")
-
 public class UsersService {
 
     @Autowired
-    private KeycloakClient keycloakclient;
+    private static KeycloakClient keycloakclient;
 
-    private List<UserDTO> DTOs = new ArrayList<>();
-    private  Map<String, List<String>> Atributes;
     private final static String SMSROLE = "role";
     private final static String SMSGROUP = "group";
     private final static String SMSPHONENUMBER = "phoneNumber";
@@ -33,127 +31,134 @@ public class UsersService {
     private final static String SMSRELATED = "realatedUser";
     private final static String SMSMIDDLENAME = "middleName";
 
-
-    public  void getUserById(String id) {
+    public static void getUserById(String id) {
         Optional<UserRepresentation> user = keycloakclient.getUser(id);
         if (user.isPresent()) {
-            User USER = new User.Builder()
-                    .firstName(user.get().getFirstName())
-                    .lastName(user.get().getLastName())
-                    .username(user.get().getUsername())
-                    .role(UserDTO.Role.STUDENT)
-                    .userAttributes(Collections.emptyMap()) //bez dodatkowych póki co
-                    .email(Optional.ofNullable(user.get().getEmail()))
-                    .build();
-            toDTO(USER);
-        }
+            UserRepresentation tmp=user.get();
+            toDTO(buildUser(tmp));
+        } else throw new IllegalStateException("User doesnt exist");
     }
 
-    public  void getGroup(String ID) {
+    //search/object object->username/name/phone ip?
+    public static void getUser(String object) {
+        UserSearchParams params = new UserSearchParams().username(object);
+        List<UserRepresentation> users = keycloakclient.getUsers(params);
+        if (!users.isEmpty()) {
+            for (UserRepresentation user : users) {
+                toDTO(buildUser(user));
+            }
+        }else throw new IllegalStateException("Users not found!");
+    }
+
+    public void getUsers(int i){
+        UserSearchParams params = new UserSearchParams().max(10).first(i*10);
+        List<UserRepresentation> users = keycloakclient.getUsers(params);
+        if(!users.isEmpty()){
+            for (UserRepresentation user : users) {
+                toDTO(buildUser(user));
+            }
+        }else throw new IllegalStateException("Users not found!");
+    }
+
+    public static void getString(String group) {
         List<UserRepresentation> users = keycloakclient.getAllUsers();
         if (!users.isEmpty()) {
             for (UserRepresentation user : users) {
-                Map<String, List<String>> UserAtribs=user.getAttributes();
-                List<String> role = UserAtribs.get(SMSROLE);
-                List<String> groupID= UserAtribs.get(SMSGROUP);
-                for( String match : groupID){
-                    if(match.equals(ID))
-                        BuildUser(user, UserDTO.Role.valueOf(role.get(0)), groupID.get(0));
-                }
+                String tmpGroup= getSpecificAttrib(user.getAttributes(), SMSGROUP);
+                if(tmpGroup.equals(group)) toDTO(buildUser(user));
             }
-        }
+        } else throw new IllegalStateException("Users not found!");
     }
 
-
-        public void getUser(String object){
-            UserSearchParams params = new UserSearchParams();
-            params.search(object);
-            List<UserRepresentation> users = keycloakclient.getUsers(params);
-            if (!users.isEmpty()) {
-                for (UserRepresentation user : users) {
-                    User USER = new User.Builder()
-                            .firstName(user.getFirstName())
-                            .username(user.getUsername())
-                            .role(UserDTO.Role.STUDENT)
-                            .userAttributes(Collections.emptyMap()) //bez dodatkowych póki co
-                            .email(Optional.ofNullable(user.getEmail()))
-                            .build();
-                    DTOs.add(toDTO(USER));
-                }
-            }
-        }
-
-
-    public void getRole(String object){
+    public static void getRoleGroup(String object, String otherobject) {
         List<UserRepresentation> users = keycloakclient.getAllUsers();
         if (!users.isEmpty()) {
+            String P1= compareAttrib(object);
+            String P2= compareAttrib(otherobject);
+            if(P1.equals(P2)) throw new IllegalArgumentException("Patters are equals");
             for (UserRepresentation user : users) {
-                Map<String, List<String>> UserAtribs=user.getAttributes();
-                List<String> role = UserAtribs.get(SMSROLE);
-                List<String> groupID= UserAtribs.get(SMSGROUP);
-                for( String match : role){
-                    if(match.equals(object))
-                        BuildUser(user, UserDTO.Role.valueOf(object), groupID.get(0));
+                String attrib1=getSpecificAttrib(user.getAttributes(), P1);
+                if(attrib1.equals(object.toLowerCase())){
+                    String attrib2=getSpecificAttrib(user.getAttributes(), P2);
+                    if(attrib2.equals(otherobject.toLowerCase())) toDTO(buildUser(user));
                 }
             }
-        }
+        } else throw new IllegalStateException("Users not found!");
     }
 
-    private  void BuildUser(UserRepresentation user, UserDTO.Role ROLE, String GROUP){
-
-        User USER = new User.Builder()
+    private static User buildUser(UserRepresentation user) {
+        return new User.Builder()
                 .firstName(user.getFirstName())
                 .username(user.getUsername())
-                .role(ROLE)
-                .userAttributes(Collections.emptyMap()) //bez dodatkowych póki co
+                .role(getRole(user.getAttributes()))
+                .userAttributes(MapUserAttributes(user.getAttributes()))
                 .email(Optional.ofNullable(user.getEmail()))
                 .build();
-        DTOs.add(toDTO(USER));
     }
 
-    private UserDTO.Role getRole(Map<String, List<String>> Attributes){
-        List<String> tmp=Attributes.get(SMSROLE);
-        if(tmp.contains("STUDENT")) return UserDTO.Role.STUDENT;
-        if(tmp.contains("TEACHER")) return UserDTO.Role.TEACHER;
-        if(tmp.contains("PARENT"))  return UserDTO.Role.PARENT;
+    private static UserDTO.Role getRole(Map<String, List<String>> Attributes) {
+        List<String> tmp = Attributes.get(SMSROLE);
+        if (tmp.contains("student")) return UserDTO.Role.STUDENT;
+        if (tmp.contains("teacher")) return UserDTO.Role.TEACHER;
+        if (tmp.contains("parent")) return UserDTO.Role.PARENT;
         else
             return UserDTO.Role.ADMIN;
     }
 
-    private String getGroup(Map<String, List<String>> Attributes){
-        return Attributes.get(SMSGROUP).get(0);
+    private static String getSpecificAttrib(Map<String, List<String>> Attributes, String SMS){
+        return Attributes.get(SMS).stream().toString();
     }
 
-    private String getPhoneNumber(Map<String, List<String>> Attributes){
-        return Attributes.get(SMSPHONENUMBER).get(0);
-    }
-
-    private String getSubject(Map<String, List<String>> Attributes){
-        return Attributes.get(SMSSUBJECTS).get(0);
-    }
-
-    private String getMiddleName(Map<String, List<String>> Attributes){
-        return Attributes.get(SMSMIDDLENAME).get(0);
-    }
-
-    private String getRelated(Map<String, List<String>>Attributes){
-        return Attributes.get(SMSRELATED).get(0);
-    }
-    private String getPesel(Map<String, List<String>> Attributes){
-        return Attributes.get(SMSPESEL).get(0);
-    }
-
-    private Map<String, String> MapUserAttributes(Map<String, List<String>> Attributes){
-        Map<String, String> userAttrib= new HashMap<>();
-        userAttrib.put(SMSPESEL, getPesel(Attributes));
-        userAttrib.put(SMSPHONENUMBER, getPhoneNumber(Attributes));
-        userAttrib.put(SMSRELATED, getPesel(Attributes));
-        userAttrib.put(SMSMIDDLENAME, getMiddleName(Attributes));
-        userAttrib.put(SMSSUBJECTS, getSubject(Attributes));
+    private static Map<String, String> MapUserAttributes(Map<String, List<String>> Attributes) {
+        Map<String, String> userAttrib = new HashMap<>();
+        userAttrib.put(SMSPESEL, getSpecificAttrib(Attributes, SMSPESEL));
+        userAttrib.put(SMSPHONENUMBER, getSpecificAttrib(Attributes, SMSPHONENUMBER));
+        userAttrib.put(SMSRELATED, getSpecificAttrib(Attributes, SMSRELATED));
+        userAttrib.put(SMSMIDDLENAME, getSpecificAttrib(Attributes, SMSMIDDLENAME));
+        userAttrib.put(SMSSUBJECTS, getSpecificAttrib(Attributes, SMSSUBJECTS));
         return userAttrib;
     }
 
+    private static String compareAttrib(String object){
 
+            String tmp=object.toLowerCase();
+            boolean b= Pattern.matches("[1-9][a-z]}", tmp);
+            if(b) return SMSGROUP;
 
+            switch (tmp) {
+                case "admin":
+                case "teachers":
+                case "students":
+                case "parents":
+                    return SMSROLE;
+                default:
+                    throw new IllegalArgumentException("pattern doesnt match");
+            }
+    }
+}
+
+/*
+*     private String getGroup(Map<String, List<String>> Attributes) {
+        return Attributes.get(SMSGROUP).stream().toString();
     }
 
+    private String getPhoneNumber(Map<String, List<String>> Attributes) {
+        return Attributes.get(SMSPHONENUMBER).stream().toString();
+    }
+
+    private String getSubject(Map<String, List<String>> Attributes) {
+        return Attributes.get(SMSSUBJECTS).stream().toString();
+    }
+
+    private String getMiddleName(Map<String, List<String>> Attributes) {
+        return Attributes.get(SMSMIDDLENAME).stream().toString();
+    }
+
+    private String getRelated(Map<String, List<String>> Attributes) {
+        return Attributes.get(SMSRELATED).stream().toString();
+    }
+
+    private String getPesel(Map<String, List<String>> Attributes) {
+        return Attributes.get(SMSPESEL).stream().toString();
+    }
+    */
