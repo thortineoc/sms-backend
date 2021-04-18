@@ -7,7 +7,7 @@ import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.HttpStatus;
@@ -21,14 +21,12 @@ public class CreateNewUserTest {
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
     private final static KeycloakClient KEYCLOAK_CLIENT = new KeycloakClient();
 
-    @BeforeAll
-    public static void cleanup() {
+    @BeforeEach
+    public void cleanup() {
         UserSearchParams params = new UserSearchParams().firstName("firstName");
         List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
 
-        for (UserRepresentation user : createdUsers) {
-            KEYCLOAK_CLIENT.deleteUser(user.getId());
-        }
+        createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
     }
 
     @Test
