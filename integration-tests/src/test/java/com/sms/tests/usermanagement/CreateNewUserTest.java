@@ -190,6 +190,52 @@ public class CreateNewUserTest {
         KEYCLOAK_CLIENT.deleteUser(createdParent.getId());
     }
 
+    @Test
+    void shouldReturnConflictWhenCreatingTwoUsersWithIdenticalData() throws JsonProcessingException {
 
+        List<String> subjects = Stream.of("subject1", "subject2").collect(Collectors.toList());
+
+        CustomAttributesDTO attributesDTO = CustomAttributesDTO.builder()
+                .phoneNumber("132-234-234")
+                .middleName("middleName")
+                .relatedUser("example-user")
+                .group("example-group")
+                .subjects(subjects)
+                .build();
+
+        UserDTO userDTO = UserDTO.builder()
+                .id("null")
+                .userName("null")
+                .firstName("firstName")
+                .lastName("lastName")
+                .pesel("pesel")
+                .role(UserDTO.Role.ADMIN)
+                .email("mail@email.com")
+                .customAttributes(attributesDTO)
+                .build();
+
+        String userJson = mapper.writeValueAsString(userDTO);
+
+        Response response = CLIENT.request("usermanagement-service")
+                .contentType("application/json")
+                .body(userJson)
+                .post("/users");
+
+        Assertions.assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+
+        response = CLIENT.request("usermanagement-service")
+                .contentType("application/json")
+                .body(userJson)
+                .post("/users");
+
+        Assertions.assertEquals(HttpStatus.SC_CONFLICT, response.getStatusCode());
+
+        //TODO delete user with API call
+
+        UserSearchParams params = new UserSearchParams().username("a_pesel");
+        UserRepresentation createdUser= KEYCLOAK_CLIENT.getUsers(params).get(0);
+        KEYCLOAK_CLIENT.deleteUser(createdUser.getId());
+
+    }
 
 }
