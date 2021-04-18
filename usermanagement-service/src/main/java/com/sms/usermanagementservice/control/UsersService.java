@@ -44,7 +44,7 @@ public class UsersService {
     private void createParent(UserDTO user, UserRepresentation createdStudent) {
 
         UserRepresentation parent = UserMapper
-                .toParentRepresentationFromStudent(user, calculateUsername(user), calculatePassword(user));
+                .toParentRepresentationFromStudent(user, calculateParentUsernameFromStudent(user), calculatePassword(user));
         Map<String, List<String>> parentAttributes = new HashMap<>(parent.getAttributes());
         parentAttributes.put("relatedUser", Collections.singletonList(createdStudent.getId()));
         parent.setAttributes(parentAttributes);
@@ -84,8 +84,12 @@ public class UsersService {
             case STUDENT: return "s_" + user.getPesel();
             case ADMIN: return "a_" + user.getPesel();
             case TEACHER: return "t_" + user.getPesel();
-            case PARENT: return "p_" + user.getPesel();
             default: throw new IllegalStateException();
         }
     }
+
+    private String calculateParentUsernameFromStudent(UserDTO user) {
+        return "p_" + user.getPesel();
+    }
+
 }
