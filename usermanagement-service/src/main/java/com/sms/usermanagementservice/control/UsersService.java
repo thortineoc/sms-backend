@@ -10,17 +10,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.BadRequestException;
-import java.awt.geom.IllegalPathStateException;
+import javax.ws.rs.core.MultivaluedMap;
 import java.util.*;
-import java.util.regex.Pattern;
+
 
 @Component
 @Scope("request")
 public class UsersService {
 
-    private final KeycloakClient keycloakClient=new KeycloakClient();
-    public List<UserRepresentation> userRepresentation=new ArrayList<>();
+    private final KeycloakClient keycloakClient = new KeycloakClient();
+    public List<UserRepresentation> userRepresentation = new ArrayList<>();
+    private boolean filtered = false;
     private final static String SMSROLE = "role";
     private final static String SMSGROUP = "group";
     private final static String SMSPHONENUMBER = "phoneNumber";
@@ -28,6 +28,258 @@ public class UsersService {
     private final static String SMSPESEL = "pesel";
     private final static String SMSRELATED = "realatedUser";
     private final static String SMSMIDDLENAME = "middleName";
+
+    //TODO w każdej wywala userRep zamiast sfiltrowanej
+    //List<UserDTO>
+    public List<UserRepresentation> FilterUser(MultivaluedMap<String, String> queryParams) {
+        if (queryParams.containsKey("firstName")) getUsersByFirstName(queryParams.getFirst("firstName"));
+        if (queryParams.containsKey("lastName")) getUsersByLastName(queryParams.getFirst("lastName"));
+        if (queryParams.containsKey("middleName")) getByAttribute(queryParams.getFirst("middleName"), "middleName");
+        if (queryParams.containsKey("e-mail")) getUserByEmail(queryParams.getFirst("e-mail"));
+        if (queryParams.containsKey("role")) getByAttribute(queryParams.getFirst("role"), "role");
+        if (queryParams.containsKey("group")) getByAttribute(queryParams.getFirst("group"), "group");
+        if (queryParams.containsKey("subject")) getByAttribute(queryParams.getFirst("subject"), "subject");
+        if (queryParams.containsKey("username")) getUserByUsername(queryParams.getFirst("username"));
+        return userRepresentation;
+    }
+
+
+    public void getUsers() {
+        List<UserRepresentation> users = keycloakClient.getAllUsers();
+        if (!users.isEmpty()) {
+            userRepresentation.addAll(users);
+        } else throw new IllegalStateException("Users not found!");
+        filtered = true;
+    }
+
+    public void getUsersByFirstName(String param) {
+        if (!filtered) {
+            UserSearchParams searchParam = new UserSearchParams().firstName(param);
+            List<UserRepresentation> users = keycloakClient.getUsers(searchParam);
+            if (!users.isEmpty()) userRepresentation.addAll(users);
+            else throw new IllegalStateException("Users not found!");
+            filtered = true;
+        } else {
+            for (UserRepresentation user : userRepresentation) {
+                if (user.getFirstName().toLowerCase().equals(param)) userRepresentation.add(user);
+            }
+            if (userRepresentation.isEmpty()) throw new IllegalStateException("Users not found");
+        }
+    }
+
+    public void getUsersByLastName(String param) {
+        if (!filtered) {
+            UserSearchParams searchParam = new UserSearchParams().lastName(param);
+            List<UserRepresentation> users = keycloakClient.getUsers(searchParam);
+            if (!users.isEmpty()) userRepresentation.addAll(users);
+            else throw new IllegalStateException("Users not found!");
+            filtered = true;
+        } else {
+            for (UserRepresentation user : userRepresentation) {
+                if (user.getLastName().toLowerCase().equals(param)) userRepresentation.add(user);
+            }
+            if (userRepresentation.isEmpty()) throw new IllegalStateException("Users not found");
+        }
+    }
+
+    public void getUserByEmail(String param) {
+        if (!filtered) {
+            UserSearchParams searchParam = new UserSearchParams().email(param);
+            List<UserRepresentation> users = keycloakClient.getUsers(searchParam);
+            if (!users.isEmpty()) userRepresentation.addAll(users);
+            else throw new IllegalStateException("Users not found!");
+            filtered = true;
+        } else {
+            for (UserRepresentation user : userRepresentation) {
+                if (user.getEmail().toLowerCase().equals(param)) userRepresentation.add(user);
+            }
+            if (userRepresentation.isEmpty()) throw new IllegalStateException("Users not found");
+        }
+    }
+
+    public void getUserById(String param) {
+        if (!filtered) {
+            Optional<UserRepresentation> user = keycloakClient.getUser(param);
+            if (user.isPresent()) userRepresentation.add(user.get());
+            else throw new IllegalStateException("User not found!");
+            filtered = true;
+        } else {
+            for (UserRepresentation user : userRepresentation) {
+                if (user.getId().toLowerCase().equals(param)) userRepresentation.add(user);
+            }
+            if (userRepresentation.isEmpty()) throw new IllegalStateException("User not found");
+        }
+    }
+
+
+    public void getUserByUsername(String param) {
+        if (!filtered) {
+            UserSearchParams searchParam = new UserSearchParams().username(param);
+            List<UserRepresentation> users = keycloakClient.getUsers(searchParam);
+            if (!users.isEmpty()) userRepresentation.addAll(users);
+            else throw new IllegalStateException("User not found!");
+            filtered = true;
+        } else {
+            for (UserRepresentation user : userRepresentation) {
+                if (user.getUsername().toLowerCase().equals(param)) userRepresentation.add(user);
+            }
+            if (userRepresentation.isEmpty()) throw new IllegalStateException("User not found");
+        }
+    }
+
+
+    public void getByAttribute(String filter, String param) {
+        if (!filtered) getUsers();
+        for (UserRepresentation user : userRepresentation) {
+            String attribute = getSpecificAttrib(user.getAttributes(), filter);
+            if (attribute.equals(param)) userRepresentation.add(user);
+        }
+        if (userRepresentation.isEmpty()) throw new IllegalStateException("User not found");
+    }
+
+    public String getSpecificAttrib(Map<String, List<String>> Attributes, String filter) {
+        return Attributes.get(filter).get(0).toLowerCase();
+    }
+
+    private UserDTO.Role Role(Map<String, List<String>> Attributes) {
+        List<String> tmp = Attributes.get(SMSROLE);
+        if (tmp.contains("STUDENT")) return UserDTO.Role.STUDENT;
+        if (tmp.contains("TEACHER")) return UserDTO.Role.TEACHER;
+        if (tmp.contains("PARENT")) return UserDTO.Role.PARENT;
+        else
+            return UserDTO.Role.ADMIN;
+    }
+
+
+    private Map<String, String> MapUserAttributes(Map<String, List<String>> Attributes) {
+        Map<String, String> userAttributes = new HashMap<>();
+        userAttributes.put(SMSPESEL, getSpecificAttrib(Attributes, SMSPESEL));
+        userAttributes.put(SMSPHONENUMBER, getSpecificAttrib(Attributes, SMSPHONENUMBER));
+        userAttributes.put(SMSRELATED, getSpecificAttrib(Attributes, SMSRELATED));
+        userAttributes.put(SMSMIDDLENAME, getSpecificAttrib(Attributes, SMSMIDDLENAME));
+        userAttributes.put(SMSSUBJECTS, getSpecificAttrib(Attributes, SMSSUBJECTS));
+        return userAttributes;
+    }
+
+    private User buildUser(UserRepresentation user) {
+        return new User.Builder()
+                .firstName(user.getFirstName())
+                .username(user.getUsername())
+                .role(Role(user.getAttributes()))
+                .userAttributes(MapUserAttributes(user.getAttributes()))
+                .email(Optional.ofNullable(user.getEmail()))
+                .build();
+    }
+
+
+    public void createStudentWithParent(UserDTO user) {
+        createUser(user);
+
+        UserSearchParams params = new UserSearchParams().username(calculateUsername(user));
+        UserRepresentation createdStudent = keycloakClient.getUsers(params)
+                .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
+
+        createParent(user, createdStudent);
+    }
+
+    public void createUser(UserDTO user) {
+        UserRepresentation userRep = UserMapper
+                .toUserRepresentation(user, calculateUsername(user), calculatePassword(user));
+
+        if (!keycloakClient.createUser(userRep)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+    }
+
+    private void createParent(UserDTO user, UserRepresentation createdStudent) {
+
+        UserRepresentation parent = UserMapper
+                .toParentRepresentationFromStudent(user, calculateUsername(user), calculatePassword(user));
+        Map<String, List<String>> parentAttributes = new HashMap<>(parent.getAttributes());
+        parentAttributes.put("relatedUser", Collections.singletonList(createdStudent.getId()));
+        parent.setAttributes(parentAttributes);
+
+
+        if (!keycloakClient.createUser(parent)) {
+            keycloakClient.deleteUser(createdStudent.getId());
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+
+        updateStudentRelatedUser(createdStudent, calculateUsername(user));
+    }
+
+    private void updateStudentRelatedUser(UserRepresentation createdStudent, String parentUsername) {
+
+        UserSearchParams params = new UserSearchParams().username(parentUsername);
+        UserRepresentation createdParent = keycloakClient.getUsers(params)
+                .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
+
+        Map<String, List<String>> studentAttributes = new HashMap<>(createdStudent.getAttributes());
+        studentAttributes.put("relatedUser", Collections.singletonList(createdParent.getId()));
+        createdStudent.setAttributes(studentAttributes);
+
+        if (!keycloakClient.updateUser(createdStudent.getId(), createdStudent)) {
+            keycloakClient.deleteUser(createdStudent.getId());
+            keycloakClient.deleteUser(createdParent.getId());
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+    }
+
+    private String calculatePassword(UserDTO user) {
+        return user.getFirstName().substring(0, Math.min(user.getFirstName().length(), 4)) +
+                user.getLastName().substring(0, Math.min(user.getLastName().length(), 4));
+    }
+
+    private String calculateUsername(UserDTO user) {
+        // switch (user.getRole()) {
+        //     case STUDENT: return "s_" + user.getPesel();
+        //     case ADMIN: return "a_" + user.getPesel();
+        //     case TEACHER: return "t_" + user.getPesel();
+        //     case PARENT: return "p_" + user.getPesel();
+        //     default: throw new IllegalStateException();
+        // }
+        return user.getUserName();
+    }
+
+}
+
+
+/*
+     private String getGroup(Map<String, List<String>> Attributes) {
+        return Attributes.get(SMSGROUP).stream().toString();
+    }
+
+    private String getPhoneNumber(Map<String, List<String>> Attributes) {
+        return Attributes.get(SMSPHONENUMBER).stream().toString();
+    }
+
+    private String getSubject(Map<String, List<String>> Attributes) {
+        return Attributes.get(SMSSUBJECTS).stream().toString();
+    }
+
+    private String getMiddleName(Map<String, List<String>> Attributes) {
+        return Attributes.get(SMSMIDDLENAME).stream().toString();
+    }
+
+    private String getRelated(Map<String, List<String>> Attributes) {
+        return Attributes.get(SMSRELATED).stream().toString();
+    }
+
+    private String getPesel(Map<String, List<String>> Attributes) {
+        return Attributes.get(SMSPESEL).stream().toString();
+    }
+
+ public void getUserById(String id) {
+        Optional<UserRepresentation> user = keycloakClient.getUser(id);
+        List<User> userList=new ArrayList<>();
+        if (user.isPresent()) {
+            UserRepresentation tmp=user.get();
+            userRepresentation.add(tmp);
+        }else throw new IllegalStateException("User doesnt exist");
+    }
+
+
+
 
     //object object->username/name/last/mail?
      public void getUser(String param) {
@@ -55,12 +307,7 @@ public class UsersService {
         }else throw new IllegalStateException("Users not found!");
     }
 
-    public void getUsers(){
-        List<UserRepresentation> users = keycloakClient.getAllUsers();
-        if(!users.isEmpty()){
-            userRepresentation.addAll(users);
-        }else throw new IllegalStateException("Users not found!");
-    }
+
 
     public void getByAttributes(String param1, String param2) {
         List<UserRepresentation> users = keycloakClient.getAllUsers();
@@ -78,7 +325,8 @@ public class UsersService {
         } else throw new IllegalStateException("Users not found!");
     }
 
-    public void getByAttribute(String param1){
+
+       public void getByAttribute(String param1){
         List<UserRepresentation> users = keycloakClient.getAllUsers();
         if (!users.isEmpty()) {
             String P1= compareAttrib(param1);
@@ -89,6 +337,8 @@ public class UsersService {
             }
         }
     }
+
+
 
     public void match(Optional<String> par1, Optional<String> par2, Optional<String> par3, Optional<String> par4){
         if(par1.isPresent()){
@@ -217,145 +467,6 @@ public class UsersService {
         }
     }
 
-    private  UserDTO.Role Role(Map<String, List<String>> Attributes) {
-        List<String> tmp = Attributes.get(SMSROLE);
-        if (tmp.contains("STUDENT")) return UserDTO.Role.STUDENT;
-        if (tmp.contains("TEACHER")) return UserDTO.Role.TEACHER;
-        if (tmp.contains("PARENT")) return UserDTO.Role.PARENT;
-        else
-            return UserDTO.Role.ADMIN;
-    }
-
-    public  String getSpecificAttrib(Map<String, List<String>> Attributes, String SMS){
-        return Attributes.get(SMS).get(0);
-    }
-
-    private  Map<String, String> MapUserAttributes(Map<String, List<String>> Attributes) {
-        Map<String, String> userAttributes = new HashMap<>();
-        userAttributes.put(SMSPESEL, getSpecificAttrib(Attributes, SMSPESEL));
-        userAttributes.put(SMSPHONENUMBER, getSpecificAttrib(Attributes, SMSPHONENUMBER));
-        userAttributes.put(SMSRELATED, getSpecificAttrib(Attributes, SMSRELATED));
-        userAttributes.put(SMSMIDDLENAME, getSpecificAttrib(Attributes, SMSMIDDLENAME));
-        userAttributes.put(SMSSUBJECTS, getSpecificAttrib(Attributes, SMSSUBJECTS));
-        return userAttributes;
-    }
-
-    private  User buildUser(UserRepresentation user) {
-        return new User.Builder()
-                 .firstName(user.getFirstName())
-                 .username(user.getUsername())
-                 .role(Role(user.getAttributes()))
-                 .userAttributes(MapUserAttributes(user.getAttributes()))
-                 .email(Optional.ofNullable(user.getEmail()))
-                 .build();
-    }
-
-
-
-    public void createStudentWithParent(UserDTO user) {
-        createUser(user);
-
-        UserSearchParams params = new UserSearchParams().username(calculateUsername(user));
-        UserRepresentation createdStudent = keycloakClient.getUsers(params)
-                .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
-
-        createParent(user, createdStudent);
-    }
-
-    public void createUser(UserDTO user) {
-        UserRepresentation userRep = UserMapper
-                .toUserRepresentation(user, calculateUsername(user), calculatePassword(user));
-
-        if (!keycloakClient.createUser(userRep)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
-        }
-    }
-
-    private void createParent(UserDTO user, UserRepresentation createdStudent) {
-
-        UserRepresentation parent = UserMapper
-                .toParentRepresentationFromStudent(user, calculateUsername(user), calculatePassword(user));
-        Map<String, List<String>> parentAttributes = new HashMap<>(parent.getAttributes());
-        parentAttributes.put("relatedUser", Collections.singletonList(createdStudent.getId()));
-        parent.setAttributes(parentAttributes);
-
-
-        if (!keycloakClient.createUser(parent)) {
-            keycloakClient.deleteUser(createdStudent.getId());
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
-        }
-
-        updateStudentRelatedUser(createdStudent, calculateUsername(user));
-    }
-
-    private void updateStudentRelatedUser(UserRepresentation createdStudent, String parentUsername) {
-
-        UserSearchParams params = new UserSearchParams().username(parentUsername);
-        UserRepresentation createdParent = keycloakClient.getUsers(params)
-                .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
-
-        Map<String, List<String>> studentAttributes = new HashMap<>(createdStudent.getAttributes());
-        studentAttributes.put("relatedUser", Collections.singletonList(createdParent.getId()));
-        createdStudent.setAttributes(studentAttributes);
-
-        if (!keycloakClient.updateUser(createdStudent.getId(), createdStudent)) {
-            keycloakClient.deleteUser(createdStudent.getId());
-            keycloakClient.deleteUser(createdParent.getId());
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
-        }
-    }
-
-    private String calculatePassword(UserDTO user) {
-        return user.getFirstName().substring(0, Math.min(user.getFirstName().length(), 4)) +
-                user.getLastName().substring(0, Math.min(user.getLastName().length(), 4));
-    }
-
-    private String calculateUsername(UserDTO user) {
-       // switch (user.getRole()) {
-       //     case STUDENT: return "s_" + user.getPesel();
-       //     case ADMIN: return "a_" + user.getPesel();
-       //     case TEACHER: return "t_" + user.getPesel();
-       //     case PARENT: return "p_" + user.getPesel();
-       //     default: throw new IllegalStateException();
-        // }
-        return user.getUserName();
-    }
-}
-
-
-/*
-     private String getGroup(Map<String, List<String>> Attributes) {
-        return Attributes.get(SMSGROUP).stream().toString();
-    }
-
-    private String getPhoneNumber(Map<String, List<String>> Attributes) {
-        return Attributes.get(SMSPHONENUMBER).stream().toString();
-    }
-
-    private String getSubject(Map<String, List<String>> Attributes) {
-        return Attributes.get(SMSSUBJECTS).stream().toString();
-    }
-
-    private String getMiddleName(Map<String, List<String>> Attributes) {
-        return Attributes.get(SMSMIDDLENAME).stream().toString();
-    }
-
-    private String getRelated(Map<String, List<String>> Attributes) {
-        return Attributes.get(SMSRELATED).stream().toString();
-    }
-
-    private String getPesel(Map<String, List<String>> Attributes) {
-        return Attributes.get(SMSPESEL).stream().toString();
-    }
-
- public void getUserById(String id) {
-        Optional<UserRepresentation> user = keycloakClient.getUser(id);
-        List<User> userList=new ArrayList<>();
-        if (user.isPresent()) {
-            UserRepresentation tmp=user.get();
-            userRepresentation.add(tmp);
-        }else throw new IllegalStateException("User doesnt exist");
-    }
 
 
     */

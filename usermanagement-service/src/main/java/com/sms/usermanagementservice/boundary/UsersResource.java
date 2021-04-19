@@ -7,11 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.security.auth.login.LoginException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -34,12 +39,10 @@ public class UsersResource {
     // {group}/{role} <-grupa, rola
     // + - sortowanie po ostatnim?
     @GetMapping
-    public void findByParams(@RequestParam("param1") Optional<String> param1,
-                             @RequestParam("param2") Optional<String> param2,
-                             @RequestParam("param3") Optional<String> param3,
-                             @RequestParam("param4") Optional<String> param4){
+    public void FilterGet(@Context UriInfo ui) {
        validateRole();
-       usersService.match(param1, param2, param3, param4);
+        MultivaluedMap<String, String> queryParams=ui.getQueryParameters();
+        //ewentualnie https://stackoverflow.com/questions/55103757/urlsearchparams-returning-null-for-the-first-query-string
     }
 
     private void validateRole() {

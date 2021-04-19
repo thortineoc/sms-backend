@@ -1,12 +1,19 @@
 package com.sms.usermanagementservice.control;  // ← jak widać package się zgadza z tym w UsersService
+import com.google.common.collect.ArrayListMultimap;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.UserDTO;
+import kotlin.collections.ArrayDeque;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
+import javax.validation.constraints.AssertTrue;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 import java.util.*;
 
 import static java.util.Optional.ofNullable;
@@ -48,7 +55,48 @@ public class UsersServiceTest {
         CLIENT.createUser(user4);
     }
 
-    @Test
+   @Test
+   void shouldFindByUserName(){
+        UsersService service= new UsersService();
+       MultivaluedMap<String, String> map= new MultivaluedHashMap<>();
+        List<String> list=new ArrayList<>();
+        list.add("testbackenduser");
+       map.put("Username", list);
+       service.getUsersByLastName("Wojna");
+       assertSame(service.userRepresentation.size(), 1);
+
+    }
+
+
+    private UserRepresentation createUserRep(String username, String password, String firstName, String lastName,
+                                             String email, String group, String role) {
+        UserRepresentation userRep = new UserRepresentation();
+        userRep.setEmail(email);
+        userRep.setUsername(username);
+        userRep.setFirstName(firstName);
+        userRep.setLastName(lastName);
+        userRep.setCredentials(Collections.singletonList(getPasswordCredential(password)));
+
+        Map<String, List<String>> customAttributes = new HashMap<>();
+        customAttributes.put("role", Collections.singletonList(role));
+        customAttributes.put("group", Collections.singletonList(group));
+
+        userRep.setAttributes(customAttributes);
+        return userRep;
+    }
+
+    private CredentialRepresentation getPasswordCredential(String password) {
+        CredentialRepresentation credential = new CredentialRepresentation();
+        credential.setType("password");
+        credential.setValue(password);
+        credential.setTemporary(false);
+        return credential;
+    }
+}
+
+
+
+/*    @Test
     void shouldFindAttrib(){
         UsersService UserService=new UsersService();
         assertSame( UserService.compareAttrib("1a"), "group");
@@ -58,10 +106,8 @@ public class UsersServiceTest {
         assertSame( UserService.compareAttrib("teacher"), "role");
         assertSame( UserService.compareAttrib("parent"), "role");
         assertSame( UserService.compareAttrib("nazwisko"), "param");
-    }
-/*
 
-    @Test
+         @Test
     void shouldFindAllUsers(){
         UsersService UserService=new UsersService();
         UserService.getUsers();
@@ -102,7 +148,6 @@ public class UsersServiceTest {
         UserService.match(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
         assertTrue( UserService.userRepresentation.size()>2);
     }
-*/
 
     @Test
     void mainFunctionTest2(){
@@ -131,28 +176,5 @@ public class UsersServiceTest {
         assertSame(1, UserService.userRepresentation.size());
     }
 
-    private UserRepresentation createUserRep(String username, String password, String firstName, String lastName,
-                                             String email, String group, String role) {
-        UserRepresentation userRep = new UserRepresentation();
-        userRep.setEmail(email);
-        userRep.setUsername(username);
-        userRep.setFirstName(firstName);
-        userRep.setLastName(lastName);
-        userRep.setCredentials(Collections.singletonList(getPasswordCredential(password)));
 
-        Map<String, List<String>> customAttributes = new HashMap<>();
-        customAttributes.put("role", Collections.singletonList(role));
-        customAttributes.put("group", Collections.singletonList(group));
-
-        userRep.setAttributes(customAttributes);
-        return userRep;
-    }
-
-    private CredentialRepresentation getPasswordCredential(String password) {
-        CredentialRepresentation credential = new CredentialRepresentation();
-        credential.setType("password");
-        credential.setValue(password);
-        credential.setTemporary(false);
-        return credential;
-    }
-}
+    }*/

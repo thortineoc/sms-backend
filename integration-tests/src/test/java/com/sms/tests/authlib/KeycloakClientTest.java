@@ -97,7 +97,6 @@ class KeycloakClientTest {
            List<String> ROLA = Atrybuty.get("role");
            List<String> GRUPA = Atrybuty.get("group");
             assertNotNull(ROLA);
-            assertNotNull(GRUPA);
         }
 
 
