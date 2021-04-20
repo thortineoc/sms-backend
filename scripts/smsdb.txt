@@ -1,12 +1,10 @@
-DROP TABLE IF EXISTS grades;
-DROP TABLE IF EXISTS parent_child;
-DROP TABLE IF EXISTS Answers;
-DROP TABLE IF EXISTS Presences;
-DROP TABLE IF EXISTS Homeworks;
-DROP TABLE IF EXISTS Classes;
-DROP TABLE IF EXISTS Subjects;
-DROP TABLE IF EXISTS Groups;
-DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS grades CASCADE;
+DROP TABLE IF EXISTS Answers CASCADE;
+DROP TABLE IF EXISTS Presences CASCADE;
+DROP TABLE IF EXISTS Homeworks CASCADE;
+DROP TABLE IF EXISTS Classes CASCADE;
+DROP TABLE IF EXISTS Subjects CASCADE;
+DROP TABLE IF EXISTS Groups CASCADE;
 DROP TYPE IF EXISTS presence_type;
 
 
@@ -20,41 +18,32 @@ CREATE TYPE presence_type AS ENUM (
     );
 
 
-CREATE TABLE Users (
-                       id 		SERIAL PRIMARY KEY,
-                       kc_id 		varchar(80)	NOT NULL,
-                       firstName	varchar(31)	NOT NULL,
-                       secondName 	varchar(31),
-                       surName 	varchar(31)	NOT NULL,
-		       group_id int
-);
-
 CREATE TABLE Subjects (
                           id 		SERIAL PRIMARY KEY,
                           name 		varchar(63) 	NOT NULL
 );
 
 CREATE TABLE Groups (
-	id	SERIAL PRIMARY KEY,
-	name 	varchar(10)	NOT NULL
+			 id	SERIAL PRIMARY KEY,
+			 name 	varchar(15)	NOT NULL
 );
 
 CREATE TABLE Classes (
                          id 		SERIAL PRIMARY KEY,
 			 group_id 	int		NOT NULL,
                          subject_id 	int 		NOT NULL,
-                         teacher_id 	int		NOT NULL,
+                         teacher_id 	varchar(63)	NOT NULL,
                          weekday 	int		NOT NULL,
                          room 		int		NOT NULL,
                          beginDate 	date		NOT NULL,
-                         endDate		date		NOT NULL,
+                         endDate	date		NOT NULL,
                          lesson		int		NOT NULL
 );
 
 CREATE TABLE Grades (
                         id 		SERIAL PRIMARY KEY,
-                        subject_id 	int 		NOT NULL,
-                        student_id 	int 		NOT NULL,
+                        class_id 	int 		NOT NULL,
+                        student_id 	varchar(63) 	NOT NULL,
                         grade		int		NOT NULL,
                         description 	TEXT,
                         weight 		int 		DEFAULT 1
@@ -62,16 +51,16 @@ CREATE TABLE Grades (
 
 CREATE TABLE Homeworks (
                            id		SERIAL PRIMARY KEY,
-                           title		varchar(255)	NOT NULL,
+                           title	varchar(255)	NOT NULL,
                            description	TEXT,
                            deadline	timestamp	NOT NULL,
-                           file 		bytea,
-                        class_id int NOT NULL
+                           file 	bytea,
+                           class_id  	int 		NOT NULL
 );
 
 CREATE TABLE Presences (
                            id		SERIAL PRIMARY KEY,
-                           student_id	int		NOT NULL,
+                           student_id	varchar(63)	NOT NULL,
                            class_id	int		NOT NULL,
                            day		date		NOT NULL,
                            type		presence_type	DEFAULT 'present'
@@ -80,46 +69,17 @@ CREATE TABLE Presences (
 CREATE TABLE Answers (
                          id 		SERIAL PRIMARY KEY,
                          homework_id	int		NOT NULL,
-                         student_id	int		NOT NULL,
+                         student_id	varchar(63)	NOT NULL,
                          review		TEXT,
                          file		bytea
 );
 
-CREATE TABLE Parent_Child (
-                              parent_id	int		NOT NULL,
-                              child_id	int		NOT NULL
-);
-
 
 ALTER TABLE Grades
-    ADD CONSTRAINT fk_grades_student_id
-        FOREIGN KEY(student_id)
-            REFERENCES Users(id)
-            ON DELETE CASCADE;
-
-ALTER TABLE Parent_Child
-    ADD CONSTRAINT fk_pc_parent_id
-        FOREIGN KEY(parent_id)
-            REFERENCES Users(id)
-            ON DELETE CASCADE;
-
-ALTER TABLE Parent_Child
-    ADD CONSTRAINT fk_pc_child_id
-        FOREIGN KEY(child_id)
-            REFERENCES Users(id)
-            ON DELETE CASCADE;
-
-ALTER TABLE Grades
-    ADD CONSTRAINT fk_grades_subject_id
-        FOREIGN KEY(subject_id)
-            REFERENCES Subjects(id)
+    ADD CONSTRAINT fk_grades_class_id
+        FOREIGN KEY(class_id)
+            REFERENCES Classes(id)
             ON DELETE SET NULL;
-
-ALTER TABLE Classes
-    ADD CONSTRAINT fk_classes_teacher_id
-        FOREIGN KEY(teacher_id)
-            REFERENCES Users(id)
-            ON DELETE CASCADE;
 
 ALTER TABLE Classes
     ADD CONSTRAINT fk_classes_subject_id
@@ -133,28 +93,10 @@ ALTER TABLE Classes
             REFERENCES Groups(id)
             ON DELETE CASCADE;
 
-ALTER TABLE Class_Student
-    ADD CONSTRAINT fk_cs_student_id
-        FOREIGN KEY(student_id)
-            REFERENCES Users(id)
-            ON DELETE CASCADE;
-
-ALTER TABLE Class_Student
-    ADD CONSTRAINT fk_cs_class_id
-        FOREIGN KEY(class_id)
-            REFERENCES Classes(id)
-            ON DELETE CASCADE;
-
 ALTER TABLE Presences
     ADD CONSTRAINT fk_presences_class_id
         FOREIGN KEY(class_id)
             REFERENCES Classes(id)
-            ON DELETE CASCADE;
-
-ALTER TABLE Presences
-    ADD CONSTRAINT fk_presences_student_id
-        FOREIGN KEY(student_id)
-            REFERENCES Users(id)
             ON DELETE CASCADE;
 
 ALTER TABLE Homeworks
@@ -163,15 +105,9 @@ ALTER TABLE Homeworks
             REFERENCES Classes(id)
             ON DELETE CASCADE;
 
-
 ALTER TABLE Answers
     ADD CONSTRAINT fk_answers_homework_id
         FOREIGN KEY(homework_id)
             REFERENCES Homeworks(id)
             ON DELETE CASCADE;
 
-ALTER TABLE Answers
-    ADD CONSTRAINT fk_answers_student_id
-        FOREIGN KEY(student_id)
-            REFERENCES Users(id)
-            ON DELETE CASCADE;
