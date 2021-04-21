@@ -13,11 +13,11 @@ public class WebClient {
 
     private static final Environment ENV = Environment.ENV;
 
-    private static String AUTH_TOKEN;
-    private static String REFRESH_TOKEN;
-    private static Integer AUTH_EXPIRES_IN;
-    private static Integer REFRESH_EXPIRES_IN;
-    private static final Stopwatch TOKEN_EXPIRATION_TIMER = Stopwatch.createUnstarted();
+    private String authToken;
+    private String refreshToken;
+    private Integer authExpiresIn;
+    private Integer refreshExpiresIn;
+    private final Stopwatch tokenExpirationTimer = Stopwatch.createUnstarted();
 
     private final String username;
     private final String password;
@@ -33,14 +33,14 @@ public class WebClient {
     }
 
     public RequestSpecification request() {
-        if (AUTH_TOKEN == null) {
+        if (authToken == null) {
             getAccessToken();
-        } else if (TOKEN_EXPIRATION_TIMER.elapsed(TimeUnit.SECONDS) > AUTH_EXPIRES_IN) {
+        } else if (tokenExpirationTimer.elapsed(TimeUnit.SECONDS) > authExpiresIn) {
             refreshToken();
         }
 
         return RestAssured.given()
-                .auth().oauth2(AUTH_TOKEN)
+                .auth().oauth2(authToken)
                 .when();
     }
 
@@ -57,7 +57,7 @@ public class WebClient {
                 .contentType("application/x-www-form-urlencoded").log().all()
                 .formParam("client_id", ENV.authClientId)
                 .formParam("grant_type", "refresh_token")
-                .formParam("refresh_token", REFRESH_TOKEN)
+                .formParam("refresh_token", refreshToken)
                 .when()
                 .post(ENV.haproxyUrl + ENV.tokenUrl);
         if (response.statusCode() == 400) {
@@ -84,14 +84,14 @@ public class WebClient {
     }
 
     private void resetTimer() {
-        TOKEN_EXPIRATION_TIMER.reset();
-        TOKEN_EXPIRATION_TIMER.start();
+        tokenExpirationTimer.reset();
+        tokenExpirationTimer.start();
     }
 
     private void parseTokenResponse(JsonPath json) {
-        AUTH_TOKEN = json.get("access_token");
-        REFRESH_TOKEN = json.get("refresh_token");
-        AUTH_EXPIRES_IN = json.get("expires_in");
-        REFRESH_EXPIRES_IN = json.get("refresh_expires_in");
+        authToken = json.get("access_token");
+        refreshToken = json.get("refresh_token");
+        authExpiresIn = json.get("expires_in");
+        refreshExpiresIn = json.get("refresh_expires_in");
     }
 }
