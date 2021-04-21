@@ -1,5 +1,4 @@
 package com.sms.usermanagementservice.control;
-
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.UserDTO;
@@ -9,10 +8,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
-
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.*;
-
 import static com.sms.usermanagementservice.control.UserMapper.*;
 
 
@@ -45,7 +42,7 @@ public class UsersService {
         usersList.add(adam);
         Map<String, String> map= adam.getUserAttributes();
         toDTO(adam);
-            return usersList;
+        return usersList;
     }
 
     private void mapUserRepresentationToUserDTO(List<UserRepresentation> userRepresentation){
@@ -214,11 +211,11 @@ public class UsersService {
     }
 
     private String calculateUsername(UserDTO user) {
-         switch (user.getRole()) {
+        switch (user.getRole()) {
             case STUDENT: return "s_" + user.getPesel();
-             case ADMIN: return "a_" + user.getPesel();
-             case TEACHER: return "t_" + user.getPesel();
-             case PARENT: return "p_" + user.getPesel();
+            case ADMIN: return "a_" + user.getPesel();
+            case TEACHER: return "t_" + user.getPesel();
+            case PARENT: return "p_" + user.getPesel();
             default: throw new IllegalStateException();
         }
     }
@@ -231,27 +228,21 @@ public class UsersService {
      private String getGroup(Map<String, List<String>> Attributes) {
         return Attributes.get(SMSGROUP).stream().toString();
     }
-
     private String getPhoneNumber(Map<String, List<String>> Attributes) {
         return Attributes.get(SMSPHONENUMBER).stream().toString();
     }
-
     private String getSubject(Map<String, List<String>> Attributes) {
         return Attributes.get(SMSSUBJECTS).stream().toString();
     }
-
     private String getMiddleName(Map<String, List<String>> Attributes) {
         return Attributes.get(SMSMIDDLENAME).stream().toString();
     }
-
     private String getRelated(Map<String, List<String>> Attributes) {
         return Attributes.get(SMSRELATED).stream().toString();
     }
-
     private String getPesel(Map<String, List<String>> Attributes) {
         return Attributes.get(SMSPESEL).stream().toString();
     }
-
  public void getUserById(String id) {
         Optional<UserRepresentation> user = keycloakClient.getUser(id);
         List<User> userList=new ArrayList<>();
@@ -260,15 +251,10 @@ public class UsersService {
             userRepresentation.add(tmp);
         }else throw new IllegalStateException("User doesnt exist");
     }
-
-
-
-
     //object object->username/name/last/mail?
      public void getUser(String param) {
         UserSearchParams params = new UserSearchParams().username(param);
         List<UserRepresentation> users = keycloakClient.getUsers(params);
-
         if(users.isEmpty()){
             params=new UserSearchParams().firstName(param);
             users = keycloakClient.getUsers(params);
@@ -289,9 +275,6 @@ public class UsersService {
             userRepresentation.addAll(users);
         }else throw new IllegalStateException("Users not found!");
     }
-
-
-
     public void getByAttributes(String param1, String param2) {
         List<UserRepresentation> users = keycloakClient.getAllUsers();
         if (!users.isEmpty()) {
@@ -307,8 +290,6 @@ public class UsersService {
             }
         } else throw new IllegalStateException("Users not found!");
     }
-
-
        public void getByAttribute(String param1){
         List<UserRepresentation> users = keycloakClient.getAllUsers();
         if (!users.isEmpty()) {
@@ -320,9 +301,6 @@ public class UsersService {
             }
         }
     }
-
-
-
     public void match(Optional<String> par1, Optional<String> par2, Optional<String> par3, Optional<String> par4){
         if(par1.isPresent()){
             if(par2.isPresent()){
@@ -334,7 +312,6 @@ public class UsersService {
             }else oneAttribute(par1.get());
         }else getUsers();
     }
-
     private void divideToPages(String pages){
         int onPage=Integer.parseInt(pages);
         if(onPage!=0){
@@ -343,11 +320,9 @@ public class UsersService {
             else throw new BadRequestException("Not enough users");
         }
      }
-
     private void sort(String sort){
-    //TODO
+    
     }
-
     private void oneAttribute(String param){
         String val1=compareAttrib(param);
         switch (val1) {
@@ -368,7 +343,6 @@ public class UsersService {
                 throw new IllegalPathStateException("Illegal path");
         }
     }
-
     private void twoAttributes(String param1, String param2){
         String val1 = compareAttrib(param1);
         String val2 = compareAttrib(param2);
@@ -391,7 +365,6 @@ public class UsersService {
             divideToPages(param2);
         }else throw new IllegalPathStateException("Illegal path");
     }
-
     private void threeAttributes(String param1, String param2, String param3){
         String val1=compareAttrib(param1);
         String val2=compareAttrib(param2);
@@ -412,13 +385,11 @@ public class UsersService {
             sort(param3);
         }else throw new IllegalPathStateException("Illegal path");
     }
-
     private void fourAttributes(String param1, String param2, String param3, String param4){
         String val1=compareAttrib(param1);
         String val2=compareAttrib(param2);
         String val3=compareAttrib(param3);
         String val4=compareAttrib(param4);
-
         if((val1.equals(SMSGROUP) || val1.equals(SMSROLE)) && (val2.equals(SMSGROUP) || val2.equals(SMSROLE)) &&
                 val3.equals("PAGE") && val4.equals("SORT")){
             getByAttributes(param1, param2);
@@ -431,7 +402,6 @@ public class UsersService {
             sort(param4);
         }else throw new IllegalPathStateException("Illegal path");
     }
-
     public  String compareAttrib(String object){
         String tmp=object.toLowerCase();
         boolean b= Pattern.matches("[1-9][a-z]", tmp);
@@ -449,7 +419,6 @@ public class UsersService {
                 return "param";
         }
     }
-
   /*
     private void sortUsers(String param) {
         switch (param) {
@@ -468,6 +437,5 @@ public class UsersService {
             userRepresentation.sort(e);
         }
     }*/
-
 
 
