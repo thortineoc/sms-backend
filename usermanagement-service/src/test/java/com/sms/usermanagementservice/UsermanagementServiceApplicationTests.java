@@ -8,7 +8,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 class UsermanagementServiceApplicationTests {
 
     @Test
-    void contextLoads() {
+    void contextLoads(){
+
     }
 
+    public static class GetUsersTest {
+    }
 }
