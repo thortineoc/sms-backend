@@ -174,11 +174,10 @@ public class UsersService {
     private void createParent(UserDTO user, UserRepresentation createdStudent) {
 
         UserRepresentation parent = UserMapper
-                .toParentRepresentationFromStudent(user, calculateUsername(user), calculatePassword(user));
+                .toParentRepresentationFromStudent(user, calculateParentUsernameFromStudent(user), calculatePassword(user));
         Map<String, List<String>> parentAttributes = new HashMap<>(parent.getAttributes());
         parentAttributes.put("relatedUser", Collections.singletonList(createdStudent.getId()));
         parent.setAttributes(parentAttributes);
-
 
         if (!keycloakClient.createUser(parent)) {
             keycloakClient.deleteUser(createdStudent.getId());
@@ -219,6 +218,11 @@ public class UsersService {
             default: throw new IllegalStateException();
         }
     }
+
+    private String calculateParentUsernameFromStudent(UserDTO user) {
+        return "p_" + user.getPesel();
+    }
+
 
 }
 
@@ -321,7 +325,7 @@ public class UsersService {
         }
      }
     private void sort(String sort){
-    
+
     }
     private void oneAttribute(String param){
         String val1=compareAttrib(param);
