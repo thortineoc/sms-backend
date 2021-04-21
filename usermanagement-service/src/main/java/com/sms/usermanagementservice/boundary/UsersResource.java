@@ -33,14 +33,8 @@ public class UsersResource {
        validateRole();
        MultivaluedMap<String, String> queryParams=ui.getQueryParameters();
        return usersService.FilterUsers(queryParams);
-        //ewentualnie https://stackoverflow.com/questions/55103757/urlsearchparams-returning-null-for-the-first-query-string
     }
 
-    private void validateRole() {
-        if (!userContext.getSmsRole().equals("ADMIN")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-    }
 
   @PostMapping
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
@@ -59,6 +53,12 @@ public class UsersResource {
         }
 
         return ResponseEntity.ok().build();
+    }
+
+    private void validateRole() {
+        if (!userContext.getSmsRole().equals("ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
     }
 
 }
