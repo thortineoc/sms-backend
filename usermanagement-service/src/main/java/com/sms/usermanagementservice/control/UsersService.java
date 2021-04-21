@@ -22,12 +22,12 @@ public class UsersService {
 
     private final KeycloakClient keycloakClient = new KeycloakClient();
     public List<UserRepresentation> userRepresentation = new ArrayList<>();
-    public List<UserDTO> userDTOList = new ArrayList<>();
+    private List<User> usersList = new ArrayList<>();
     private boolean filtered = false;
 
-    //TODO w każdej wywala userRep zamiast sfiltrowanej
+    //TODO w każdej wywala List<Uuser> zamiast sfiltrowanej
     //List<UserDTO>
-    public List<UserRepresentation> FilterUsers(MultivaluedMap<String, String> queryParams) {
+    public List<User> FilterUsers(MultivaluedMap<String, String> queryParams) {
 
         if (queryParams.containsKey("firstName")) getUsersByFirstName(queryParams.getFirst("firstName"));
         if (queryParams.containsKey("lastName")) getUsersByLastName(queryParams.getFirst("lastName"));
@@ -37,10 +37,26 @@ public class UsersService {
         if (queryParams.containsKey("group")) getByAttribute("group", queryParams.getFirst("group"));
         if (queryParams.containsKey("subject")) getByAttribute("subject", queryParams.getFirst("subject"));
         if (queryParams.containsKey("username")) getUserByUsername(queryParams.getFirst("username"));
+        if (queryParams.containsKey("id")) getUserById(queryParams.getFirst("username"));
 
         if(queryParams.isEmpty()) getUsers();
+        //to test
+        User adam= (toUserFromUserRepresentation(userRepresentation.get(0)));
+        usersList.add(adam);
+        Map<String, String> map= adam.getUserAttributes();
+        toDTO(adam);
+            return usersList;
+    }
 
-            return userRepresentation;
+    private void mapUserRepresentationToUserDTO(List<UserRepresentation> userRepresentation){
+        for(UserRepresentation user : userRepresentation){
+            //userDTOList.add(toDTO(toUserFromUserRepresentation(user)));
+            usersList.add(toUserFromUserRepresentation(user)); //wywala jak user nie ma wszystkich pól
+        }
+    }
+
+    private String getSpecificAttrib(Map<String, List<String>> Attributes, String filter) {
+        return Attributes.get(filter).get(0).toLowerCase();
     }
 
     private void getByAttribute(String filter, String param) {
@@ -139,37 +155,6 @@ public class UsersService {
     }
 
 
-    private void mapUserRepresentationToUserDTO(List<UserRepresentation> userRepresentation){
-        for(UserRepresentation user : userRepresentation){
-            userDTOList.add(toDTO(toUserFromUserRepresentation(user)));
-        }
-    }
-
-
-    private String getSpecificAttrib(Map<String, List<String>> Attributes, String filter) {
-        return Attributes.get(filter).get(0).toLowerCase();
-    }
-
-
-    /*
-    private void sortUsers(String param) {
-        switch (param) {
-            case "username":
-                Comparator<UserRepresentation> c = (s1, s2) -> s1.getUsername().compareToIgnoreCase(s2.getUsername());
-                userRepresentation.sort(c);
-            case "firstname":
-                userRepresentation.sort((object1, object2) -> object1.getFirstName().compareToIgnoreCase(object2.getFirstName()));
-            case "lastname":
-                userRepresentation.sort((object1, object2) -> object1.getLastName().compareToIgnoreCase(object2.getLastName()));
-            case "role":
-                Comparator<UserRepresentation> d = (s1, s2) -> s1.getAttributes().get("role").get(0).compareToIgnoreCase(s2.getAttributes().get("role").get(0));
-                userRepresentation.sort(d);
-            case "group":
-            Comparator<UserRepresentation> e = (s1, s2) -> s1.getAttributes().get("group").get(0).compareToIgnoreCase(s2.getAttributes().get("group").get(0));
-            userRepresentation.sort(e);
-        }
-    }*/
-
     public void createStudentWithParent(UserDTO user) {
         createUser(user);
 
@@ -229,18 +214,18 @@ public class UsersService {
     }
 
     private String calculateUsername(UserDTO user) {
-        // switch (user.getRole()) {
-        //     case STUDENT: return "s_" + user.getPesel();
-        //     case ADMIN: return "a_" + user.getPesel();
-        //     case TEACHER: return "t_" + user.getPesel();
-        //     case PARENT: return "p_" + user.getPesel();
-        //     default: throw new IllegalStateException();
-        // }
-        return user.getUserName();
+         switch (user.getRole()) {
+            case STUDENT: return "s_" + user.getPesel();
+             case ADMIN: return "a_" + user.getPesel();
+             case TEACHER: return "t_" + user.getPesel();
+             case PARENT: return "p_" + user.getPesel();
+            default: throw new IllegalStateException();
+        }
     }
 
 }
 
+//potem to wypierdole
 
 /*
      private String getGroup(Map<String, List<String>> Attributes) {
@@ -465,9 +450,24 @@ public class UsersService {
         }
     }
 
-
-
-    */
+  /*
+    private void sortUsers(String param) {
+        switch (param) {
+            case "username":
+                Comparator<UserRepresentation> c = (s1, s2) -> s1.getUsername().compareToIgnoreCase(s2.getUsername());
+                userRepresentation.sort(c);
+            case "firstname":
+                userRepresentation.sort((object1, object2) -> object1.getFirstName().compareToIgnoreCase(object2.getFirstName()));
+            case "lastname":
+                userRepresentation.sort((object1, object2) -> object1.getLastName().compareToIgnoreCase(object2.getLastName()));
+            case "role":
+                Comparator<UserRepresentation> d = (s1, s2) -> s1.getAttributes().get("role").get(0).compareToIgnoreCase(s2.getAttributes().get("role").get(0));
+                userRepresentation.sort(d);
+            case "group":
+            Comparator<UserRepresentation> e = (s1, s2) -> s1.getAttributes().get("group").get(0).compareToIgnoreCase(s2.getAttributes().get("group").get(0));
+            userRepresentation.sort(e);
+        }
+    }*/
 
 
 

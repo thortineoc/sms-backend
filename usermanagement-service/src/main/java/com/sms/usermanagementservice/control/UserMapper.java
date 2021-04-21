@@ -47,7 +47,6 @@ public class UserMapper {
     }
 
 
-
     private static UserDTO.Role Role(String tmp) {
         if (tmp.equalsIgnoreCase("student")) return UserDTO.Role.STUDENT;
         if (tmp.equalsIgnoreCase("teacher")) return UserDTO.Role.TEACHER;

@@ -1,5 +1,8 @@
 package com.sms.usermanagementservice.control;  // ← jak widać package się zgadza z tym w UsersService
 import com.sms.clients.KeycloakClient;
+import com.sms.clients.entity.UserSearchParams;
+import com.sms.usermanagementservice.entity.User;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -17,16 +20,15 @@ public class UsersServiceTest {
     private final static String KOPYTKO54_USER = PREFIX + "kopytko";
 
 
-  /*  @AfterAll
+/*@AfterAll
     static void cleanup() {
-
         UserSearchParams params = new UserSearchParams().username(KOPYTKO54_USER);
         Optional<UserRepresentation> testUser = CLIENT.getUsers(params).stream().findFirst();
         testUser.ifPresent(userRepresentation -> CLIENT.deleteUser(userRepresentation.getId()));
     }
-*/
+    */
 
-    @Test
+/*    @Test
     void shouldFindUserByUsername(){
         UsersService service= new UsersService();
         MultivaluedMap<String, String> map= new MultivaluedHashMap<>();
@@ -50,7 +52,7 @@ public class UsersServiceTest {
         MultivaluedMap<String, String> map= new MultivaluedHashMap<>();
         service.FilterUsers(map);
         assertEquals(3,service.userRepresentation.size());
-    }
+    }*/
 
     @Test
     void shouldFindAdminEla(){
@@ -58,7 +60,8 @@ public class UsersServiceTest {
         MultivaluedMap<String, String> map= new MultivaluedHashMap<>();
         map.put("role", Collections.singletonList("admin"));
         map.put("firstName", Collections.singletonList("Tomasz"));
-        service.FilterUsers(map);
+        List<User> users=service.FilterUsers(map);
+        assertEquals(1, users.size());
         assertEquals( 1, service.userRepresentation.size());
     }
 
