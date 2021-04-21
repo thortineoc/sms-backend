@@ -13,6 +13,8 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.*;
 
+import static com.sms.usermanagementservice.control.UserMapper.*;
+
 
 @Component
 @Scope("request")
@@ -20,31 +22,39 @@ public class UsersService {
 
     private final KeycloakClient keycloakClient = new KeycloakClient();
     public List<UserRepresentation> userRepresentation = new ArrayList<>();
+    public List<UserDTO> userDTOList = new ArrayList<>();
     private boolean filtered = false;
-    private final static String SMSROLE = "role";
-    private final static String SMSGROUP = "group";
-    private final static String SMSPHONENUMBER = "phoneNumber";
-    private final static String SMSSUBJECTS = "subjects";
-    private final static String SMSPESEL = "pesel";
-    private final static String SMSRELATED = "realatedUser";
-    private final static String SMSMIDDLENAME = "middleName";
 
     //TODO w każdej wywala userRep zamiast sfiltrowanej
     //List<UserDTO>
-    public List<UserRepresentation> FilterUser(MultivaluedMap<String, String> queryParams) {
+    public List<UserRepresentation> FilterUsers(MultivaluedMap<String, String> queryParams) {
+
         if (queryParams.containsKey("firstName")) getUsersByFirstName(queryParams.getFirst("firstName"));
         if (queryParams.containsKey("lastName")) getUsersByLastName(queryParams.getFirst("lastName"));
         if (queryParams.containsKey("middleName")) getByAttribute(queryParams.getFirst("middleName"), "middleName");
         if (queryParams.containsKey("e-mail")) getUserByEmail(queryParams.getFirst("e-mail"));
-        if (queryParams.containsKey("role")) getByAttribute(queryParams.getFirst("role"), "role");
-        if (queryParams.containsKey("group")) getByAttribute(queryParams.getFirst("group"), "group");
-        if (queryParams.containsKey("subject")) getByAttribute(queryParams.getFirst("subject"), "subject");
+        if (queryParams.containsKey("role")) getByAttribute("role", queryParams.getFirst("role"));
+        if (queryParams.containsKey("group")) getByAttribute("group", queryParams.getFirst("group"));
+        if (queryParams.containsKey("subject")) getByAttribute("subject", queryParams.getFirst("subject"));
         if (queryParams.containsKey("username")) getUserByUsername(queryParams.getFirst("username"));
-        return userRepresentation;
+
+        if(queryParams.isEmpty()) getUsers();
+
+            return userRepresentation;
     }
 
+    private void getByAttribute(String filter, String param) {
+        List<UserRepresentation> userList=new ArrayList<>();
+        if (!filtered) getUsers();
+        for (UserRepresentation user : userRepresentation) {
+            String attribute = getSpecificAttrib(user.getAttributes(), filter);
+            if (attribute.equals(param)) userList.add(user);
+        }
+        if (userRepresentation.isEmpty()) throw new IllegalStateException("User not found");
+        userRepresentation=userList;
+    }
 
-    public void getUsers() {
+    private void getUsers() {
         List<UserRepresentation> users = keycloakClient.getAllUsers();
         if (!users.isEmpty()) {
             userRepresentation.addAll(users);
@@ -52,7 +62,7 @@ public class UsersService {
         filtered = true;
     }
 
-    public void getUsersByFirstName(String param) {
+    private void getUsersByFirstName(String param) {
         if (!filtered) {
             UserSearchParams searchParam = new UserSearchParams().firstName(param);
             List<UserRepresentation> users = keycloakClient.getUsers(searchParam);
@@ -67,7 +77,7 @@ public class UsersService {
         }
     }
 
-    public void getUsersByLastName(String param) {
+    private void getUsersByLastName(String param) {
         if (!filtered) {
             UserSearchParams searchParam = new UserSearchParams().lastName(param);
             List<UserRepresentation> users = keycloakClient.getUsers(searchParam);
@@ -82,7 +92,7 @@ public class UsersService {
         }
     }
 
-    public void getUserByEmail(String param) {
+    private void getUserByEmail(String param) {
         if (!filtered) {
             UserSearchParams searchParam = new UserSearchParams().email(param);
             List<UserRepresentation> users = keycloakClient.getUsers(searchParam);
@@ -97,7 +107,8 @@ public class UsersService {
         }
     }
 
-    public void getUserById(String param) {
+
+    private void getUserById(String param) {
         if (!filtered) {
             Optional<UserRepresentation> user = keycloakClient.getUser(param);
             if (user.isPresent()) userRepresentation.add(user.get());
@@ -112,7 +123,7 @@ public class UsersService {
     }
 
 
-    public void getUserByUsername(String param) {
+    private void getUserByUsername(String param) {
         if (!filtered) {
             UserSearchParams searchParam = new UserSearchParams().username(param);
             List<UserRepresentation> users = keycloakClient.getUsers(searchParam);
@@ -128,49 +139,36 @@ public class UsersService {
     }
 
 
-    public void getByAttribute(String filter, String param) {
-        if (!filtered) getUsers();
-        for (UserRepresentation user : userRepresentation) {
-            String attribute = getSpecificAttrib(user.getAttributes(), filter);
-            if (attribute.equals(param)) userRepresentation.add(user);
+    private void mapUserRepresentationToUserDTO(List<UserRepresentation> userRepresentation){
+        for(UserRepresentation user : userRepresentation){
+            userDTOList.add(toDTO(toUserFromUserRepresentation(user)));
         }
-        if (userRepresentation.isEmpty()) throw new IllegalStateException("User not found");
     }
 
-    public String getSpecificAttrib(Map<String, List<String>> Attributes, String filter) {
+
+    private String getSpecificAttrib(Map<String, List<String>> Attributes, String filter) {
         return Attributes.get(filter).get(0).toLowerCase();
     }
 
-    private UserDTO.Role Role(Map<String, List<String>> Attributes) {
-        List<String> tmp = Attributes.get(SMSROLE);
-        if (tmp.contains("STUDENT")) return UserDTO.Role.STUDENT;
-        if (tmp.contains("TEACHER")) return UserDTO.Role.TEACHER;
-        if (tmp.contains("PARENT")) return UserDTO.Role.PARENT;
-        else
-            return UserDTO.Role.ADMIN;
-    }
 
-
-    private Map<String, String> MapUserAttributes(Map<String, List<String>> Attributes) {
-        Map<String, String> userAttributes = new HashMap<>();
-        userAttributes.put(SMSPESEL, getSpecificAttrib(Attributes, SMSPESEL));
-        userAttributes.put(SMSPHONENUMBER, getSpecificAttrib(Attributes, SMSPHONENUMBER));
-        userAttributes.put(SMSRELATED, getSpecificAttrib(Attributes, SMSRELATED));
-        userAttributes.put(SMSMIDDLENAME, getSpecificAttrib(Attributes, SMSMIDDLENAME));
-        userAttributes.put(SMSSUBJECTS, getSpecificAttrib(Attributes, SMSSUBJECTS));
-        return userAttributes;
-    }
-
-    private User buildUser(UserRepresentation user) {
-        return new User.Builder()
-                .firstName(user.getFirstName())
-                .username(user.getUsername())
-                .role(Role(user.getAttributes()))
-                .userAttributes(MapUserAttributes(user.getAttributes()))
-                .email(Optional.ofNullable(user.getEmail()))
-                .build();
-    }
-
+    /*
+    private void sortUsers(String param) {
+        switch (param) {
+            case "username":
+                Comparator<UserRepresentation> c = (s1, s2) -> s1.getUsername().compareToIgnoreCase(s2.getUsername());
+                userRepresentation.sort(c);
+            case "firstname":
+                userRepresentation.sort((object1, object2) -> object1.getFirstName().compareToIgnoreCase(object2.getFirstName()));
+            case "lastname":
+                userRepresentation.sort((object1, object2) -> object1.getLastName().compareToIgnoreCase(object2.getLastName()));
+            case "role":
+                Comparator<UserRepresentation> d = (s1, s2) -> s1.getAttributes().get("role").get(0).compareToIgnoreCase(s2.getAttributes().get("role").get(0));
+                userRepresentation.sort(d);
+            case "group":
+            Comparator<UserRepresentation> e = (s1, s2) -> s1.getAttributes().get("group").get(0).compareToIgnoreCase(s2.getAttributes().get("group").get(0));
+            userRepresentation.sort(e);
+        }
+    }*/
 
     public void createStudentWithParent(UserDTO user) {
         createUser(user);

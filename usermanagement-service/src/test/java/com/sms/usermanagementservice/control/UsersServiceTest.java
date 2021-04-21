@@ -1,25 +1,12 @@
 package com.sms.usermanagementservice.control;  // ← jak widać package się zgadza z tym w UsersService
-import com.google.common.collect.ArrayListMultimap;
 import com.sms.clients.KeycloakClient;
-import com.sms.clients.entity.UserSearchParams;
-import com.sms.usermanagement.UserDTO;
-import kotlin.collections.ArrayDeque;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-
-import javax.validation.constraints.AssertTrue;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.*;
-
-import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 public class UsersServiceTest {
 
     // a tutaj piszemy testy do UsersService
@@ -30,41 +17,49 @@ public class UsersServiceTest {
     private final static String KOPYTKO54_USER = PREFIX + "kopytko";
 
 
-    @AfterAll
+  /*  @AfterAll
     static void cleanup() {
 
         UserSearchParams params = new UserSearchParams().username(KOPYTKO54_USER);
         Optional<UserRepresentation> testUser = CLIENT.getUsers(params).stream().findFirst();
         testUser.ifPresent(userRepresentation -> CLIENT.deleteUser(userRepresentation.getId()));
     }
-
-
+*/
 
     @Test
-    void shouldCreateUserInKeycloak() {
-        // GIVEN
-        UserRepresentation user2 = createUserRep(KOPYTKO54_USER+"2", "kopytko56", "Tomasz", "Wojna",
-                "twojna@wp.pl", "2a", "STUDENT");
-        UserRepresentation user3 = createUserRep(KOPYTKO54_USER+"3", "kopytko57", "Tomasz", "Wojna",
-                "twojna@o2.pl", "3a", "STUDENT");
-        UserRepresentation user4 = createUserRep(KOPYTKO54_USER+"4", "kopytko58", "Tomasz", "Wojna",
-                "twojna@onet.pl", "3b", "ADMIN");
-
-        CLIENT.createUser(user2);
-        CLIENT.createUser(user3);
-        CLIENT.createUser(user4);
+    void shouldFindUserByUsername(){
+        UsersService service= new UsersService();
+        MultivaluedMap<String, String> map= new MultivaluedHashMap<>();
+        map.put("username", Collections.singletonList("smsadmin"));
+        assertSame(service.FilterUsers(map).size(), 1);
     }
 
-   @Test
-   void shouldFindByUserName(){
+    @Test
+    void shouldFindUserByRole(){
         UsersService service= new UsersService();
-       MultivaluedMap<String, String> map= new MultivaluedHashMap<>();
-        List<String> list=new ArrayList<>();
-        list.add("testbackenduser");
-       map.put("Username", list);
-       service.getUsersByLastName("Wojna");
-       assertSame(service.userRepresentation.size(), 1);
+        MultivaluedMap<String, String> map= new MultivaluedHashMap<>();
+        map.put("role", Collections.singletonList("student"));
+        service.FilterUsers(map);
+        assertEquals(service.userRepresentation.size(), 1);
+        assertEquals(service.userRepresentation.get(0).getAttributes().get("group").get(0), "1a");
+    }
 
+    @Test
+    void shouldFindAllUsers(){
+        UsersService service= new UsersService();
+        MultivaluedMap<String, String> map= new MultivaluedHashMap<>();
+        service.FilterUsers(map);
+        assertEquals(3,service.userRepresentation.size());
+    }
+
+    @Test
+    void shouldFindAdminEla(){
+        UsersService service= new UsersService();
+        MultivaluedMap<String, String> map= new MultivaluedHashMap<>();
+        map.put("role", Collections.singletonList("admin"));
+        map.put("firstName", Collections.singletonList("Tomasz"));
+        service.FilterUsers(map);
+        assertEquals( 1, service.userRepresentation.size());
     }
 
 
