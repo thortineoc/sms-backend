@@ -29,6 +29,9 @@ public class GroupsResource {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getGroups() {
         List<GroupDTO> list = groupsService.getAll();
+        if(list.isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.ok().body(list);
     }
 

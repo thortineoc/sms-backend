@@ -39,5 +39,4 @@ public class Group {
         return GroupDTO.builder().id(this.id).name(this.name).build();
     }
 
-
 }

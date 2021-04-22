@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +34,7 @@ public class GroupsService {
         try {
             Group newGroup = new Group(group.getName());
             groupRepository.save(newGroup);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
 
@@ -45,7 +45,7 @@ public class GroupsService {
         try {
             Group groupToDelete = new Group(id);
             groupRepository.delete(groupToDelete);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
     }
