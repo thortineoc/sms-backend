@@ -15,7 +15,7 @@ public class FilteredUsers {
 
     // input: role I output Ia Ic IIc
     //it works but...
-    List<UserDTO> filterUsersByParam(List<UserRepresentation> users, QueryParams parameters){
+    public List<UserDTO> filterUsersByParam(List<UserRepresentation> users, QueryParams parameters){
 
         if(parameters.getGroup()!=null)
             userRepresentation = users.stream().filter((f) -> f.getAttributes().get("group").
