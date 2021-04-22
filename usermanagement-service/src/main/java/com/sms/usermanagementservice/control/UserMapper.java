@@ -1,5 +1,6 @@
 package com.sms.usermanagementservice.control;
 
+import antlr.StringUtils;
 import com.sms.usermanagement.*;
 import com.sms.usermanagementservice.entity.User;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -24,6 +25,17 @@ public class UserMapper {
                 .build();
     }
 
+    public static UserDTO toDTO(UserRepresentation user){
+        return UserDTO.builder()
+                .userName(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .role(UserDTO.Role.valueOf(user.getAttributes().get("role").get(0)))
+                .email(user.getEmail())
+                .customAttributes(mapUserAttributes_(mapUserAttributes(user)))
+                .build();
+    }
+
     public static User toUser(UserDTO user) {
         return User.builder()
                 .username(user.getUserName())
@@ -35,57 +47,27 @@ public class UserMapper {
                 .build();
     }
 
-    public static User toUserFromUserRepresentation(UserRepresentation user) {
+    public static User toUser(UserRepresentation user) {
         return   User.builder()
                 .username(user.getUsername())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .userAttributes(mapUserAttributesR(user))
+                .userAttributes(mapUserAttributes(user))
                 .email(Optional.ofNullable(user.getEmail()))
-                .role(Role(user.getAttributes().get("role").get(0)))
+                .role(UserDTO.Role.valueOf(user.getAttributes().get("role").get(0)))
                 .build();
     }
 
 
-    private static UserDTO.Role Role(String tmp) {
-        if (tmp.equalsIgnoreCase("student")) return UserDTO.Role.STUDENT;
-        if (tmp.equalsIgnoreCase("teacher")) return UserDTO.Role.TEACHER;
-        if (tmp.equalsIgnoreCase("parent")) return UserDTO.Role.PARENT;
-        else
-            return UserDTO.Role.ADMIN;
-    }
+    public static Map<String, String> mapUserAttributes(UserRepresentation user) {
+        Map<String, List<String>> customAttributes = user.getAttributes();
 
-    public static Map<String, String> mapUserAttributesR(UserRepresentation user) {
-
-            Map<String, String> userAttributes = new HashMap<>();
-            Map<String, List<String>> customAttributes = user.getAttributes();
-            if(customAttributes.containsKey("pesel"))
-                userAttributes.put("pesel", customAttributes.get("pesel").get(0));
-            if(customAttributes.containsKey("role"))
-                userAttributes.put("role", Role(customAttributes.get("role").get(0)).toString());
-            if(customAttributes.containsKey("middleName"))
-                userAttributes.put("middleName", customAttributes.get("middleName").get(0));
-            if(customAttributes.containsKey("phoneNumber"))
-                userAttributes.put("phoneNumber", customAttributes.get("phoneNumber").get(0));
-
-            switch (Role(user.getAttributes().get("role").get(0))) {
-                case STUDENT:
-                    userAttributes.put("group", customAttributes.get("group").get(0));
-                    userAttributes.put("relatedUser", customAttributes.get("relatedUser").get(0));
-                    break;
-                case TEACHER:
-                    if (customAttributes.get("subjects") != null && !customAttributes.get("subjects").isEmpty()) {
-                        userAttributes.put("subjects", String.join(",", customAttributes.get("subjects")));
-                    }
-                    break;
-                case ADMIN:
-                case PARENT:
-                    break;
-            }
-
-            return userAttributes;
+        if(customAttributes.containsKey("subjects")){
+            List<String> list = Collections.singletonList(String.join("," , customAttributes.get("subjects")));
+            customAttributes.replace("subjects", list);
         }
-
+        return customAttributes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().findFirst().get()));
+    }
 
     public static UserRepresentation toUserRepresentation(UserDTO user, String username, String password) {
         UserRepresentation userRep = new UserRepresentation();
@@ -99,8 +81,6 @@ public class UserMapper {
 
         return userRep;
     }
-
-
 
     public static UserRepresentation toParentRepresentationFromStudent(UserDTO user, String username, String password) {
         UserRepresentation userRep = new UserRepresentation();
@@ -156,7 +136,8 @@ public class UserMapper {
         return credential;
     }
 
-    private static CustomAttributesDTO mapUserAttributes(Map<String, String> attributes) {
+    //if attributes.get("subjects/related") doesnt exist -> nullptr { teacher != related, student != subjects}
+    public static CustomAttributesDTO mapUserAttributes(Map<String, String> attributes) {
         return CustomAttributesDTO.builder()
                 .group(Optional.ofNullable(attributes.get("group")))
                 .middleName(Optional.ofNullable(attributes.get("middleName")))
@@ -164,6 +145,34 @@ public class UserMapper {
                 .subjects(Arrays.asList(attributes.get("subjects").split(",")))
                 .relatedUser(Optional.ofNullable(attributes.get("relatedUser")))
                 .build();
+    }
+
+
+    public static CustomAttributesDTO mapUserAttributes_(Map<String, String> attributes) {
+        switch(attributes.get("role")) {
+            case "ADMIN": //custom attributes for admin???
+            case "STUDENT":
+                return CustomAttributesDTO.builder()
+                        .group(Optional.ofNullable(attributes.get("group")))
+                        .middleName(Optional.ofNullable(attributes.get("middleName")))
+                        .phoneNumber(Optional.ofNullable(attributes.get("phoneNumber")))
+                        .relatedUser(Optional.ofNullable(attributes.get("relatedUser")))
+                        .build();
+            case "TEACHER":
+                return CustomAttributesDTO.builder()
+                        .middleName(Optional.ofNullable(attributes.get("middleName")))
+                        .phoneNumber(Optional.ofNullable(attributes.get("phoneNumber")))
+                        .subjects(Arrays.asList(attributes.get("subjects").split(",")))
+                        .relatedUser(Optional.ofNullable(attributes.get("relatedUser")))
+                        .build();
+            case "PARENT":
+                return CustomAttributesDTO.builder()
+                    .middleName(Optional.ofNullable(attributes.get("middleName")))
+                    .phoneNumber(Optional.ofNullable(attributes.get("phoneNumber")))
+                    .relatedUser(Optional.ofNullable(attributes.get("relatedUser")))
+                    .build();
+            default: throw new IllegalStateException("Illegal role");
+        }
     }
 
     private static Map<String, List<String>> asMultimap(Map<String, String> map) {

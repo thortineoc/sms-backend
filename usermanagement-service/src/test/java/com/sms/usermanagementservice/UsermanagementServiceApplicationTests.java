@@ -9,9 +9,6 @@ class UsermanagementServiceApplicationTests {
 
     @Test
     void contextLoads(){
-
     }
 
-    public static class GetUsersTest {
-    }
 }

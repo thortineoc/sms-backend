@@ -1,6 +1,8 @@
 package com.sms.usermanagementservice.control;  // ← jak widać package się zgadza z tym w UsersService
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
+import com.sms.usermanagement.CustomAttributesDTO;
+import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagementservice.entity.User;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -9,6 +11,9 @@ import org.keycloak.representations.idm.UserRepresentation;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.*;
+import java.util.stream.Stream;
+
+import static com.sms.usermanagementservice.control.UserMapper.*;
 import static org.junit.jupiter.api.Assertions.*;
 public class UsersServiceTest {
 
@@ -28,43 +33,58 @@ public class UsersServiceTest {
     }
     */
 
-/*    @Test
-    void shouldFindUserByUsername(){
+    @Test
+    void shouldFindSomeGroup(){
         UsersService service= new UsersService();
-        MultivaluedMap<String, String> map= new MultivaluedHashMap<>();
-        map.put("username", Collections.singletonList("smsadmin"));
-        assertSame(service.FilterUsers(map).size(), 1);
+
+        //CREATE MAP OF PARAMS
+        Map<String, String> map= new HashMap<>();
+        map.put("group", "IIa");
+        //
+        assertEquals( 1, service.filterUserByParameters(map).size());
     }
 
     @Test
-    void shouldFindUserByRole(){
+    void shouldFind3Users(){
         UsersService service= new UsersService();
-        MultivaluedMap<String, String> map= new MultivaluedHashMap<>();
-        map.put("role", Collections.singletonList("student"));
-        service.FilterUsers(map);
-        assertEquals(service.userRepresentation.size(), 1);
-        assertEquals(service.userRepresentation.get(0).getAttributes().get("group").get(0), "1a");
+
+        //CREATE MAP OF PARAMS
+        Map<String, String> map= new HashMap<>();
+        map.put("group", "IIa");
+        //
+        assertEquals( 3, service.getUsers().size());
     }
 
     @Test
-    void shouldFindAllUsers(){
-        UsersService service= new UsersService();
-        MultivaluedMap<String, String> map= new MultivaluedHashMap<>();
-        service.FilterUsers(map);
-        assertEquals(3,service.userRepresentation.size());
-    }*/
+    void userParamsTest(){
+        UsersService service = new UsersService();
 
-    @Test
-    void shouldFindAdminEla(){
-        UsersService service= new UsersService();
-        MultivaluedMap<String, String> map= new MultivaluedHashMap<>();
-        map.put("role", Collections.singletonList("admin"));
-        map.put("firstName", Collections.singletonList("Tomasz"));
-        List<User> users=service.FilterUsers(map);
-        assertEquals(1, users.size());
-        assertEquals( 1, service.userRepresentation.size());
+        //CREATE MAP OF PARAMS
+        Map<String, String> map= new HashMap<>();
+        map.put("group", "group");
+        map.put("middleName", "middleName");
+        map.put("pesel", "pesel");
+        map.put("phoneNumber", "phoneNumber");
+        //CREATE QUERY PARAMS
+        QueryParams params=new QueryParams(map);
+        assertEquals("group", params.getGroup());
+        assertEquals("middleName", params.getMiddleName());
+        assertEquals("pesel", params.getPesel());
+        assertEquals("phoneNumber", params.getPhoneNumber());
     }
 
+    @Test
+    void userMapperTest(){
+        UsersService service = new UsersService();
+
+        //CREATE MAP OF PARAMS
+        Map<String, String> map= new HashMap<>();
+        map.put("group", "IIa");
+        //CREATE QUERY PARAMS
+        List<UserRepresentation> list = service.filterUserByParameters(map);
+        assertEquals(1, list.size());
+
+    }
 
     private UserRepresentation createUserRep(String username, String password, String firstName, String lastName,
                                              String email, String group, String role) {
