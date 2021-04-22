@@ -19,8 +19,7 @@ public class UsersService {
     private final KeycloakClient keycloakClient= new KeycloakClient();
 
 
-
-    public List<UserRepresentation>  filterUserByParameters(Map<String, String> queryParameters){
+    public List<UserDTO>  filterUserByParameters(Map<String, String> queryParameters){
         QueryParams queryParams= new QueryParams(queryParameters);
         FilteredUsers filterUser = new FilteredUsers();
 

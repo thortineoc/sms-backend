@@ -33,12 +33,12 @@ public class UsersResource {
     @Autowired
     private UserContext userContext;
 
-/*   @PostMapping
+   @GetMapping
     public List<UserDTO> filterUsers(@RequestParam Map<String, String> queryParam) {
 
        validateRole();
        return usersService.filterUserByParameters(queryParam);
-    }*/
+    }
 
   @PostMapping
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {

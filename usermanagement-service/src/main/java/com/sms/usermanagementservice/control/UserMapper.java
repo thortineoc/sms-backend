@@ -27,6 +27,8 @@ public class UserMapper {
 
     public static UserDTO toDTO(UserRepresentation user){
         return UserDTO.builder()
+                .id(user.getId())
+                .pesel(user.getAttributes().get("pesel").toString())
                 .userName(user.getUsername())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())

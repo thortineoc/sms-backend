@@ -15,7 +15,7 @@ public class FilteredUsers {
 
     // input: role I output Ia Ic IIc
     //it works but...
-    List<UserRepresentation> filterUsersByParam(List<UserRepresentation> users, QueryParams parameters){
+    List<UserDTO> filterUsersByParam(List<UserRepresentation> users, QueryParams parameters){
 
         if(parameters.getGroup()!=null)
             userRepresentation = users.stream().filter((f) -> f.getAttributes().get("group").
@@ -30,7 +30,8 @@ public class FilteredUsers {
             userRepresentation = users.stream().filter((f) -> f.getAttributes().get("pesel").
                     toString().contains(parameters.getPesel())).collect(Collectors.toList());
 
-        return  userRepresentation;
+        toUserDTO();
+        return  usersDTOList;
     }
 
     private void toUserDTO(){

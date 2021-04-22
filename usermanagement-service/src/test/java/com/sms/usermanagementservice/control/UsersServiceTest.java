@@ -39,20 +39,9 @@ public class UsersServiceTest {
 
         //CREATE MAP OF PARAMS
         Map<String, String> map= new HashMap<>();
-        map.put("group", "IIa");
+        map.put("group", "II");
         //
         assertEquals( 1, service.filterUserByParameters(map).size());
-    }
-
-    @Test
-    void shouldFind3Users(){
-        UsersService service= new UsersService();
-
-        //CREATE MAP OF PARAMS
-        Map<String, String> map= new HashMap<>();
-        map.put("group", "IIa");
-        //
-        assertEquals( 3, service.getUsers().size());
     }
 
     @Test
@@ -79,10 +68,11 @@ public class UsersServiceTest {
 
         //CREATE MAP OF PARAMS
         Map<String, String> map= new HashMap<>();
-        map.put("group", "IIa");
+        map.put("group", "II");
         //CREATE QUERY PARAMS
-        List<UserRepresentation> list = service.filterUserByParameters(map);
+        List<UserDTO> list = service.filterUserByParameters(map);
         assertEquals(1, list.size());
+        assertEquals(list.get(0).getFirstName(), "Tomasz");
 
     }
 
