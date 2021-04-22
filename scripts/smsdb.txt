@@ -20,12 +20,12 @@ CREATE TYPE presence_type AS ENUM (
 
 CREATE TABLE Subjects (
                           id 		SERIAL PRIMARY KEY,
-                          name 		varchar(63) 	NOT NULL
+                          name 		varchar(63) 	NOT NULL UNIQUE
 );
 
 CREATE TABLE Groups (
 			 id	SERIAL PRIMARY KEY,
-			 name 	varchar(15)	NOT NULL
+			 name 	varchar(15)	NOT NULL UNIQUE
 );
 
 CREATE TABLE Classes (
