@@ -74,14 +74,6 @@ public class UsersService {
         }
     }
 
-    private void updateUser(UserRepresentation user) {
-        //get original user
-        //set attribusted to given
-        //save to kecloack
-        //...
-        //if only it was that easy...
-    }
-
     private String calculatePassword(UserDTO user) {
         return user.getFirstName().substring(0, Math.min(user.getFirstName().length(), 4)) +
                 user.getLastName().substring(0, Math.min(user.getLastName().length(), 4));

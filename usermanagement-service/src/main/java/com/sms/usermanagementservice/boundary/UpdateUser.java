@@ -10,9 +10,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-
 @RestController
-@RequestMapping("/create")
+@Scope("request")
 public class UpdateUser {
 
+    @Autowired
+    private KeycloakClient keycloakClient;
+
+    public void updateUser(UserRepresentation user) {
+        if (!keycloakClient.updateUser(user.getID(), user)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+    }
 }
