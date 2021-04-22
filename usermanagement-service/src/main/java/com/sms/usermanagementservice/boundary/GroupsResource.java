@@ -31,13 +31,9 @@ public class GroupsResource {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getGroups(){
         validateRole();
-
         List <GroupDTO> list = groupsService.getAll();
-
-
         return ResponseEntity.ok().body(list);
     }
-
 
     @PostMapping
     public ResponseEntity<String> newGroup(@RequestBody GroupDTO group){

@@ -6,7 +6,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "groups" )
+@Table(name = "groups")
 public class Group {
 
     @Id
@@ -24,9 +24,7 @@ public class Group {
         this.id = id;
     }
 
-    public Group() {
-
-    }
+    public Group() { }
 
     public Integer getId(){
         return this.id;

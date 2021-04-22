@@ -19,7 +19,6 @@ public class GroupsService {
     @Autowired
     private GroupDao groupDao;
 
-
     public List<GroupDTO> getAll(){
 
         List<GroupDTO> listOfGroupDTO = new ArrayList<>();
@@ -42,6 +41,7 @@ public class GroupsService {
     }
 
     public void delete(GroupDTO group){
+        //TODO: check if group is used
         try {
             Group groupToDelete = new Group(group.getId());
             groupDao.delete(groupToDelete);
