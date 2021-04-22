@@ -3,21 +3,24 @@ import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.UserDTO;
 import org.keycloak.representations.idm.UserRepresentation;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 
 @Component
 @Scope("request")
 public class UsersService {
 
-    // @Autowired //field injection is not recommended??? --> getUsers - nullptr
-    // private KeycloakClient keycloakClient;
-    private final KeycloakClient keycloakClient= new KeycloakClient();
-
+     @Autowired
+     private KeycloakClient keycloakClient;
 
     public List<UserDTO>  filterUserByParameters(Map<String, String> queryParameters){
         QueryParams queryParams= new QueryParams(queryParameters);
@@ -27,6 +30,8 @@ public class UsersService {
     }
 
     public List<UserRepresentation> getUsers() {
+
+        if(keycloakClient==null)  throw new IllegalArgumentException("dsadsa");
         List<UserRepresentation> users = keycloakClient.getAllUsers();
         if (!users.isEmpty()) {
            return users;

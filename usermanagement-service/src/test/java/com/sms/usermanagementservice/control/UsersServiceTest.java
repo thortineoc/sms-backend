@@ -17,77 +17,110 @@ import static com.sms.usermanagementservice.control.UserMapper.*;
 import static org.junit.jupiter.api.Assertions.*;
 public class UsersServiceTest {
 
-    // a tutaj piszemy testy do UsersService
-
-    private final static KeycloakClient CLIENT = new KeycloakClient();
-    private final static String TEST_USER_ID = "a43856df-96bf-4747-b947-0b2b127ae677";
-    private final static String PREFIX = "INTEGRATION_TESTS_";
-    private final static String KOPYTKO54_USER = PREFIX + "kopytko";
-
-
-/*@AfterAll
-    static void cleanup() {
-        UserSearchParams params = new UserSearchParams().username(KOPYTKO54_USER);
-        Optional<UserRepresentation> testUser = CLIENT.getUsers(params).stream().findFirst();
-        testUser.ifPresent(userRepresentation -> CLIENT.deleteUser(userRepresentation.getId()));
-    }
-    */
+    private final String username="username";
+    private final String password="password";
+    private final String firtsName="firstName";
+    private final String lastName="lastName";
+    private final String email="email";
+    private final String middleName="middleName";
+    private final String group="group";
+    private final String student = "STUDENT";
+    private final String pesel="pesel";
+    private final String teacher = "TEACHER";
+    private final String admin = "ADMIN";
+    private final String id="sampleID";
 
     @Test
-    void shouldFindSomeGroup(){
+    void shouldFindUserByGroup(){
         UsersService service= new UsersService();
+        List<UserRepresentation> users= new ArrayList<>();
 
-        //CREATE MAP OF PARAMS
+        //CREATE USER
+        UserRepresentation user= createStudentRep(username, password, firtsName, lastName, email, "IIIA", student, pesel, id, middleName);
+        users.add(user);
+        UserRepresentation user1= createStudentRep(username+"1", password+"1", firtsName+"1", lastName+"1", email+"1", "IIA", student, pesel+"1", id+"1", middleName+1);
+        users.add(user1);
+
+        //CREATE PARAMETERS MAP
         Map<String, String> map= new HashMap<>();
         map.put("group", "II");
-        //
-        assertEquals( 1, service.filterUserByParameters(map).size());
+
+        //ADD TO QUERY PARAMS
+        QueryParams queryParams = new QueryParams(map);
+
+        //FILTER USERS
+        FilteredUsers filteredUsers = new FilteredUsers();
+        List<UserDTO> list=filteredUsers.filterUsersByParam(users, queryParams);
+
+        //SHOULD FIND TWO USERS AND THEY SHOULD BE IIIA AND IIA
+        assertEquals(2, list.size());
+        assertEquals( "IIIA", list.get(0).getCustomAttributes().getGroup().get());
+        assertEquals( "IIA", list.get(1).getCustomAttributes().getGroup().get());
     }
 
     @Test
-    void userParamsTest(){
-        UsersService service = new UsersService();
+    void shouldFindUserByMiddleName(){
+        UsersService service= new UsersService();
+        List<UserRepresentation> users= new ArrayList<>();
 
-        //CREATE MAP OF PARAMS
+        //CREATE USER
+        UserRepresentation user= createStudentRep(username, password, firtsName, lastName, email, "IIIA", student, pesel, id, middleName);
+        users.add(user);
+        UserRepresentation user1= createStudentRep(username+"1", password+"1", firtsName+"1", lastName+"1", email+"1", "IIA", student, pesel+"1", id+"1", middleName+"1");
+        users.add(user1);
+
+        //CREATE PARAMETERS MAP
         Map<String, String> map= new HashMap<>();
-        map.put("group", "group");
-        map.put("middleName", "middleName");
-        map.put("pesel", "pesel");
-        map.put("phoneNumber", "phoneNumber");
-        //CREATE QUERY PARAMS
-        QueryParams params=new QueryParams(map);
-        assertEquals("group", params.getGroup());
-        assertEquals("middleName", params.getMiddleName());
-        assertEquals("pesel", params.getPesel());
-        assertEquals("phoneNumber", params.getPhoneNumber());
-    }
+        map.put("middleName", "1");
 
-    @Test
-    void userMapperTest(){
-        UsersService service = new UsersService();
+        //ADD TO QUERY PARAMS
+        QueryParams queryParams = new QueryParams(map);
 
-        //CREATE MAP OF PARAMS
-        Map<String, String> map= new HashMap<>();
-        map.put("group", "II");
-        //CREATE QUERY PARAMS
-        List<UserDTO> list = service.filterUserByParameters(map);
+        //FILTER USERS
+        FilteredUsers filteredUsers = new FilteredUsers();
+        List<UserDTO> list=filteredUsers.filterUsersByParam(users, queryParams);
+
+        //SHOULD FIND ONE USER AND HE SHOULD BE userName
         assertEquals(1, list.size());
-        assertEquals(list.get(0).getFirstName(), "Tomasz");
+        assertEquals( "middleName1", list.get(0).getCustomAttributes().getMiddleName().get());
+
+        // \\ // \\ SHOULD FIND TWO USERS
+
+        //CREATE PARAMETERS MAP
+        Map<String, String> map1= new HashMap<>();
+        map1.put("middleName", "middle");
+
+        //ADD TO QUERY PARAMS
+        QueryParams queryParams1 = new QueryParams(map1);
+
+        //FILTER USERS
+        FilteredUsers filteredUsers1 = new FilteredUsers();
+        List<UserDTO> list1=filteredUsers1.filterUsersByParam(users, queryParams1);
+
+        //SHOULD FIND ONE USER AND HE SHOULD BE middleName and middleName1
+        assertEquals(2, list1.size());
+        assertEquals( "middleName", list1.get(0).getCustomAttributes().getMiddleName().get());
+        assertEquals( "middleName1", list1.get(1).getCustomAttributes().getMiddleName().get());
 
     }
 
-    private UserRepresentation createUserRep(String username, String password, String firstName, String lastName,
-                                             String email, String group, String role) {
+
+
+    private UserRepresentation createStudentRep(String username, String password, String firstName, String lastName,
+                                             String email, String group, String role, String pesel, String id, String middleName) {
         UserRepresentation userRep = new UserRepresentation();
         userRep.setEmail(email);
         userRep.setUsername(username);
         userRep.setFirstName(firstName);
         userRep.setLastName(lastName);
+        userRep.setId(id);
         userRep.setCredentials(Collections.singletonList(getPasswordCredential(password)));
 
         Map<String, List<String>> customAttributes = new HashMap<>();
         customAttributes.put("role", Collections.singletonList(role));
         customAttributes.put("group", Collections.singletonList(group));
+        customAttributes.put("pesel", Collections.singletonList(pesel));
+        customAttributes.put("middleName", Collections.singletonList(middleName));
 
         userRep.setAttributes(customAttributes);
         return userRep;
