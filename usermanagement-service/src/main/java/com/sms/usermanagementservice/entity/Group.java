@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 public class Group {
 
     @Id
-    @GeneratedValue(generator="groups_id_seq")
+    @GeneratedValue(generator = "groups_id_seq")
     private Integer id;
 
     @NotNull
@@ -20,21 +20,22 @@ public class Group {
         this.name = name;
     }
 
-    public Group(Integer id){
+    public Group(Integer id) {
         this.id = id;
     }
 
-    public Group() { }
+    public Group() {
+    }
 
-    public Integer getId(){
+    public Integer getId() {
         return this.id;
     }
 
-    public String getName(){
+    public String getName() {
         return this.name;
     }
 
-    public GroupDTO getGroupDTO(){
+    public GroupDTO getGroupDTO() {
         return GroupDTO.builder().id(this.id).name(this.name).build();
     }
 

@@ -1,5 +1,6 @@
 package com.sms.usermanagementservice.control.groups;
 
+import com.google.common.collect.Lists;
 import com.sms.usermanagement.GroupDTO;
 import com.sms.usermanagementservice.entity.Group;
 import com.sms.usermanagementservice.entity.GroupRepository;
@@ -11,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Scope("request")
@@ -19,20 +21,16 @@ public class GroupsService {
     @Autowired
     private GroupRepository groupRepository;
 
-    public List<GroupDTO> getAll(){
+    public List<GroupDTO> getAll() {
 
-        List<GroupDTO> listOfGroupDTO = new ArrayList<>();
-        List<Group> groups = groupRepository.findAll();
-        for(Group group: groups){
-            listOfGroupDTO.add(group.getGroupDTO());
-        }
-        if(listOfGroupDTO.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT);
-        }
-        return listOfGroupDTO;
+        return Lists.newArrayList(groupRepository.findAll())
+                .stream()
+                .map(Group::getGroupDTO)
+                .collect(Collectors.toList());
+
     }
 
-    public void create(GroupDTO group){
+    public void create(GroupDTO group) {
         try {
             Group newGroup = new Group(group.getName());
             groupRepository.save(newGroup);
@@ -42,10 +40,10 @@ public class GroupsService {
 
     }
 
-    public void delete(GroupDTO group){
+    public void delete(Integer id) {
         //TODO: check if group is used
         try {
-            Group groupToDelete = new Group(group.getId());
+            Group groupToDelete = new Group(id);
             groupRepository.delete(groupToDelete);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);

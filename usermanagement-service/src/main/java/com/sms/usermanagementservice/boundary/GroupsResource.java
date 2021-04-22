@@ -27,23 +27,22 @@ public class GroupsResource {
     private GroupsService groupsService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getGroups(){
-        validateRole();
-        List <GroupDTO> list = groupsService.getAll();
+    public ResponseEntity<Object> getGroups() {
+        List<GroupDTO> list = groupsService.getAll();
         return ResponseEntity.ok().body(list);
     }
 
     @PostMapping
-    public ResponseEntity<String> newGroup(@RequestBody GroupDTO group){
+    public ResponseEntity<String> newGroup(@RequestBody GroupDTO group) {
         validateRole();
         groupsService.create(group);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping
-    public ResponseEntity<String> deleteGroup(@RequestBody GroupDTO group){
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<String> deleteGroup(@PathVariable Integer id) {
         validateRole();
-        groupsService.delete(group);
+        groupsService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
