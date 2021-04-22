@@ -6,7 +6,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 @Transactional
-public interface GroupDao extends CrudRepository<Group, Integer> {
+public interface GroupRepository extends CrudRepository<Group, Integer> {
     List<Group> findAll();
 }
 

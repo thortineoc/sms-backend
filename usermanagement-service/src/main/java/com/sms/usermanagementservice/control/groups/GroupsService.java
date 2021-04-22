@@ -1,8 +1,8 @@
-package com.sms.usermanagementservice.control;
+package com.sms.usermanagementservice.control.groups;
 
 import com.sms.usermanagement.GroupDTO;
 import com.sms.usermanagementservice.entity.Group;
-import com.sms.usermanagementservice.entity.GroupDao;
+import com.sms.usermanagementservice.entity.GroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
@@ -17,23 +17,25 @@ import java.util.List;
 public class GroupsService {
 
     @Autowired
-    private GroupDao groupDao;
+    private GroupRepository groupRepository;
 
     public List<GroupDTO> getAll(){
 
         List<GroupDTO> listOfGroupDTO = new ArrayList<>();
-        List<Group> groups = groupDao.findAll();
+        List<Group> groups = groupRepository.findAll();
         for(Group group: groups){
             listOfGroupDTO.add(group.getGroupDTO());
         }
-
+        if(listOfGroupDTO.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+        }
         return listOfGroupDTO;
     }
 
     public void create(GroupDTO group){
         try {
             Group newGroup = new Group(group.getName());
-            groupDao.save(newGroup);
+            groupRepository.save(newGroup);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
@@ -44,7 +46,7 @@ public class GroupsService {
         //TODO: check if group is used
         try {
             Group groupToDelete = new Group(group.getId());
-            groupDao.delete(groupToDelete);
+            groupRepository.delete(groupToDelete);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }

@@ -2,9 +2,7 @@ package com.sms.usermanagementservice.boundary;
 
 import com.sms.context.UserContext;
 import com.sms.usermanagement.GroupDTO;
-import com.sms.usermanagementservice.control.GroupsService;
-import com.sms.usermanagementservice.entity.Group;
-import com.sms.usermanagementservice.entity.GroupDao;
+import com.sms.usermanagementservice.control.groups.GroupsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
@@ -13,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
+
 import java.util.List;
 
 
@@ -39,14 +37,14 @@ public class GroupsResource {
     public ResponseEntity<String> newGroup(@RequestBody GroupDTO group){
         validateRole();
         groupsService.create(group);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping
     public ResponseEntity<String> deleteGroup(@RequestBody GroupDTO group){
         validateRole();
         groupsService.delete(group);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     private void validateRole() {
