@@ -31,16 +31,9 @@ public class GroupsResource {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getGroups(){
         validateRole();
-        GroupDTO a = GroupDTO.builder().id(234234).name("hrgb").build();
-        GroupDTO b = GroupDTO.builder().id(23423).name("hsfsfrgb").build();
-        GroupDTO c = GroupDTO.builder().id(234).name("hrsfgb").build();
-        GroupDTO d = GroupDTO.builder().id(234234234).name("hrdfgb").build();
 
-        List<GroupDTO> list = new ArrayList<>();
-        list.add(a);
-        list.add(b);
-        list.add(c);
-        list.add(d);
+        List <GroupDTO> list = groupsService.getAll();
+
 
         return ResponseEntity.ok().body(list);
     }

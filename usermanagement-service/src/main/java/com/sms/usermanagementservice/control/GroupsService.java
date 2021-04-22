@@ -9,12 +9,27 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 @Scope("request")
 public class GroupsService {
 
     @Autowired
     private GroupDao groupDao;
+
+
+    public List<GroupDTO> getAll(){
+
+        List<GroupDTO> listOfGroupDTO = new ArrayList<>();
+        List<Group> groups = groupDao.findAll();
+        for(Group group: groups){
+            listOfGroupDTO.add(group.getGroupDTO());
+        }
+
+        return listOfGroupDTO;
+    }
 
     public void create(GroupDTO group){
         try {
