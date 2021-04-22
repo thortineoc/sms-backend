@@ -18,6 +18,10 @@ public class Group {
         this.name = name;
     }
 
+    public Group(Integer id){
+        this.id = id;
+    }
+
     public Group() {
 
     }

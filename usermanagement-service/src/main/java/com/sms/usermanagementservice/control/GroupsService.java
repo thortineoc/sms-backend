@@ -25,4 +25,13 @@ public class GroupsService {
         }
 
     }
+
+    public void delete(GroupDTO group){
+        try {
+            Group groupToDelete = new Group(group.getId());
+            groupDao.delete(groupToDelete);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+    }
 }

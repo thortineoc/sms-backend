@@ -46,22 +46,19 @@ public class GroupsResource {
     }
 
 
-
     @PostMapping
     public ResponseEntity<String> newGroup(@RequestBody GroupDTO group){
         validateRole();
-
         groupsService.create(group);
-
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping
     public ResponseEntity<String> deleteGroup(@RequestBody GroupDTO group){
         validateRole();
+        groupsService.delete(group);
         return ResponseEntity.ok().build();
     }
-
 
     private void validateRole() {
         if (!userContext.getSmsRole().equals("ADMIN")) {
