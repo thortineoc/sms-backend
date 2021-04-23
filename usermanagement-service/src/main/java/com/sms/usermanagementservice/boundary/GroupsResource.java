@@ -24,7 +24,7 @@ public class GroupsResource {
     private GroupsService groupsService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getGroups() {
+    public ResponseEntity<List<String>> getGroups() {
 
         List<String> list = groupsService.getAll();
         if(list.isEmpty()){
@@ -34,14 +34,14 @@ public class GroupsResource {
         return ResponseEntity.ok().body(list);
     }
 
-    @PostMapping(value = "/{name}")
+    @PostMapping( "/{name}")
     public ResponseEntity<String> newGroup(@PathVariable String name) {
         validateRole();
         groupsService.create(name);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping( "/{id}")
     public ResponseEntity<String> deleteGroup(@PathVariable String id) {
         validateRole();
         groupsService.delete(id);

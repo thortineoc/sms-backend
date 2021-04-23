@@ -1,4 +1,4 @@
-package com.sms.tests.usermanagement;
+package com.sms.tests.usermanagement.groups;
 
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.WebClient;
@@ -14,6 +14,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.HttpStatus;
 
 import javax.ws.rs.core.MediaType;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -21,24 +22,21 @@ public class GroupsManagementTest {
 
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
     private final static KeycloakClient KEYCLOAK_CLIENT = new KeycloakClient();
+    private static final String TEST_LAST_NAME = "temp_user_group_test";
+    private static final String TEST_GROUP_1 = "temp_group1";
+    private static final String TEST_GROUP_2 = "temp_group2";
+    private static final String TEST_GROUP_3 = "temp_group3";
 
     @BeforeAll
     @AfterAll
     static void cleanup(){
-        CLIENT.request("usermanagement-service")
-                .delete("/groups/temp_group1");
 
+        deleteGroup(TEST_GROUP_1);
+        deleteGroup(TEST_GROUP_2);
+        deleteGroup(TEST_GROUP_3);
 
-        CLIENT.request("usermanagement-service")
-                .delete("/groups/temp_group2");
-
-
-        CLIENT.request("usermanagement-service")
-                .delete("/groups/temp_group3");
-
-        UserSearchParams params = new UserSearchParams().lastName("temp_user_group_test");
+        UserSearchParams params = new UserSearchParams().lastName(TEST_LAST_NAME);
         List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-
         createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
     }
 
@@ -50,13 +48,13 @@ public class GroupsManagementTest {
 
         //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
         tempWebClient.request("usermanagement-service")
-                .post("/groups/temp")
+                .post("/groups/" + TEST_GROUP_1)
                 .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
 
         //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
         tempWebClient.request("usermanagement-service")
-                .delete("/groups/temp")
+                .delete("/groups/" + TEST_GROUP_1)
                 .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
     }
@@ -64,21 +62,15 @@ public class GroupsManagementTest {
     @Test
     void shouldCreateQueryAndDeleteGroups() {
 
-        //CREATE FIRST GROUP
-        CLIENT.request("usermanagement-service")
-                .post("/groups/temp_group1")
+        createGroup(TEST_GROUP_1)
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
-        //CREATE SECOND GROUP
-        CLIENT.request("usermanagement-service")
-                .post("/groups/temp_group2")
+        createGroup(TEST_GROUP_2)
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
-        //CREATE THIRD GROUP
-        CLIENT.request("usermanagement-service")
-                .post("/groups/temp_group3")
+        createGroup(TEST_GROUP_3)
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
@@ -87,26 +79,19 @@ public class GroupsManagementTest {
         Assertions.assertEquals(HttpStatus.OK.value(), response.statusCode());
 
         //CHECK RESPONSE BODY
-        String body = response.getBody().prettyPrint();
-        Assertions.assertTrue(body.contains("temp_group1"));
-        Assertions.assertTrue(body.contains("temp_group2"));
-        Assertions.assertTrue(body.contains("temp_group3"));
+        String[] array = response.getBody().as(String[].class);
+        List<String> list = Arrays.asList(array);
+        Assertions.assertTrue(list.containsAll(Arrays.asList(TEST_GROUP_1, TEST_GROUP_2, TEST_GROUP_3)));
 
-        //DELETE FIRST GROUP
-        CLIENT.request("usermanagement-service")
-                .delete("/groups/temp_group1")
+        deleteGroup(TEST_GROUP_1)
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
-        //DELETE SECOND GROUP
-        CLIENT.request("usermanagement-service")
-                .delete("/groups/temp_group2")
+        deleteGroup(TEST_GROUP_2)
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
-        //DELETE THIRD GROUP
-        CLIENT.request("usermanagement-service")
-                .delete("/groups/temp_group3")
+        deleteGroup(TEST_GROUP_3)
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
@@ -115,22 +100,20 @@ public class GroupsManagementTest {
     @Test
     void shouldReturnConflictWhenGroupIsUsed(){
 
-        //CREATE GROUP
-        CLIENT.request("usermanagement-service")
-                .post("/groups/temp_group1")
+        createGroup(TEST_GROUP_1)
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
         //CREATE USER
         CustomAttributesDTO attributesDTO = CustomAttributesDTO.builder()
-                .group("temp_group1")
+                .group(TEST_GROUP_1)
                 .build();
 
         UserDTO userDTO = UserDTO.builder()
                 .id("null")
                 .userName("null")
                 .firstName("firstName")
-                .lastName("temp_user_group_test")
+                .lastName(TEST_LAST_NAME)
                 .pesel("pesel")
                 .role(UserDTO.Role.STUDENT)
                 .email("mail@email.com")
@@ -145,12 +128,22 @@ public class GroupsManagementTest {
                 .statusCode(HttpStatus.OK.value());
 
         //TRY TO DELETE GROUP
-        CLIENT.request("usermanagement-service")
-                .delete("/groups/temp_group1")
+        deleteGroup(TEST_GROUP_1)
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
         //TODO: change to CONFLICT
 
     }
+
+    private static Response deleteGroup(String name){
+        return CLIENT.request("usermanagement-service")
+                .delete("/groups/" + name);
+    }
+
+    private static Response createGroup(String name){
+        return CLIENT.request("usermanagement-service")
+                .post("/groups/" + name);
+    }
+
 
 }

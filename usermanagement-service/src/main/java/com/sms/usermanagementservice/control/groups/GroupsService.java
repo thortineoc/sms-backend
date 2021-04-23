@@ -27,7 +27,7 @@ public class GroupsService {
 
     public List<String> getAll() {
 
-        return Lists.newArrayList(groupRepository.findAll())
+        return groupRepository.findAll()
                 .stream()
                 .map(Group::getName)
                 .collect(Collectors.toList());
@@ -35,12 +35,9 @@ public class GroupsService {
 
     public void create(String group) {
 
-        try {
-            Group newGroup = new Group(group);
-            groupRepository.save(newGroup);
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
-        }
+        Group newGroup = new Group(group);
+        groupRepository.save(newGroup);
+
 
     }
 
