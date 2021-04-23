@@ -1,8 +1,6 @@
 package com.sms.usermanagementservice.control.groups;
 
-import com.google.common.collect.Lists;
 import com.sms.clients.KeycloakClient;
-import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagementservice.entity.Group;
 import com.sms.usermanagementservice.entity.GroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
