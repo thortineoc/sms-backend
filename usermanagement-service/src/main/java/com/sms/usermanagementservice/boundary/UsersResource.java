@@ -1,6 +1,6 @@
 package com.sms.usermanagementservice.boundary;
 
-import com.sms.context.UserContext;
+import com.sms.context.AuthRole;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagementservice.control.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,18 +16,12 @@ import org.springframework.web.server.ResponseStatusException;
 @Scope("request")
 public class UsersResource {
 
-
     @Autowired
     private UsersService usersService;
 
-    @Autowired
-    private UserContext userContext;
-
     @PostMapping
+    @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
-
-        validateRole();
-
         switch (data.getRole()) {
             case STUDENT:
                 usersService.createStudentWithParent(data);
@@ -40,12 +34,6 @@ public class UsersResource {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        return ResponseEntity.ok().build();
-    }
-
-    private void validateRole() {
-        if (!userContext.getSmsRole().equals("ADMIN")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
+        return ResponseEntity.noContent().build();
     }
 }
