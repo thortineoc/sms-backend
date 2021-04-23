@@ -81,10 +81,14 @@ public class UsersService {
 
     private String calculateUsername(UserDTO user) {
         switch (user.getRole()) {
-            case STUDENT: return "s_" + user.getPesel();
-            case ADMIN: return "a_" + user.getPesel();
-            case TEACHER: return "t_" + user.getPesel();
-            default: throw new IllegalStateException();
+            case STUDENT:
+                return "s_" + user.getPesel();
+            case ADMIN:
+                return "a_" + user.getPesel();
+            case TEACHER:
+                return "t_" + user.getPesel();
+            default:
+                throw new IllegalStateException();
         }
     }
 
@@ -93,9 +97,7 @@ public class UsersService {
     }
 
     public void updateUser(UserDTO userDTO) {
-
-        UserRepresentation user = keycloakClient.getUsers(userDTO.getID())
-                .stream().findFirst().orElseThrow(() -> new IllegalStateException("User does not exist"));
+        UserRepresentation user = UserMapper::toUserRepresentation (userDTO, userDTO.getUserName(), NULL);
 
         if (!keycloakClient.updateUser(user.getID(), user)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
