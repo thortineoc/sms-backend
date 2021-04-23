@@ -34,6 +34,7 @@ public class GroupsService {
     }
 
     public void create(String group) {
+
         try {
             Group newGroup = new Group(group);
             groupRepository.save(newGroup);

@@ -13,14 +13,10 @@ public class Group {
         this.name = name;
     }
 
-
-    public Group() {
-    }
-
+    public Group() { }
 
     public String getName() {
         return this.name;
     }
-
 
 }

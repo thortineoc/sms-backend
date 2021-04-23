@@ -30,6 +30,7 @@ public class GroupsResource {
         if(list.isEmpty()){
             return ResponseEntity.noContent().build();
         }
+
         return ResponseEntity.ok().body(list);
     }
 
