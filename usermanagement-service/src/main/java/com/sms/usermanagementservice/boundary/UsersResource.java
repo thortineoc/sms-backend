@@ -4,6 +4,7 @@ import com.sms.context.UserContext;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagement.UsersFiltersDTO;
 import com.sms.usermanagementservice.control.UsersService;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,6 @@ public class UsersResource {
 
     @PostMapping("/filter")
     public List<UserDTO> filterUsers(@RequestBody UsersFiltersDTO filterParamsDTO) {
-
 
        return usersService.filterUserByParameters(filterParamsDTO);
     }

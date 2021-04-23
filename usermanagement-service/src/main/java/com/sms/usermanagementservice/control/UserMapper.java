@@ -1,7 +1,9 @@
 package com.sms.usermanagementservice.control;
 
 
+import com.google.common.base.Preconditions;
 import com.sms.usermanagement.CustomAttributesDTO;
+import com.sms.usermanagement.ImmutableCustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagement.UsersFiltersDTO;
 import com.sms.usermanagementservice.entity.CustomFilterParams;
@@ -99,6 +101,8 @@ public class UserMapper {
         return userRep;
     }
 
+
+
     public static UserRepresentation toParentRepresentationFromStudent(UserDTO user, String username, String password) {
         UserRepresentation userRep = new UserRepresentation();
         userRep.setUsername(username);
@@ -158,10 +162,21 @@ public class UserMapper {
                 .group(Optional.ofNullable(attributes.get("group")))
                 .middleName(Optional.ofNullable(attributes.get("middleName")))
                 .phoneNumber(Optional.ofNullable(attributes.get("phoneNumber")))
-                .subjects(Arrays.asList(attributes.get("subjects").split(","))) //TODO TU WYWALA
+                .subjects(Arrays.asList(Preconditions.checkNotNull(attributes.get("subjects")).split(","))) //TODO TU WYWALA
                 .relatedUser(Optional.ofNullable(attributes.get("relatedUser")))
                 .build();
     }
+
+   /* public static CustomAttributesDTO mapToUserAttributes(Map<String, String> attributes){
+
+        ImmutableCustomAttributesDTO.Builder builder=CustomAttributesDTO.builder();
+        Optional.ofNullable(attributes.get("group")).ifPresent(builder::group);
+        Optional.ofNullable(attributes.get("middleName")).ifPresent(builder::middleName);
+        Optional.ofNullable(attributes.get("phoneNumber")).ifPresent(builder::phoneNumber);
+        Optional.ofNullable(attributes.get("relatedUser")).ifPresent(builder::relatedUser);
+        Optional.ofNullable(attributes.get("subjects")).map(s -> (s.split(",")) );
+
+    }*/
 
     private static Map<String, List<String>> asMultimap(Map<String, String> map) {
         return map.entrySet()

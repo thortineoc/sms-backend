@@ -8,7 +8,9 @@ import com.sms.usermanagementservice.entity.KeyCloakFilterParams;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +32,7 @@ public class UserFilteringService {
                 .filter(user -> filterByCustomAttribute(parameters.getPhoneNumber(), "phoneNumber", user))
                 .map(UserMapper::toDTO)
                 .collect(Collectors.toList());
+
 
     }
 

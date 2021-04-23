@@ -29,13 +29,10 @@ public class UsersService {
 
         CustomFilterParams customFilterParams= UserMapper.mapCustomFilterParams(filterParamsDTO);
         KeyCloakFilterParams keyCloakFilterParams=UserMapper.mapKeyCloakFilterParams(filterParamsDTO);
-
-              UserRepresentation user= new UserRepresentation();
-              List<UserRepresentation> userList= new ArrayList<>();
-              userList =  userFilteringService.keyCloakFilteringUsers(keyCloakFilterParams); //OK
-
-              List<UserDTO> list = userFilteringService.customFilteringUsers(userList, customFilterParams);
-              return list;
+        List<UserRepresentation> userList = userFilteringService.keyCloakFilteringUsers(keyCloakFilterParams);
+        List<UserDTO> list = userFilteringService.customFilteringUsers(userList, customFilterParams);
+        if(list.isEmpty() ) throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+        return list;
     }
 
 
