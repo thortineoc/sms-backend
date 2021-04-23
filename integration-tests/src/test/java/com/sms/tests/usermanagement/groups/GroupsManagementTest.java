@@ -27,8 +27,9 @@ public class GroupsManagementTest {
     private static final String TEST_GROUP_2 = "temp_group2";
     private static final String TEST_GROUP_3 = "temp_group3";
 
-    @BeforeAll
+
     @AfterAll
+    @BeforeAll
     static void cleanup(){
 
         deleteGroup(TEST_GROUP_1);
@@ -125,12 +126,22 @@ public class GroupsManagementTest {
                 .body(userDTO)
                 .post("/users")
                 .then()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.NO_CONTENT.value());
 
         //TRY TO DELETE GROUP
         deleteGroup(TEST_GROUP_1)
                 .then()
                 .statusCode(HttpStatus.BAD_REQUEST.value());
+
+        //DELETE USER
+        UserSearchParams params = new UserSearchParams().lastName(TEST_LAST_NAME);
+        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
+        createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
+
+        //TRY TO DELETE GROUP AGAIN
+        deleteGroup(TEST_GROUP_1)
+                .then()
+                .statusCode(HttpStatus.NO_CONTENT.value());
 
     }
 
