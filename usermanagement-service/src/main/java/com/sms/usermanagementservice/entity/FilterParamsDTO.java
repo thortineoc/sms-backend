@@ -1,7 +1,9 @@
 package com.sms.usermanagementservice.entity;
 
+import javax.annotation.Generated;
 import java.util.Optional;
 
+@Generated("jsonschema2pojo")
 public class FilterParamsDTO{
 
     private final Optional<String> group;
@@ -13,6 +15,60 @@ public class FilterParamsDTO{
     private final Optional<String> email;
     private final Optional<String> username;
     private final Optional<String> search;
+
+    public FilterParamsDTO(Optional<String> group, Optional<String> phoneNumber, Optional<String> middleName, Optional<String> pesel,
+                           Optional<String> firstName, Optional<String> lastName, Optional<String> email, Optional<String> username, Optional<String> search){
+
+        super();
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.username = username;
+        this.search = search;
+        this.group = group;
+        this.phoneNumber = phoneNumber;
+        this.middleName = middleName;
+        this.pesel = pesel;
+
+    }
+
+    public Optional<String> getFirstName() {
+        return firstName;
+    }
+
+    public Optional<String> getLastName() {
+        return lastName;
+    }
+
+    public Optional<String> getEmail() {
+        return email;
+    }
+
+    public Optional<String> getUsername() {
+        return username;
+    }
+
+    public Optional<String> getSearch() {
+        return search;
+    }
+
+    public Optional<String> getGroup() {
+        return group;
+    }
+
+    public Optional<String> getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public Optional<String> getMiddleName() {
+        return middleName;
+    }
+
+    public Optional<String> getPesel() {
+        return pesel;
+    }
+
+/*
 
     public Optional<String> getFirstName() {
         return firstName;
@@ -124,6 +180,7 @@ public class FilterParamsDTO{
             return new FilterParamsDTO(this);
         }
     }
+*/
 
 
 

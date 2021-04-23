@@ -24,14 +24,14 @@ public class UsersService {
      @Autowired
      private KeycloakClient keycloakClient;
 
-    public List<UserDTO>  filterUserByParameters(FilterParamsDTO filterParamsDTO) {
+    /*public List<UserDTO>  filterUserByParameters(FilterParamsDTO filterParamsDTO) {
 
 
        return new UserFilteringService().customFilteringUsers(
                new  UserFilteringService().keyCloakFilteringUsers(keycloakClient, UserMapper.mapKeyCloakFilterParams(filterParamsDTO)),
                UserMapper.mapCustomFilterParams(filterParamsDTO)
        );
-    }
+    }*/
 
 
     public void createStudentWithParent(UserDTO user) {

@@ -40,38 +40,71 @@ public class UsersServiceTest {
         UserRepresentation user = createStudentRep(USERNAME, PASSWORD, FIRSTNAME, LASTNAME, EMAIL, MIDDLENAME,
                 GROUP, STUDENT, PESEL, ID);
         CLIENT.createUser(user);
-        UserRepresentation user1 = createStudentRep(USERNAME + "ALA", PASSWORD + "ALA", FIRSTNAME + "ALA",
-                LASTNAME + "ALA", EMAIL + "ALA", MIDDLENAME + "ALA", GROUP + "ALA", STUDENT, PESEL + "ALA", ID + "ALA");
+        UserRepresentation user1 = createStudentRep(USERNAME + "OLA", PASSWORD + "ALA", FIRSTNAME + "ALA",
+                LASTNAME + "OLA", EMAIL + "OLA", MIDDLENAME + "OLA", GROUP + "ALA", STUDENT,  ID + "ALA", PESEL + "ALA");
         CLIENT.createUser(user1);
         UserRepresentation user2 = createStudentRep(USERNAME + "OLA", PASSWORD + "OLA", FIRSTNAME + "OLA",
-                LASTNAME + "OLA", EMAIL + "OLA", MIDDLENAME + "OLA", GROUP + "OLA", STUDENT, PESEL + "OLA", ID + "OLA");
+                LASTNAME + "OLA", EMAIL + "OLA", MIDDLENAME + "OLA", GROUP + "OLA", STUDENT, ID + "OLA", PESEL + "OLA");
         CLIENT.createUser(user2);
-        FilterParamsDTO filterParamsDTO = new FilterParamsDTO.Builder()
-                .firstName(Optional.empty())
-                .phoneNumber(Optional.of("OLA"))
-                .search(Optional.of("A"))
-                .email(Optional.empty())
-                .lastName(Optional.empty())
-                .username(Optional.empty())
-                .build();
-        CustomFilterParams customFilterParams = UserMapper.mapCustomFilterParams(filterParamsDTO);
+
+
+        FilterParamsDTO filterParamsDTO = new FilterParamsDTO(
+                Optional.empty(), //group
+                Optional.empty(), //phone
+                Optional.empty(), //middle
+                Optional.of("pesel"), //pesel
+                Optional.empty(), //first
+                Optional.empty(), //last
+                Optional.empty(), //email
+                Optional.empty(), //username
+                Optional.of("user")); //search
+
+
         KeyCloakFilterParams keyCloakFilterParams = UserMapper.mapKeyCloakFilterParams(filterParamsDTO);
-
-        assertSame(customFilterParams.getPhoneNumber().get(), "OLA");
-        assertSame(keyCloakFilterParams.getFirstName().get(), "ALA");
-
-        assertSame(keyCloakFilterParams.getFirstName().isPresent(), true);
-        assertSame(customFilterParams.getPhoneNumber().isPresent(), true);
+        assertSame(keyCloakFilterParams.getFirstName().isPresent(), false);
         assertSame(keyCloakFilterParams.getLastName().isPresent(), false);
         assertSame(keyCloakFilterParams.getEmail().isPresent(), false);
         assertSame(keyCloakFilterParams.getUsername().isPresent(), false);
-        assertSame(keyCloakFilterParams.getSearch().isPresent(), false);
-        UsersService usersService=new UsersService();
+        assertSame(keyCloakFilterParams.getSearch().isPresent(), true);
 
+
+        CustomFilterParams customFilterParams=UserMapper.mapCustomFilterParams(filterParamsDTO);
+        assertSame(customFilterParams.getPhoneNumber().isPresent(), false);
+        assertSame(customFilterParams.getGroup().isPresent(), false);
+        assertSame(customFilterParams.getPesel().isPresent(), true);
+        assertSame(customFilterParams.getMiddleName().isPresent(), false);
+
+
+        UsersService usersService=new UsersService();
         UserFilteringService userFilteringService= new UserFilteringService();
-        assertSame(userFilteringService.keyCloakFilteringUsers(CLIENT, keyCloakFilterParams).size(),1);
+
+        List<UserRepresentation> list = userFilteringService.keyCloakFilteringUsers(CLIENT, keyCloakFilterParams);
+        assertSame(list.size(), 4);
+
+        assertSame(userFilteringService.customFilteringUsers(list, customFilterParams).size(), 3);
+
 
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private UserRepresentation createStudentRep(String username, String password, String firstName, String lastName,
                                              String email, String group, String role, String pesel, String id, String middleName) {

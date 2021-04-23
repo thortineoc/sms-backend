@@ -27,14 +27,15 @@ public class UsersResource {
     @Autowired
     private UserContext userContext;
 
-    @PostMapping
+    @PostMapping("/filter")
     public List<UserDTO> filterUsers(@RequestBody FilterParamsDTO filterParamsDTO) {
 
-       validateRole();
-       return usersService.filterUserByParameters(filterParamsDTO);
+      /// validateRole();
+      // return usersService.filterUserByParameters(filterParamsDTO);
+        return null;
     }
 
-  @PostMapping("/filter")
+  @PostMapping
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
 
         validateRole();
