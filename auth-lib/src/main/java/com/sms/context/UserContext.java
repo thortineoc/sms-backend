@@ -1,6 +1,7 @@
 package com.sms.context;
 
 import com.sms.authlib.UserAuthDTO;
+import com.sms.usermanagement.UserDTO;
 import org.keycloak.KeycloakPrincipal;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,7 @@ public class UserContext {
     private String userName;
     private String token;
     private Set<String> kcRoles;
-    private String smsRole;
+    private UserDTO.Role smsRole;
     private Map<String, Object> customAttributes;
 
     void fromHttpRequest(HttpServletRequest request) {
@@ -24,7 +25,7 @@ public class UserContext {
 
             this.customAttributes = keycloakPrincipal.getKeycloakSecurityContext().getToken().getOtherClaims();
             if (customAttributes.containsKey("role")) {
-                this.smsRole = customAttributes.get("role").toString();
+                this.smsRole = UserDTO.Role.valueOf(customAttributes.get("role").toString());
             }
             this.userId = keycloakPrincipal.getName();
             this.token = keycloakPrincipal.getKeycloakSecurityContext().getTokenString();
@@ -42,7 +43,7 @@ public class UserContext {
         this.customAttributes = null;
     }
 
-    public String getSmsRole() {
+    public UserDTO.Role getSmsRole() {
         return smsRole;
     }
 

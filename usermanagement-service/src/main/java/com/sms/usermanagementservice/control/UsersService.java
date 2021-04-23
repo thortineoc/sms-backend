@@ -91,5 +91,4 @@ public class UsersService {
     private String calculateParentUsernameFromStudent(UserDTO user) {
         return "p_" + user.getPesel();
     }
-
 }

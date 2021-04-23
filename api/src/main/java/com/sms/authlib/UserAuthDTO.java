@@ -2,6 +2,7 @@ package com.sms.authlib;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.sms.usermanagement.UserDTO;
 import org.immutables.value.Value;
 
 import java.util.Set;
@@ -24,6 +25,6 @@ public interface UserAuthDTO {
 
     Set<String> getRoles();
 
-    String getSmsRole();
+    UserDTO.Role getSmsRole();
 
 }
