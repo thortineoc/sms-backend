@@ -3,12 +3,14 @@ package com.sms.usermanagementservice.boundary;
 import com.sms.context.UserContext;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagementservice.control.UsersService;
+import com.sms.usermanagementservice.entity.FilterParamsDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 import java.util.Map;
 
@@ -19,20 +21,20 @@ import java.util.Map;
 public class UsersResource {
 
 
-    @Autowired //field injection not recommended
+    @Autowired
     private UsersService usersService;
 
-    @Autowired //field injection not recommended
+    @Autowired
     private UserContext userContext;
 
-   @GetMapping
-    public List<UserDTO> filterUsers(@RequestParam Map<String, String> queryParam) {
+    @PostMapping
+    public List<UserDTO> filterUsers(@RequestBody FilterParamsDTO filterParamsDTO) {
 
        validateRole();
-       return usersService.filterUserByParameters(queryParam);
+       return usersService.filterUserByParameters(filterParamsDTO);
     }
 
-  @PostMapping
+  @PostMapping("/filter")
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
 
         validateRole();

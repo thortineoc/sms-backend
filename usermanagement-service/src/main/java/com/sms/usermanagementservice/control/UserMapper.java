@@ -1,7 +1,11 @@
 package com.sms.usermanagementservice.control;
 
 
-import com.sms.usermanagement.*;
+import com.sms.usermanagement.CustomAttributesDTO;
+import com.sms.usermanagement.UserDTO;
+import com.sms.usermanagementservice.entity.CustomFilterParams;
+import com.sms.usermanagementservice.entity.FilterParamsDTO;
+import com.sms.usermanagementservice.entity.KeyCloakFilterParams;
 import com.sms.usermanagementservice.entity.User;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -34,7 +38,7 @@ public class UserMapper {
                 .lastName(user.getLastName())
                 .role(UserDTO.Role.valueOf(user.getAttributes().get("role").get(0)))
                 .email(user.getEmail())
-                .customAttributes(mapUserAttributes_(mapUserAttributes(user)))
+                .customAttributes(mapUserAttributes(mapUserRepresentation(user)))
                 .build();
     }
 
@@ -49,26 +53,37 @@ public class UserMapper {
                 .build();
     }
 
-    public static User toUser(UserRepresentation user) {
-        return   User.builder()
-                .username(user.getUsername())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .userAttributes(mapUserAttributes(user))
-                .email(Optional.ofNullable(user.getEmail()))
-                .role(UserDTO.Role.valueOf(user.getAttributes().get("role").get(0)))
+    public static KeyCloakFilterParams mapKeyCloakFilterParams(FilterParamsDTO filterParamsDTO) {
+        return KeyCloakFilterParams.builder()
+                .firstName(filterParamsDTO.getFirstName())
+                .lastName(filterParamsDTO.getLastName())
+                .search(filterParamsDTO.getSearch())
+                .username(filterParamsDTO.getUsername())
+                .email(filterParamsDTO.getEmail())
                 .build();
     }
 
+    public static CustomFilterParams mapCustomFilterParams(FilterParamsDTO filterParamsDTO) {
+        return CustomFilterParams.builder()
+                .pesel(filterParamsDTO.getPesel())
+                .phoneNumber(filterParamsDTO.getPhoneNumber())
+                .group(filterParamsDTO.getGroup())
+                .middleName(filterParamsDTO.getMiddleName())
+                .build();
 
-    public static Map<String, String> mapUserAttributes(UserRepresentation user) {
-        Map<String, List<String>> customAttributes = user.getAttributes();
+    }
 
-        if(customAttributes.containsKey("subjects")){
-            List<String> list = Collections.singletonList(String.join("," , customAttributes.get("subjects")));
-            customAttributes.replace("subjects", list);
-        }
-        return customAttributes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().findFirst().get()));
+    public static Map<String, String> mapUserRepresentation(UserRepresentation user) {
+        return user.getAttributes().entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> "subjects".equals(entry.getKey())
+                                ? String.join(",", entry.getValue())
+                                : entry.getValue().stream()
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalStateException("Missing parameter value"))
+                ));
     }
 
     public static UserRepresentation toUserRepresentation(UserDTO user, String username, String password) {
@@ -138,7 +153,6 @@ public class UserMapper {
         return credential;
     }
 
-    //if attributes.get("subjects/related") doesnt exist -> nullptr { teacher != related, student != subjects}
     public static CustomAttributesDTO mapUserAttributes(Map<String, String> attributes) {
         return CustomAttributesDTO.builder()
                 .group(Optional.ofNullable(attributes.get("group")))
@@ -149,37 +163,12 @@ public class UserMapper {
                 .build();
     }
 
-
-    public static CustomAttributesDTO mapUserAttributes_(Map<String, String> attributes) {
-        switch(attributes.get("role")) {
-            case "ADMIN": //custom attributes for admin???
-            case "STUDENT":
-                return CustomAttributesDTO.builder()
-                        .group(Optional.ofNullable(attributes.get("group")))
-                        .middleName(Optional.ofNullable(attributes.get("middleName")))
-                        .phoneNumber(Optional.ofNullable(attributes.get("phoneNumber")))
-                        .relatedUser(Optional.ofNullable(attributes.get("relatedUser")))
-                        .build();
-            case "TEACHER":
-                return CustomAttributesDTO.builder()
-                        .middleName(Optional.ofNullable(attributes.get("middleName")))
-                        .phoneNumber(Optional.ofNullable(attributes.get("phoneNumber")))
-                        .subjects(Arrays.asList(attributes.get("subjects").split(",")))
-                        .relatedUser(Optional.ofNullable(attributes.get("relatedUser")))
-                        .build();
-            case "PARENT":
-                return CustomAttributesDTO.builder()
-                    .middleName(Optional.ofNullable(attributes.get("middleName")))
-                    .phoneNumber(Optional.ofNullable(attributes.get("phoneNumber")))
-                    .relatedUser(Optional.ofNullable(attributes.get("relatedUser")))
-                    .build();
-            default: throw new IllegalStateException("Illegal role");
-        }
-    }
-
     private static Map<String, List<String>> asMultimap(Map<String, String> map) {
         return map.entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.singletonList(e.getValue())));
     }
+
+
+
 }

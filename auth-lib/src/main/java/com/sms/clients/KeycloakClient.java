@@ -85,21 +85,11 @@ public class KeycloakClient {
         Response response = target.request(MediaType.APPLICATION_JSON)
                 .header(AUTHORIZATION, "Bearer " + adminToken.getAccessToken())
                 .get();
-        return Arrays.asList(response.readEntity(UserRepresentation[].class));
-    }
-
-    public List<UserRepresentation> getAllUsers() {
-        checkToken();
-        Response response = client.target(KEYCLOAK_ADMIN_URL + "/users")
-                .request(MediaType.APPLICATION_JSON)
-                .header(AUTHORIZATION, "Bearer " + adminToken.getAccessToken())
-                .get();
         if (isResponseSuccessful(response)) {
             return Arrays.asList(response.readEntity(UserRepresentation[].class));
         }
         else return Collections.emptyList();
     }
-
 
     // TODO: public only for integration tests, fix this
     public TokenDTO obtainToken() {

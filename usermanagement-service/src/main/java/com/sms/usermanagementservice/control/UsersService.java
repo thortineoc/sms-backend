@@ -1,18 +1,20 @@
 package com.sms.usermanagementservice.control;
+
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.UserDTO;
+import com.sms.usermanagementservice.entity.FilterParamsDTO;
 import org.keycloak.representations.idm.UserRepresentation;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.awt.*;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Component
@@ -22,21 +24,15 @@ public class UsersService {
      @Autowired
      private KeycloakClient keycloakClient;
 
-    public List<UserDTO>  filterUserByParameters(Map<String, String> queryParameters){
-        QueryParams queryParams= new QueryParams(queryParameters);
-        FilteredUsers filterUser = new FilteredUsers();
+    public List<UserDTO>  filterUserByParameters(FilterParamsDTO filterParamsDTO) {
 
-        return filterUser.filterUsersByParam(getUsers(), queryParams);
+
+       return new UserFilteringService().customFilteringUsers(
+               new  UserFilteringService().keyCloakFilteringUsers(keycloakClient, UserMapper.mapKeyCloakFilterParams(filterParamsDTO)),
+               UserMapper.mapCustomFilterParams(filterParamsDTO)
+       );
     }
 
-    public List<UserRepresentation> getUsers() {
-
-        if(keycloakClient==null)  throw new IllegalArgumentException("dsadsa");
-        List<UserRepresentation> users = keycloakClient.getAllUsers();
-        if (!users.isEmpty()) {
-           return users;
-        } else throw new IllegalStateException("Users not found!");
-    }
 
     public void createStudentWithParent(UserDTO user) {
         createUser(user);
