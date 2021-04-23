@@ -1,7 +1,6 @@
 package com.sms.usermanagementservice.control.groups;
 
 import com.google.common.collect.Lists;
-import com.sms.usermanagement.GroupDTO;
 import com.sms.usermanagementservice.entity.Group;
 import com.sms.usermanagementservice.entity.GroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,18 +20,17 @@ public class GroupsService {
     @Autowired
     private GroupRepository groupRepository;
 
-    public List<GroupDTO> getAll() {
+    public List<String> getAll() {
 
         return Lists.newArrayList(groupRepository.findAll())
                 .stream()
-                .map(Group::getGroupDTO)
+                .map(Group::getName)
                 .collect(Collectors.toList());
-
     }
 
-    public void create(GroupDTO group) {
+    public void create(String group) {
         try {
-            Group newGroup = new Group(group.getName());
+            Group newGroup = new Group(group);
             groupRepository.save(newGroup);
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
@@ -40,10 +38,10 @@ public class GroupsService {
 
     }
 
-    public void delete(Integer id) {
+    public void delete(String name) {
         //TODO: check if group is used
         try {
-            Group groupToDelete = new Group(id);
+            Group groupToDelete = new Group(name);
             groupRepository.delete(groupToDelete);
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);

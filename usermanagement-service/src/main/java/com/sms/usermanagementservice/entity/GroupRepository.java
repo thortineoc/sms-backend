@@ -7,7 +7,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 @Transactional
-public interface GroupRepository extends CrudRepository<Group, Integer> {
+public interface GroupRepository extends CrudRepository<Group, String> {
     @NonNull
     List<Group> findAll();
 }
