@@ -3,7 +3,9 @@ package com.sms.usermanagementservice.control;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagementservice.entity.FilterParamsDTO;
+import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.usermanagementservice.entity.CustomFilterParams;
+import com.sms.usermanagementservice.entity.KeyCloakFilterParams;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -11,10 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Component
@@ -23,15 +22,21 @@ public class UsersService {
 
      @Autowired
      private KeycloakClient keycloakClient;
+     @Autowired
+     private UserFilteringService userFilteringService;
 
-    /*public List<UserDTO>  filterUserByParameters(FilterParamsDTO filterParamsDTO) {
+      public List<UserDTO>  filterUserByParameters(UsersFiltersDTO filterParamsDTO) {
 
+        CustomFilterParams customFilterParams= UserMapper.mapCustomFilterParams(filterParamsDTO);
+        KeyCloakFilterParams keyCloakFilterParams=UserMapper.mapKeyCloakFilterParams(filterParamsDTO);
 
-       return new UserFilteringService().customFilteringUsers(
-               new  UserFilteringService().keyCloakFilteringUsers(keycloakClient, UserMapper.mapKeyCloakFilterParams(filterParamsDTO)),
-               UserMapper.mapCustomFilterParams(filterParamsDTO)
-       );
-    }*/
+              UserRepresentation user= new UserRepresentation();
+              List<UserRepresentation> userList= new ArrayList<>();
+              userList =  userFilteringService.keyCloakFilteringUsers(keyCloakFilterParams); //OK
+
+              List<UserDTO> list = userFilteringService.customFilteringUsers(userList, customFilterParams);
+              return list;
+    }
 
 
     public void createStudentWithParent(UserDTO user) {
@@ -73,6 +78,8 @@ public class UsersService {
         UserSearchParams params = new UserSearchParams().username(parentUsername);
         UserRepresentation createdParent = keycloakClient.getUsers(params)
                 .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
+
+
 
         Map<String, List<String>> studentAttributes = new HashMap<>(createdStudent.getAttributes());
         studentAttributes.put("relatedUser", Collections.singletonList(createdParent.getId()));

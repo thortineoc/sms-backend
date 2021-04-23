@@ -3,8 +3,8 @@ package com.sms.usermanagementservice.control;
 
 import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
+import com.sms.usermanagement.UsersFiltersDTO;
 import com.sms.usermanagementservice.entity.CustomFilterParams;
-import com.sms.usermanagementservice.entity.FilterParamsDTO;
 import com.sms.usermanagementservice.entity.KeyCloakFilterParams;
 import com.sms.usermanagementservice.entity.User;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -53,7 +53,7 @@ public class UserMapper {
                 .build();
     }
 
-    public static KeyCloakFilterParams mapKeyCloakFilterParams(FilterParamsDTO filterParamsDTO) {
+    public static KeyCloakFilterParams mapKeyCloakFilterParams(UsersFiltersDTO filterParamsDTO) {
         return KeyCloakFilterParams.builder()
                 .firstName(filterParamsDTO.getFirstName())
                 .lastName(filterParamsDTO.getLastName())
@@ -63,7 +63,7 @@ public class UserMapper {
                 .build();
     }
 
-    public static CustomFilterParams mapCustomFilterParams(FilterParamsDTO filterParamsDTO) {
+    public static CustomFilterParams mapCustomFilterParams(UsersFiltersDTO filterParamsDTO) {
         return CustomFilterParams.builder()
                 .pesel(filterParamsDTO.getPesel())
                 .phoneNumber(filterParamsDTO.getPhoneNumber())
@@ -158,7 +158,7 @@ public class UserMapper {
                 .group(Optional.ofNullable(attributes.get("group")))
                 .middleName(Optional.ofNullable(attributes.get("middleName")))
                 .phoneNumber(Optional.ofNullable(attributes.get("phoneNumber")))
-                .subjects(Arrays.asList(attributes.get("subjects").split(",")))
+                .subjects(Arrays.asList(attributes.get("subjects").split(","))) //TODO TU WYWALA
                 .relatedUser(Optional.ofNullable(attributes.get("relatedUser")))
                 .build();
     }
