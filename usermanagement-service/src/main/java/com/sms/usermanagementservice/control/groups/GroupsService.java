@@ -73,7 +73,7 @@ public class GroupsService {
                 .map(groups -> groups.contains(group))
                 .orElse(false);
 
-        return UserDTO.Role.STUDENT.equals(role) & hasGroup;
+        return UserDTO.Role.STUDENT.equals(role) && hasGroup;
     }
 
     private Supplier<RuntimeException> noRoleException(UserRepresentation user) {
