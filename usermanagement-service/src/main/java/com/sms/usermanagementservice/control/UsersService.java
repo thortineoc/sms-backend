@@ -92,4 +92,14 @@ public class UsersService {
         return "p_" + user.getPesel();
     }
 
+    public void updateUser(UserDTO userDTO) {
+
+        UserRepresentation user = keycloakClient.getUsers(userDTO.getID())
+                .stream().findFirst().orElseThrow(() -> new IllegalStateException("User does not exist"));
+
+        if (!keycloakClient.updateUser(user.getID(), user)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+    }
+
 }
