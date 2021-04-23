@@ -1,7 +1,9 @@
 package com.sms.usermanagementservice.boundary;
 
+import com.sms.context.AuthRole;
 import com.sms.context.UserContext;
 
+import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagementservice.control.groups.GroupsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -35,22 +37,24 @@ public class GroupsResource {
     }
 
     @PostMapping( "/{name}")
+    @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<String> newGroup(@PathVariable String name) {
-        validateRole();
         groupsService.create(name);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping( "/{id}")
-    public ResponseEntity<String> deleteGroup(@PathVariable String id) {
-        validateRole();
-        groupsService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
+    @DeleteMapping( "/{name}")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<List<String>> deleteGroup(@PathVariable String name) {
 
-    private void validateRole() {
-        if (!userContext.getSmsRole().equals("ADMIN")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        List<String> studentsWithGroups = groupsService.getStudentsWithGroups(name);
+
+        if (studentsWithGroups.isEmpty()) {
+            groupsService.delete(name);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.badRequest().body(studentsWithGroups);
         }
     }
+
 }

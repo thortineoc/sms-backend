@@ -130,8 +130,7 @@ public class GroupsManagementTest {
         //TRY TO DELETE GROUP
         deleteGroup(TEST_GROUP_1)
                 .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
-        //TODO: change to CONFLICT
+                .statusCode(HttpStatus.BAD_REQUEST.value());
 
     }
 
