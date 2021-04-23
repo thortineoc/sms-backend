@@ -1,7 +1,6 @@
 package com.sms.usermanagementservice.control;
 
 
-import com.google.common.base.Preconditions;
 import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.ImmutableCustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
@@ -40,7 +39,7 @@ public class UserMapper {
                 .lastName(user.getLastName())
                 .role(UserDTO.Role.valueOf(user.getAttributes().get("role").get(0)))
                 .email(user.getEmail())
-                .customAttributes(mapUserAttributes(mapUserRepresentation(user)))
+                .customAttributes(mapToUserAttributes(mapUserRepresentation(user)))
                 .build();
     }
 
@@ -162,21 +161,22 @@ public class UserMapper {
                 .group(Optional.ofNullable(attributes.get("group")))
                 .middleName(Optional.ofNullable(attributes.get("middleName")))
                 .phoneNumber(Optional.ofNullable(attributes.get("phoneNumber")))
-                .subjects(Arrays.asList(Preconditions.checkNotNull(attributes.get("subjects")).split(","))) //TODO TU WYWALA
+                .subjects(Arrays.asList(attributes.get("subjects").split(","))) 
                 .relatedUser(Optional.ofNullable(attributes.get("relatedUser")))
                 .build();
     }
 
-   /* public static CustomAttributesDTO mapToUserAttributes(Map<String, String> attributes){
+    public static CustomAttributesDTO mapToUserAttributes(Map<String, String> attributes) {
 
-        ImmutableCustomAttributesDTO.Builder builder=CustomAttributesDTO.builder();
+        ImmutableCustomAttributesDTO.Builder builder = CustomAttributesDTO.builder();
         Optional.ofNullable(attributes.get("group")).ifPresent(builder::group);
         Optional.ofNullable(attributes.get("middleName")).ifPresent(builder::middleName);
         Optional.ofNullable(attributes.get("phoneNumber")).ifPresent(builder::phoneNumber);
         Optional.ofNullable(attributes.get("relatedUser")).ifPresent(builder::relatedUser);
-        Optional.ofNullable(attributes.get("subjects")).map(s -> (s.split(",")) );
+        Optional.ofNullable(attributes.get("subjects")).map(s -> (s.split(",")));
+        return builder.build();
 
-    }*/
+    }
 
     private static Map<String, List<String>> asMultimap(Map<String, String> map) {
         return map.entrySet()
