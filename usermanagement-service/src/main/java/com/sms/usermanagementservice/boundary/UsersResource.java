@@ -45,7 +45,8 @@ public class UsersResource {
 
     @PostMapping("/update")
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
-
+        validateRole();
+        usersService.updateUser(data);
         return ResponseEntity.ok().build();
     }
     
