@@ -36,7 +36,7 @@ public class GroupsManagementTest {
         CLIENT.request("usermanagement-service")
                 .delete("/groups/temp_group3");
 
-        UserSearchParams params = new UserSearchParams().firstName("temp_user_group_test");
+        UserSearchParams params = new UserSearchParams().lastName("temp_user_group_test");
         List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
 
         createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
@@ -129,8 +129,8 @@ public class GroupsManagementTest {
         UserDTO userDTO = UserDTO.builder()
                 .id("null")
                 .userName("null")
-                .firstName("temp_user_group_test")
-                .lastName("lastName")
+                .firstName("firstName")
+                .lastName("temp_user_group_test")
                 .pesel("pesel")
                 .role(UserDTO.Role.STUDENT)
                 .email("mail@email.com")
