@@ -45,7 +45,7 @@ public class GroupsService {
     }
 
     public void delete(String name) {
-
+        //TODO: check if group is used
         try {
             Group groupToDelete = new Group(name);
             groupRepository.delete(groupToDelete);
