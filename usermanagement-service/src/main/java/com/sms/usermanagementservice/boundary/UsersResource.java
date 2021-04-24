@@ -44,16 +44,11 @@ public class UsersResource {
     }
 
     @PostMapping("/update")
+    @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
         validateRole();
         usersService.updateUser(data);
         return ResponseEntity.ok().build();
     }
-    
 
-    private void validateRole() {
-        if (!userContext.getSmsRole().equals("ADMIN")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-    }
 }
