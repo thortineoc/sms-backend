@@ -40,7 +40,6 @@ public class UsersResource {
     @DeleteMapping
     @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<Object> deleteUser() {
-        
         return ResponseEntity.noContent().build();
     }
 }
