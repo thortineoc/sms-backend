@@ -36,4 +36,10 @@ public class UsersResource {
 
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<Object> deleteUser() {
+        return ResponseEntity.noContent().build();
+    }
 }
