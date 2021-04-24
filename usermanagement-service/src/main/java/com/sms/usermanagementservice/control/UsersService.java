@@ -102,9 +102,9 @@ public class UsersService {
         if (!keycloakClient.updateUser(user.getID(), user)) {
             throw new ResponseStatusException(HttpStatus.NOT_MODIFIED);
         }
-        if (userDTO.getCustomAttributes().getRelatedUser()) {
+        if (userDTO.getCustomAttributes().getRelatedUser() != null) {
             UserRepresentation related = UserMapper::toParentRepresentationFromStudent (userDTO)
-            if (!keycloakClient.updateUser(userDTO.getCustomAttributes().getRelatedUser(), realted)) {
+            if (!keycloakClient.updateUser(userDTO.getCustomAttributes().getRelatedUser(), related)) {
                 throw new ResponseStatusException(HttpStatus.NOT_MODIFIED);
             }
         }
