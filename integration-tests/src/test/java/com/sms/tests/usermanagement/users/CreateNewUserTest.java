@@ -27,9 +27,8 @@ class CreateNewUserTest {
     @BeforeEach
     @AfterEach
     public void cleanup() {
-        UserSearchParams params = new UserSearchParams().firstName("firstName");
+        UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
         List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-
         createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
     }
 

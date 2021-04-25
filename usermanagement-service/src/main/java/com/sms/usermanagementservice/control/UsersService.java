@@ -2,12 +2,15 @@ package com.sms.usermanagementservice.control;
 
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
+import com.sms.context.UserContext;
 import com.sms.usermanagement.UserDTO;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
@@ -21,6 +24,9 @@ public class UsersService {
 
     @Autowired
     private KeycloakClient keycloakClient;
+
+    @Autowired
+    private UserContext context;
 
     public void createStudentWithParent(UserDTO user) {
         createUser(user);
@@ -81,14 +87,44 @@ public class UsersService {
 
     private String calculateUsername(UserDTO user) {
         switch (user.getRole()) {
-            case STUDENT: return "s_" + user.getPesel();
-            case ADMIN: return "a_" + user.getPesel();
-            case TEACHER: return "t_" + user.getPesel();
-            default: throw new IllegalStateException();
+            case STUDENT:
+                return "s_" + user.getPesel();
+            case ADMIN:
+                return "a_" + user.getPesel();
+            case TEACHER:
+                return "t_" + user.getPesel();
+            default:
+                throw new IllegalStateException();
         }
     }
 
     private String calculateParentUsernameFromStudent(UserDTO user) {
         return "p_" + user.getPesel();
+    }
+
+    public void deleteUser(String userId) {
+        if (context.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+        UserRepresentation userRepresentation = keycloakClient.getUser(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Boolean isDeleted = deleteRelatedUser(userRepresentation);
+        if (!(keycloakClient.deleteUser(userId) && isDeleted)) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private Boolean deleteRelatedUser(UserRepresentation userRepresentation) {
+        Map<String, List<String>> userAttributes = new HashMap<>(userRepresentation.getAttributes());
+        String role = userAttributes.get("role").stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("User without role"));
+        if (role.equals("PARENT") || role.equals("STUDENT")) {
+            String relatedUserId = userAttributes.get("relatedUser").stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("User does not have related user"));
+            return keycloakClient.deleteUser(relatedUserId);
+        }
+        return true;
     }
 }
