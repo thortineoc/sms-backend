@@ -97,12 +97,18 @@ public class UsersService {
     }
 
     public void updateUser(UserDTO userDTO) {
+        //find user
         UserSearchParams params = new UserSearchParams().username(userDTO.getUserName());
-
         UserRepresentation userRep = keycloakClient.getUsers(params)
                 .stream().findFirst().orElseThrow(() -> new IllegalStateException("User does not exist"));
 
-        if (!keycloakClient.updateUser(userDTO.getId(), userRep)) {
+        //set new values
+        userRep.setFirstName(userDTO.getFirstName());
+        userRep.setLastName(userDTO.getLastName());
+        userRep.setEmail(String.valueOf(userDTO.getEmail()));
+
+        //save in keycloak (?)
+        if (!keycloakClient.updateUser(userRep.getId(), userRep)) {
             throw new IllegalStateException();
         }
         if (userDTO.getCustomAttributes().getRelatedUser() != null) {   //this is intentional - if no related uer, then don't update him
