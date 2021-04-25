@@ -38,7 +38,7 @@ public class UsersResource {
     }
 
     @PostMapping("/update")
-    //@AuthRole(UserDTO.Role.ADMIN)
+    @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<String> updateUser(@RequestBody UserDTO data) {
         usersService.updateUser(data);
         return ResponseEntity.ok().build();
