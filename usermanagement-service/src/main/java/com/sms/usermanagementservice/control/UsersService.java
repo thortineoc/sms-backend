@@ -75,7 +75,7 @@ public class UsersService {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
 
-        updateStudentRelatedUser(createdStudent, calculateUsername(user));
+        updateStudentRelatedUser(createdStudent, calculateParentUsernameFromStudent(user));
     }
 
     private void updateStudentRelatedUser(UserRepresentation createdStudent, String parentUsername) {
