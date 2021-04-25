@@ -105,7 +105,7 @@ public class UsersService {
         if (!keycloakClient.updateUser(userDTO.getId(), userRep)) {
             throw new IllegalStateException();
         }
-        if (userDTO.getCustomAttributes().getRelatedUser() != null) {
+        if (userDTO.getCustomAttributes().getRelatedUser() != null) {   //this is intentional - if no related uer, then don't update him
             UserRepresentation related = UserMapper.toParentRepresentationFromStudent(userDTO, null, null);
             if (keycloakClient.updateUser(String.valueOf(userDTO.getCustomAttributes().getRelatedUser()), related)) {
                 throw new IllegalStateException();
