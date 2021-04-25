@@ -2,12 +2,18 @@ package com.sms.usermanagementservice.control;
 
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
+import com.sms.context.UserContext;
 import com.sms.usermanagement.UserDTO;
+import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.usermanagementservice.entity.CustomFilterParams;
+import com.sms.usermanagementservice.entity.KeyCloakFilterParams;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
@@ -20,7 +26,22 @@ import java.util.Map;
 public class UsersService {
 
     @Autowired
-    private KeycloakClient keycloakClient;
+    KeycloakClient keycloakClient;
+
+    @Autowired
+    UserFilteringService userFilteringService;
+
+    @Autowired
+    private UserContext context;
+
+    public List<UserDTO> filterUserByParameters(UsersFiltersDTO filterParamsDTO) {
+        CustomFilterParams customFilterParams = UserMapper.mapCustomFilterParams(filterParamsDTO);
+        KeyCloakFilterParams keyCloakFilterParams = UserMapper.mapKeyCloakFilterParams(filterParamsDTO);
+        List<UserRepresentation> userList = userFilteringService.filterByKCParams(keyCloakFilterParams);
+        return userFilteringService.customFilteringUsers(userList, customFilterParams);
+    }
+
+
 
     public void createStudentWithParent(UserDTO user) {
         createUser(user);
@@ -54,7 +75,7 @@ public class UsersService {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
 
-        updateStudentRelatedUser(createdStudent, calculateUsername(user));
+        updateStudentRelatedUser(createdStudent, calculateParentUsernameFromStudent(user));
     }
 
     private void updateStudentRelatedUser(UserRepresentation createdStudent, String parentUsername) {
@@ -94,6 +115,32 @@ public class UsersService {
 
     private String calculateParentUsernameFromStudent(UserDTO user) {
         return "p_" + user.getPesel();
+    }
+
+    public void deleteUser(String userId) {
+        if (context.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+        UserRepresentation userRepresentation = keycloakClient.getUser(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Boolean isDeleted = deleteRelatedUser(userRepresentation);
+        if (!(keycloakClient.deleteUser(userId) && isDeleted)) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private Boolean deleteRelatedUser(UserRepresentation userRepresentation) {
+        Map<String, List<String>> userAttributes = new HashMap<>(userRepresentation.getAttributes());
+        String role = userAttributes.get("role").stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("User without role"));
+        if (role.equals("PARENT") || role.equals("STUDENT")) {
+            String relatedUserId = userAttributes.get("relatedUser").stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("User does not have related user"));
+            return keycloakClient.deleteUser(relatedUserId);
+        }
+        return true;
     }
 
     public void updateUser(UserDTO userDTO) {
