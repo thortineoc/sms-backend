@@ -35,15 +35,11 @@ public class UsersService {
     private UserContext context;
 
     public List<UserDTO> filterUserByParameters(UsersFiltersDTO filterParamsDTO) {
-
         CustomFilterParams customFilterParams = UserMapper.mapCustomFilterParams(filterParamsDTO);
         KeyCloakFilterParams keyCloakFilterParams = UserMapper.mapKeyCloakFilterParams(filterParamsDTO);
-        List<UserRepresentation> userList = userFilteringService.keyCloakFilteringUsers(keyCloakFilterParams);
-        List<UserDTO> list = userFilteringService.customFilteringUsers(userList, customFilterParams);
-        if (list.isEmpty()) throw new ResponseStatusException(HttpStatus.NO_CONTENT);
-        return list;
+        List<UserRepresentation> userList = userFilteringService.filterByKCParams(keyCloakFilterParams);
+        return userFilteringService.customFilteringUsers(userList, customFilterParams);
     }
-
 
 
 

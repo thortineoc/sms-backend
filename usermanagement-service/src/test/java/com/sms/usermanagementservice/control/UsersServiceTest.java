@@ -11,11 +11,10 @@ import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.*;
 
-public class UsersServiceTest {
-
+class UsersServiceTest {
 
     @Test
-    private void createAndFindAllUsers() {
+    void createAndFindAllUsers() {
         List<UserRepresentation> userList = createSomeUsers();
         //CREATE USERSFILTERS
         UsersFiltersDTO filters = UsersFiltersDTO.builder()
@@ -31,7 +30,7 @@ public class UsersServiceTest {
     }
 
     @Test
-    private void createAndFindUserByRole() {
+    void createAndFindUserByRole() {
         List<UserRepresentation> userList = createSomeUsers();
         //CREATE USERSFILTERS
         UsersFiltersDTO filters = UsersFiltersDTO.builder()
@@ -48,7 +47,7 @@ public class UsersServiceTest {
     }
 
     @Test
-    private void createAndFindUserByRoleAndMiddleName() {
+    void createAndFindUserByRoleAndMiddleName() {
         List<UserRepresentation> userList = createSomeUsers();
         //CREATE USERSFILTERS
         UsersFiltersDTO filters = UsersFiltersDTO.builder()

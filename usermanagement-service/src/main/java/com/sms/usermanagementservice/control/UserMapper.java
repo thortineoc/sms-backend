@@ -78,7 +78,6 @@ public class UserMapper {
                 .middleName(filterParamsDTO.getMiddleName())
                 .role(filterParamsDTO.getRole())
                 .build();
-
     }
 
     public static Map<String, String> mapUserRepresentation(UserRepresentation user) {
@@ -106,8 +105,6 @@ public class UserMapper {
 
         return userRep;
     }
-
-
 
     public static UserRepresentation toParentRepresentationFromStudent(UserDTO user, String username, String password) {
         UserRepresentation userRep = new UserRepresentation();
@@ -143,7 +140,6 @@ public class UserMapper {
             case PARENT:
                 break;
         }
-
         return userAttributes;
     }
 
@@ -168,24 +164,28 @@ public class UserMapper {
                 .group(Optional.ofNullable(attributes.get("group")))
                 .middleName(Optional.ofNullable(attributes.get("middleName")))
                 .phoneNumber(Optional.ofNullable(attributes.get("phoneNumber")))
-                .subjects(Arrays.asList(attributes.get("subjects").split(",")))
+                .subjects(mapSubjects(attributes))
                 .relatedUser(Optional.ofNullable(attributes.get("relatedUser")))
                 .build();
     }
 
     public static CustomAttributesDTO mapToUserAttributes(Map<String, String> attributes) {
-
         ImmutableCustomAttributesDTO.Builder builder = CustomAttributesDTO.builder();
         Optional.ofNullable(attributes.get("group")).ifPresent(builder::group);
         Optional.ofNullable(attributes.get("middleName")).ifPresent(builder::middleName);
         Optional.ofNullable(attributes.get("phoneNumber")).ifPresent(builder::phoneNumber);
         Optional.ofNullable(attributes.get("relatedUser")).ifPresent(builder::relatedUser);
-        Optional.ofNullable(attributes.get("subjects")).map(s->s.split(","))
+        Optional.ofNullable(attributes.get("subjects")).map(s -> s.split(","))
                 .map(Arrays::asList)
                 .ifPresent(builder::subjects);
 
         return builder.build();
+    }
 
+    private static List<String> mapSubjects(Map<String, String> attributes) {
+        return Optional.ofNullable(attributes.get("subjects")).map(s -> s.split(","))
+                .map(Arrays::asList)
+                .orElse(Collections.emptyList());
     }
 
     private static Map<String, List<String>> asMultimap(Map<String, String> map) {
@@ -193,7 +193,4 @@ public class UserMapper {
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.singletonList(e.getValue())));
     }
-
-
-
 }

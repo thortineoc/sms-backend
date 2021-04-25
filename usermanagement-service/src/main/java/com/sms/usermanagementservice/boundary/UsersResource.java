@@ -48,8 +48,12 @@ public class UsersResource {
     }
 
     @PostMapping("/filter")
-    public List<UserDTO> filterUsers(@RequestBody UsersFiltersDTO filterParamsDTO) {
-
-        return usersService.filterUserByParameters(filterParamsDTO);
+    public ResponseEntity<List<UserDTO>> filterUsers(@RequestBody UsersFiltersDTO filterParamsDTO) {
+        List<UserDTO> users = usersService.filterUserByParameters(filterParamsDTO);
+        if (users.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(users);
+        }
     }
 }

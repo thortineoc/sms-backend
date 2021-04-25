@@ -18,32 +18,38 @@ import java.util.stream.Collectors;
 @Scope("request")
 public class UserFilteringService {
 
-
     @Autowired
     KeycloakClient keycloakClient;
 
     public List<UserDTO> customFilteringUsers(List<UserRepresentation> users, CustomFilterParams parameters) {
         return users.stream()
-                .filter(user -> filterByCustomAttribute(parameters.getGroup(), "group", user))
-                .filter(user -> filterByCustomAttribute(parameters.getMiddleName(), "middleName", user))
-                .filter(user -> filterByCustomAttribute(parameters.getPesel(), "pesel", user))
-                .filter(user -> filterByCustomAttribute(parameters.getPhoneNumber(), "phoneNumber", user))
-                .filter(user -> filterByCustomAttribute(parameters.getRole(), "role", user))
+                .filter(user -> filterFullString(parameters.getGroup(), "group", user))
+                .filter(user -> filterSubstring(parameters.getMiddleName(), "middleName", user))
+                .filter(user -> filterSubstring(parameters.getPesel(), "pesel", user))
+                .filter(user -> filterSubstring(parameters.getPhoneNumber(), "phoneNumber", user))
+                .filter(user -> filterFullString(parameters.getRole(), "role", user))
                 .map(UserMapper::toDTO)
                 .collect(Collectors.toList());
-
-
     }
 
-    private boolean filterByCustomAttribute(Optional<String> filterParam, String attributeName, UserRepresentation user) {
+    private boolean filterFullString(Optional<String> filterParam, String attributeName, UserRepresentation user) {
+        return filterByAttr(true, filterParam, attributeName, user);
+    }
+
+    private boolean filterSubstring(Optional<String> filterParam, String attributeName, UserRepresentation user) {
+        return filterByAttr(false, filterParam, attributeName, user);
+    }
+
+    private boolean filterByAttr(boolean fullString, Optional<String> filterParam, String attributeName, UserRepresentation user) {
         return filterParam.map(s -> Optional.ofNullable(user.getAttributes().get(attributeName))
-                .flatMap(list -> list.stream().findFirst())
-                .map(attr -> attr.contains(s))
-                .orElseThrow(() -> new IllegalStateException("Illegal parameter")))
+                .map(list -> list.stream().findFirst()
+                        .map(attr -> fullString ? attr.equals(s) : attr.contains(s))
+                        .orElseThrow(() -> new IllegalStateException("Missing attribute (empty list saved in KC)")))
+                .orElse(false))
                 .orElse(true);
     }
 
-    public List<UserRepresentation> keyCloakFilteringUsers(KeyCloakFilterParams parameters) {
+    public List<UserRepresentation> filterByKCParams(KeyCloakFilterParams parameters) {
 
         UserSearchParams userSearchParams = new UserSearchParams();
         parameters.getEmail().ifPresent(userSearchParams::email);
