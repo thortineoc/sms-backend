@@ -81,10 +81,14 @@ public class UsersService {
 
     private String calculateUsername(UserDTO user) {
         switch (user.getRole()) {
-            case STUDENT: return "s_" + user.getPesel();
-            case ADMIN: return "a_" + user.getPesel();
-            case TEACHER: return "t_" + user.getPesel();
-            default: throw new IllegalStateException();
+            case STUDENT:
+                return "s_" + user.getPesel();
+            case ADMIN:
+                return "a_" + user.getPesel();
+            case TEACHER:
+                return "t_" + user.getPesel();
+            default:
+                throw new IllegalStateException();
         }
     }
 
@@ -93,13 +97,16 @@ public class UsersService {
     }
 
     public void updateUser(UserDTO userDTO) {
-        UserRepresentation user = UserMapper.toUserRepresentation (userDTO, null, null);
+        UserSearchParams params = new UserSearchParams().username(userDTO.getUserName());
 
-        if (!keycloakClient.updateUser(user.getId(), user)) {
-            throw new  IllegalStateException();
+        UserRepresentation userRep = keycloakClient.getUsers(params)
+                .stream().findFirst().orElseThrow(() -> new IllegalStateException("User does not exist"));
+
+        if (!keycloakClient.updateUser(userDTO.getId(), userRep)) {
+            throw new IllegalStateException();
         }
         if (userDTO.getCustomAttributes().getRelatedUser() != null) {
-            UserRepresentation related = UserMapper.toParentRepresentationFromStudent (userDTO,null,null);
+            UserRepresentation related = UserMapper.toParentRepresentationFromStudent(userDTO, null, null);
             if (keycloakClient.updateUser(String.valueOf(userDTO.getCustomAttributes().getRelatedUser()), related)) {
                 throw new IllegalStateException();
             }
