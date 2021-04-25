@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -22,15 +19,12 @@ import java.util.List;
 @Scope("request")
 public class UsersResource {
 
-
     @Autowired
     private UsersService usersService;
 
     @PostMapping
     @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
-
-
         switch (data.getRole()) {
             case STUDENT:
                 usersService.createStudentWithParent(data);
@@ -43,6 +37,13 @@ public class UsersResource {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<Object> deleteUser(@PathVariable("id") String id) {
+        usersService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 
