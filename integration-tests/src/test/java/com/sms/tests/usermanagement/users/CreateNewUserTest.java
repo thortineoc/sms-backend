@@ -1,4 +1,4 @@
-package com.sms.tests.usermanagement;
+package com.sms.tests.usermanagement.users;
 
 import com.google.common.collect.Lists;
 import com.sms.clients.KeycloakClient;
@@ -6,6 +6,7 @@ import com.sms.clients.WebClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,12 +17,13 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 
-public class CreateNewUserTest {
+class CreateNewUserTest {
 
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
     private final static KeycloakClient KEYCLOAK_CLIENT = new KeycloakClient();
 
     @BeforeEach
+    @AfterEach
     public void cleanup() {
         UserSearchParams params = new UserSearchParams().firstName("firstName");
         List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
@@ -73,7 +75,7 @@ public class CreateNewUserTest {
                 .body(user)
                 .post("/users")
                 .then()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.NO_CONTENT.value());
 
         //TODO check details of created user with API call
         //TODO delete user with API call
@@ -97,7 +99,7 @@ public class CreateNewUserTest {
                 .body(user)
                 .post("/users")
                 .then()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.NO_CONTENT.value());
 
 
         //TODO check details of created user with API call
@@ -122,7 +124,7 @@ public class CreateNewUserTest {
                 .body(user)
                 .post("/users")
                 .then()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.NO_CONTENT.value());
 
 
         //TODO check details of created users with API call
@@ -150,7 +152,7 @@ public class CreateNewUserTest {
                 .body(user)
                 .post("/users")
                 .then()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.NO_CONTENT.value());
 
         //SHOULD RETURN CONFLICT WHEN CREATE SECOND USER
         CLIENT.request("usermanagement-service")
@@ -183,7 +185,7 @@ public class CreateNewUserTest {
                 .body(user)
                 .post("/users")
                 .then()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.NO_CONTENT.value());
 
         //SHOULD RETURN CONFLICT WHEN CREATE SECOND USER
         CLIENT.request("usermanagement-service")

@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 @Component
 @Scope("request")
 public class UsersService {
@@ -70,6 +69,7 @@ public class UsersService {
             keycloakClient.deleteUser(createdStudent.getId());
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
+
         updateStudentRelatedUser(createdStudent, calculateUsername(user));
     }
 
@@ -78,8 +78,6 @@ public class UsersService {
         UserSearchParams params = new UserSearchParams().username(parentUsername);
         UserRepresentation createdParent = keycloakClient.getUsers(params)
                 .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
-
-
 
         Map<String, List<String>> studentAttributes = new HashMap<>(createdStudent.getAttributes());
         studentAttributes.put("relatedUser", Collections.singletonList(createdParent.getId()));
@@ -110,8 +108,4 @@ public class UsersService {
     private String calculateParentUsernameFromStudent(UserDTO user) {
         return "p_" + user.getPesel();
     }
-
-
 }
-
-

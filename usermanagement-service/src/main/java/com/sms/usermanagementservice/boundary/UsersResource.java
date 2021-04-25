@@ -1,6 +1,6 @@
 package com.sms.usermanagementservice.boundary;
 
-import com.sms.context.UserContext;
+import com.sms.context.AuthRole;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagement.UsersFiltersDTO;
 import com.sms.usermanagementservice.control.UsersService;
@@ -26,21 +26,11 @@ public class UsersResource {
     @Autowired
     private UsersService usersService;
 
-    @Autowired
-    private UserContext userContext;
-
-    @PostMapping("/filter")
-    public List<UserDTO> filterUsers(@RequestBody UsersFiltersDTO filterParamsDTO) {
-
-       return usersService.filterUserByParameters(filterParamsDTO);
-    }
-
-  @PostMapping
+    @PostMapping
+    @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
 
 
-
-        validateRole();
         switch (data.getRole()) {
             case STUDENT:
                 usersService.createStudentWithParent(data);
@@ -53,13 +43,12 @@ public class UsersResource {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
-    private void validateRole() {
-        if (!userContext.getSmsRole().equals("ADMIN")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-    }
+    @PostMapping("/filter")
+    public List<UserDTO> filterUsers(@RequestBody UsersFiltersDTO filterParamsDTO) {
 
+        return usersService.filterUserByParameters(filterParamsDTO);
+    }
 }
