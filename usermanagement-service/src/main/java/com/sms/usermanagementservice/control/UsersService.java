@@ -105,7 +105,10 @@ public class UsersService {
         //set new values
         userRep.setFirstName(userDTO.getFirstName());
         userRep.setLastName(userDTO.getLastName());
-        userRep.setEmail(String.valueOf(userDTO.getEmail()));
+        if (userDTO.getEmail().isPresent()) {
+            userRep.setEmail(userDTO.getEmail().get());
+        }
+
 
         //save in keycloak (?)
         if (!keycloakClient.updateUser(userRep.getId(), userRep)) {
