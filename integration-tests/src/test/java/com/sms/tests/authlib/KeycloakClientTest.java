@@ -7,7 +7,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -88,8 +87,21 @@ class KeycloakClientTest {
 
         // USER SHOULD BE CREATED IN KEYCLOAK
         assertTrue(result);
+
+        Optional<UserRepresentation> someUser = CLIENT.getUser("a43856df-96bf-4747-b947-0b2b127ae677");
+        if(someUser.isPresent()) {
+           Map<String, List<String>> attributes = someUser.get().getAttributes();
+           List<String> role = attributes.get("role");
+           List<String> group = attributes.get("group");
+            assertNotNull(role);
+            assertNotNull(group);
+        }
+
+
         UserSearchParams params = new UserSearchParams().username(KOPYTKO54_USER);
         UserRepresentation createdUser = CLIENT.getUsers(params).get(0);
+
+
         assertUsersAreEqual(user, createdUser);
 
         // UPDATE USER DETAILS
@@ -119,8 +131,9 @@ class KeycloakClientTest {
         userRep.setCredentials(Collections.singletonList(getPasswordCredential(password)));
 
         Map<String, List<String>> customAttributes = new HashMap<>();
-        customAttributes.put("group", Collections.singletonList(group));
         customAttributes.put("role", Collections.singletonList(role));
+        customAttributes.put("group", Collections.singletonList(group));
+
         userRep.setAttributes(customAttributes);
         return userRep;
     }

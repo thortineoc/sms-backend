@@ -4,6 +4,9 @@ import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.context.UserContext;
 import com.sms.usermanagement.UserDTO;
+import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.usermanagementservice.entity.CustomFilterParams;
+import com.sms.usermanagementservice.entity.KeyCloakFilterParams;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -23,10 +26,22 @@ import java.util.Map;
 public class UsersService {
 
     @Autowired
-    private KeycloakClient keycloakClient;
+    KeycloakClient keycloakClient;
+
+    @Autowired
+    UserFilteringService userFilteringService;
 
     @Autowired
     private UserContext context;
+
+    public List<UserDTO> filterUserByParameters(UsersFiltersDTO filterParamsDTO) {
+        CustomFilterParams customFilterParams = UserMapper.mapCustomFilterParams(filterParamsDTO);
+        KeyCloakFilterParams keyCloakFilterParams = UserMapper.mapKeyCloakFilterParams(filterParamsDTO);
+        List<UserRepresentation> userList = userFilteringService.filterByKCParams(keyCloakFilterParams);
+        return userFilteringService.customFilteringUsers(userList, customFilterParams);
+    }
+
+
 
     public void createStudentWithParent(UserDTO user) {
         createUser(user);

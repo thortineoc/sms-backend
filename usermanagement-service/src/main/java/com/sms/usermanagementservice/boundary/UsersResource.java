@@ -2,6 +2,7 @@ package com.sms.usermanagementservice.boundary;
 
 import com.sms.context.AuthRole;
 import com.sms.usermanagement.UserDTO;
+import com.sms.usermanagement.UsersFiltersDTO;
 import com.sms.usermanagementservice.control.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -9,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 
 @RestController
@@ -42,5 +45,15 @@ public class UsersResource {
     public ResponseEntity<Object> deleteUser(@PathVariable("id") String id) {
         usersService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/filter")
+    public ResponseEntity<List<UserDTO>> filterUsers(@RequestBody UsersFiltersDTO filterParamsDTO) {
+        List<UserDTO> users = usersService.filterUserByParameters(filterParamsDTO);
+        if (users.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(users);
+        }
     }
 }

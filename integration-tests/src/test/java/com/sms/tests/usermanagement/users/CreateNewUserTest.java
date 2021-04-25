@@ -210,7 +210,7 @@ class CreateNewUserTest {
 
     UserDTO createUserDTO(UserDTO.Role role) {
 
-        List subjects = Lists.newArrayList("subject1", "subject2");
+        List<String> subjects = Lists.newArrayList("subject1", "subject2");
 
         CustomAttributesDTO attributesDTO = CustomAttributesDTO.builder()
                 .phoneNumber("132-234-234")
