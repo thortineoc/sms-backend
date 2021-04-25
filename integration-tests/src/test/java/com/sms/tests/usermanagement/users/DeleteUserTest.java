@@ -8,6 +8,7 @@ import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -42,7 +43,7 @@ public class DeleteUserTest {
     }
 
     @Test
-    void shouldDeleteStudentUser() {
+    void shouldDeleteStudentWithParentUser() {
         // GIVEN
         // create new user and validate it's creation
         UserDTO user = createUserDTO(UserDTO.Role.STUDENT);
@@ -50,6 +51,8 @@ public class DeleteUserTest {
         // get user from kc with valid id
         UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
         UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
+        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
+        Assertions.assertEquals(2, createdUsers.size());
 
         // DELETE USER
         CLIENT.request("usermanagement-service")
@@ -57,6 +60,10 @@ public class DeleteUserTest {
                 .delete("/users/" + createdUser.getId())
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
+
+        // validate parent and student have been deleted
+        createdUsers = KEYCLOAK_CLIENT.getUsers(params);
+        Assertions.assertEquals(0, createdUsers.size());
     }
 
     @Test
@@ -68,6 +75,8 @@ public class DeleteUserTest {
         // get user from kc with valid id
         UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
         UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
+        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
+        Assertions.assertEquals(1, createdUsers.size());
 
         // DELETE USER
         CLIENT.request("usermanagement-service")
@@ -75,6 +84,10 @@ public class DeleteUserTest {
                 .delete("/users/" + createdUser.getId())
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
+
+        // validate user has been deleted
+        createdUsers = KEYCLOAK_CLIENT.getUsers(params);
+        Assertions.assertEquals(0, createdUsers.size());
     }
 
     void createNewUser(UserDTO user) {
