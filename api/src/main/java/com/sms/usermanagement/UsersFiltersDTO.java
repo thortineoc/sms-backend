@@ -34,6 +34,7 @@ public interface UsersFiltersDTO {
 
     Optional<String> getSearch();
 
+    Optional<String> getRole();
 
 
 }

@@ -9,6 +9,7 @@ public class CustomFilterParams {
     private final Optional<String> phoneNumber;
     private final Optional<String> middleName;
     private final Optional<String> pesel;
+    private final Optional<String> role;
 
     public static CustomFilterParams.Builder builder() {
         return new CustomFilterParams.Builder();
@@ -19,6 +20,7 @@ public class CustomFilterParams {
         this.phoneNumber = builder.phoneNumber;
         this.middleName = builder.middleName;
         this.pesel = builder.pesel;
+        this.role = builder.role;
     }
 
     public static final class Builder {
@@ -26,6 +28,7 @@ public class CustomFilterParams {
         private Optional<String> phoneNumber;
         private Optional<String> middleName;
         private Optional<String> pesel;
+        private Optional<String> role;
 
         public CustomFilterParams.Builder group(Optional<String> group) {
             this.group = group;
@@ -44,6 +47,11 @@ public class CustomFilterParams {
 
         public CustomFilterParams.Builder pesel(Optional<String> pesel) {
             this.pesel = pesel;
+            return this;
+        }
+
+        public CustomFilterParams.Builder role(Optional<String> role) {
+            this.role = role;
             return this;
         }
 
@@ -67,6 +75,10 @@ public class CustomFilterParams {
 
     public Optional<String> getPesel() {
         return pesel;
+    }
+
+    public Optional<String> getRole() {
+        return role;
     }
 
 

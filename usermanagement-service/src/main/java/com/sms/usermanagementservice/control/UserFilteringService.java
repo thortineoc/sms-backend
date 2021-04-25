@@ -20,7 +20,7 @@ public class UserFilteringService {
 
 
     @Autowired
-    private KeycloakClient keycloakClient;
+    KeycloakClient keycloakClient;
 
     public List<UserDTO> customFilteringUsers(List<UserRepresentation> users, CustomFilterParams parameters) {
         return users.stream()
@@ -28,26 +28,29 @@ public class UserFilteringService {
                 .filter(user -> filterByCustomAttribute(parameters.getMiddleName(), "middleName", user))
                 .filter(user -> filterByCustomAttribute(parameters.getPesel(), "pesel", user))
                 .filter(user -> filterByCustomAttribute(parameters.getPhoneNumber(), "phoneNumber", user))
+                .filter(user -> filterByCustomAttribute(parameters.getRole(), "role", user))
                 .map(UserMapper::toDTO)
                 .collect(Collectors.toList());
 
 
     }
 
-    public boolean filterByCustomAttribute(Optional<String> filterParam, String attributeName, UserRepresentation user) {
-        return filterParam.map(param -> (user.getAttributes().get(attributeName).toString())
-                .contains(param))
+    private boolean filterByCustomAttribute(Optional<String> filterParam, String attributeName, UserRepresentation user) {
+        return filterParam.map(s -> Optional.ofNullable(user.getAttributes().get(attributeName))
+                .flatMap(list -> list.stream().findFirst())
+                .map(attr -> attr.contains(s))
+                .orElseThrow(() -> new IllegalStateException("Illegal parameter")))
                 .orElse(true);
     }
 
     public List<UserRepresentation> keyCloakFilteringUsers(KeyCloakFilterParams parameters) {
 
         UserSearchParams userSearchParams = new UserSearchParams();
-        if (parameters.getEmail().isPresent()) userSearchParams.email(parameters.getEmail().get());
-        if (parameters.getFirstName().isPresent()) userSearchParams.firstName(parameters.getFirstName().get());
-        if (parameters.getLastName().isPresent()) userSearchParams.lastName(parameters.getLastName().get());
-        if (parameters.getUsername().isPresent()) userSearchParams.username(parameters.getUsername().get());
-        if (parameters.getSearch().isPresent()) userSearchParams.search(parameters.getSearch().get());
+        parameters.getEmail().ifPresent(userSearchParams::email);
+        parameters.getUsername().ifPresent(userSearchParams::username);
+        parameters.getLastName().ifPresent(userSearchParams::lastName);
+        parameters.getFirstName().ifPresent(userSearchParams::firstName);
+        parameters.getSearch().ifPresent(userSearchParams::search);
 
         return keycloakClient.getUsers(userSearchParams);
     }

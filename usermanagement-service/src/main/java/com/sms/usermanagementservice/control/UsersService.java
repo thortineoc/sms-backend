@@ -23,18 +23,18 @@ import java.util.Map;
 @Scope("request")
 public class UsersService {
 
-     @Autowired
-     private KeycloakClient keycloakClient;
-     @Autowired
-     private UserFilteringService userFilteringService;
+    @Autowired
+    KeycloakClient keycloakClient;
+    @Autowired
+    UserFilteringService userFilteringService;
 
-      public List<UserDTO>  filterUserByParameters(UsersFiltersDTO filterParamsDTO) {
+    public List<UserDTO> filterUserByParameters(UsersFiltersDTO filterParamsDTO) {
 
-        CustomFilterParams customFilterParams= UserMapper.mapCustomFilterParams(filterParamsDTO);
-        KeyCloakFilterParams keyCloakFilterParams=UserMapper.mapKeyCloakFilterParams(filterParamsDTO);
+        CustomFilterParams customFilterParams = UserMapper.mapCustomFilterParams(filterParamsDTO);
+        KeyCloakFilterParams keyCloakFilterParams = UserMapper.mapKeyCloakFilterParams(filterParamsDTO);
         List<UserRepresentation> userList = userFilteringService.keyCloakFilteringUsers(keyCloakFilterParams);
         List<UserDTO> list = userFilteringService.customFilteringUsers(userList, customFilterParams);
-        if(list.isEmpty() ) throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+        if (list.isEmpty()) throw new ResponseStatusException(HttpStatus.NO_CONTENT);
         return list;
     }
 

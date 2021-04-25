@@ -33,14 +33,20 @@ public class UserMapper {
     public static UserDTO toDTO(UserRepresentation user){
         return UserDTO.builder()
                 .id(user.getId())
-                .pesel(user.getAttributes().get("pesel").toString())
+                .pesel(mapPesel(user))
                 .userName(user.getUsername())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .role(UserDTO.Role.valueOf(user.getAttributes().get("role").get(0)))
-                .email(user.getEmail())
+                .email(Optional.ofNullable(user.getEmail()))
                 .customAttributes(mapToUserAttributes(mapUserRepresentation(user)))
                 .build();
+    }
+
+    private static String mapPesel(UserRepresentation userRep) {
+        return Optional.ofNullable(userRep.getAttributes().get("pesel"))
+                .flatMap(list -> list.stream().findFirst())
+                .orElseThrow(() -> new IllegalStateException("peselu nie ma"));
     }
 
     public static User toUser(UserDTO user) {
@@ -70,6 +76,7 @@ public class UserMapper {
                 .phoneNumber(filterParamsDTO.getPhoneNumber())
                 .group(filterParamsDTO.getGroup())
                 .middleName(filterParamsDTO.getMiddleName())
+                .role(filterParamsDTO.getRole())
                 .build();
 
     }
@@ -161,7 +168,7 @@ public class UserMapper {
                 .group(Optional.ofNullable(attributes.get("group")))
                 .middleName(Optional.ofNullable(attributes.get("middleName")))
                 .phoneNumber(Optional.ofNullable(attributes.get("phoneNumber")))
-                .subjects(Arrays.asList(attributes.get("subjects").split(","))) 
+                .subjects(Arrays.asList(attributes.get("subjects").split(",")))
                 .relatedUser(Optional.ofNullable(attributes.get("relatedUser")))
                 .build();
     }
@@ -173,7 +180,10 @@ public class UserMapper {
         Optional.ofNullable(attributes.get("middleName")).ifPresent(builder::middleName);
         Optional.ofNullable(attributes.get("phoneNumber")).ifPresent(builder::phoneNumber);
         Optional.ofNullable(attributes.get("relatedUser")).ifPresent(builder::relatedUser);
-        Optional.ofNullable(attributes.get("subjects")).map(s -> (s.split(",")));
+        Optional.ofNullable(attributes.get("subjects")).map(s->s.split(","))
+                .map(Arrays::asList)
+                .ifPresent(builder::subjects);
+
         return builder.build();
 
     }

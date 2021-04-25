@@ -1,19 +1,13 @@
 package com.sms.usermanagementservice.control;  // ← jak widać package się zgadza z tym w UsersService
 
 import com.sms.clients.KeycloakClient;
-import com.sms.clients.entity.UserSearchParams;
-import com.sms.usermanagementservice.entity.CustomFilterParams;
-import com.sms.usermanagementservice.entity.FilterParamsDTO;
-import com.sms.usermanagementservice.entity.KeyCloakFilterParams;
-import org.checkerframework.checker.nullness.qual.AssertNonNullIfNonNull;
-import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.springframework.test.util.AssertionErrors.assertEquals;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 
@@ -34,72 +28,6 @@ public class UsersServiceTest {
     private final String TEACHER = "TEACHER";
     private final String ADMIN = "ADMIN";
     private final String ID = "sampleID";
-
-    @Test
-    void createUsers() {
-        UserRepresentation user = createStudentRep(USERNAME, PASSWORD, FIRSTNAME, LASTNAME, EMAIL, MIDDLENAME,
-                GROUP, STUDENT, PESEL, ID);
-        CLIENT.createUser(user);
-        UserRepresentation user1 = createStudentRep(USERNAME + "OLA", PASSWORD + "ALA", FIRSTNAME + "ALA",
-                LASTNAME + "OLA", EMAIL + "OLA", MIDDLENAME + "OLA", GROUP + "ALA", STUDENT,  ID + "ALA", PESEL + "ALA");
-        CLIENT.createUser(user1);
-        UserRepresentation user2 = createStudentRep(USERNAME + "OLA", PASSWORD + "OLA", FIRSTNAME + "OLA",
-                LASTNAME + "OLA", EMAIL + "OLA", MIDDLENAME + "OLA", GROUP + "OLA", STUDENT, ID + "OLA", PESEL + "OLA");
-        CLIENT.createUser(user2);
-
-
-        FilterParamsDTO filterParamsDTO = new FilterParamsDTO(
-                Optional.empty(), //group
-                Optional.empty(), //phone
-                Optional.empty(), //middle
-                Optional.of("pesel"), //pesel
-                Optional.empty(), //first
-                Optional.empty(), //last
-                Optional.empty(), //email
-                Optional.empty(), //username
-                Optional.of("user")); //search
-
-
-        KeyCloakFilterParams keyCloakFilterParams = UserMapper.mapKeyCloakFilterParams(filterParamsDTO);
-        assertSame(keyCloakFilterParams.getFirstName().isPresent(), false);
-        assertSame(keyCloakFilterParams.getLastName().isPresent(), false);
-        assertSame(keyCloakFilterParams.getEmail().isPresent(), false);
-        assertSame(keyCloakFilterParams.getUsername().isPresent(), false);
-        assertSame(keyCloakFilterParams.getSearch().isPresent(), true);
-
-
-        CustomFilterParams customFilterParams=UserMapper.mapCustomFilterParams(filterParamsDTO);
-        assertSame(customFilterParams.getPhoneNumber().isPresent(), false);
-        assertSame(customFilterParams.getGroup().isPresent(), false);
-        assertSame(customFilterParams.getPesel().isPresent(), true);
-        assertSame(customFilterParams.getMiddleName().isPresent(), false);
-
-
-        UsersService usersService=new UsersService();
-        UserFilteringService userFilteringService= new UserFilteringService();
-
-        List<UserRepresentation> list = userFilteringService.keyCloakFilteringUsers(CLIENT, keyCloakFilterParams);
-        assertSame(list.size(), 4);
-
-        assertSame(userFilteringService.customFilteringUsers(list, customFilterParams).size(), 3);
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
