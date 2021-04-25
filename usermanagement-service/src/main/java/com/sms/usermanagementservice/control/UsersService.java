@@ -97,14 +97,14 @@ public class UsersService {
     }
 
     public void updateUser(UserDTO userDTO) {
-        UserRepresentation user = UserMapper.toUserRepresentation (userDTO);
+        UserRepresentation user = UserMapper.toUserRepresentation (userDTO, null, null);
 
-        if (keycloakClient.updateUser(user.getID(), user) == null) {
+        if (!keycloakClient.updateUser(user.getId(), user)) {
             throw new  IllegalStateException();
         }
         if (userDTO.getCustomAttributes().getRelatedUser() != null) {
-            UserRepresentation related = UserMapper.toParentRepresentationFromStudent (userDTO)
-            if (keycloakClient.updateUser(userDTO.getCustomAttributes().getRelatedUser(), related) == null) {
+            UserRepresentation related = UserMapper.toParentRepresentationFromStudent (userDTO,null,null);
+            if (keycloakClient.updateUser(String.valueOf(userDTO.getCustomAttributes().getRelatedUser()), related)) {
                 throw new IllegalStateException();
             }
         }

@@ -24,9 +24,8 @@ public class UsersResource {
     private UserContext userContext;
 
     @PostMapping
+    //@AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
-
-        validateRole();
 
         switch (data.getRole()) {
             case STUDENT:
@@ -44,9 +43,8 @@ public class UsersResource {
     }
 
     @PostMapping("/update")
-    @AuthRole(UserDTO.Role.ADMIN)
-    public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
-        validateRole();
+    //@AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<String> updateUser(@RequestBody UserDTO data) {
         usersService.updateUser(data);
         return ResponseEntity.ok().build();
     }

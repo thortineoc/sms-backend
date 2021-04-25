@@ -1,3 +1,4 @@
+/*
 package com.sms.tests.usermanagement;
 
 import com.google.common.collect.Lists;
@@ -44,4 +45,4 @@ public class UpdateUserTest {
                 .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
     }
-}
+}*/
