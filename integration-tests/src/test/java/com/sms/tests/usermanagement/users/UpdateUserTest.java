@@ -31,9 +31,7 @@ public class UpdateUserTest {
     void shouldReturnForbiddenWhenNotAdmin() {
 
         //GIVEN
-
         WebClient tempWebClient = new WebClient();
-
         UserDTO user = createUserDTO(UserDTO.Role.TEACHER);
 
         //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
@@ -44,4 +42,20 @@ public class UpdateUserTest {
                 .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
     }
+
+    @Test
+    void shouldReturnBadRequestWhenMissingBody() {
+
+        //SHOULD RETURN BAD_REQUEST WHEN BODY IS MISSING
+        CLIENT.request("usermanagement-service")
+                .contentType(MediaType.APPLICATION_JSON)
+                .post("/users/update")
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST.value());
+
+    }
+
+
+
+
 }
