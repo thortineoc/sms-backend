@@ -81,14 +81,10 @@ public class UsersService {
 
     private String calculateUsername(UserDTO user) {
         switch (user.getRole()) {
-            case STUDENT:
-                return "s_" + user.getPesel();
-            case ADMIN:
-                return "a_" + user.getPesel();
-            case TEACHER:
-                return "t_" + user.getPesel();
-            default:
-                throw new IllegalStateException();
+            case STUDENT: return "s_" + user.getPesel();
+            case ADMIN: return "a_" + user.getPesel();
+            case TEACHER: return "t_" + user.getPesel();
+            default: throw new IllegalStateException();
         }
     }
 

@@ -1,6 +1,6 @@
 package com.sms.usermanagementservice.boundary;
 
-import com.sms.context.UserContext;
+import com.sms.context.AuthRole;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagementservice.control.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,17 +16,12 @@ import org.springframework.web.server.ResponseStatusException;
 @Scope("request")
 public class UsersResource {
 
-
     @Autowired
     private UsersService usersService;
 
-    @Autowired
-    private UserContext userContext;
-
     @PostMapping
-    //@AuthRole(UserDTO.Role.ADMIN)
+    @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<String> newUser(@RequestBody UserDTO data) {
-
         switch (data.getRole()) {
             case STUDENT:
                 usersService.createStudentWithParent(data);
@@ -39,7 +34,7 @@ public class UsersResource {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/update")
@@ -48,5 +43,4 @@ public class UsersResource {
         usersService.updateUser(data);
         return ResponseEntity.ok().build();
     }
-
 }
