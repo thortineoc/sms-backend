@@ -18,7 +18,6 @@ import java.util.List;
 
 import static com.sms.tests.usermanagement.TestUtils.TEST_PREFIX;
 
-
 class CreateNewUserTest {
 
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
