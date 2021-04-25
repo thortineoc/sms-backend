@@ -32,7 +32,15 @@ public class UpdateUserTest {
 
         //GIVEN
         WebClient tempWebClient = new WebClient();
-        UserDTO user = createUserDTO(UserDTO.Role.TEACHER);
+        UserDTO user = UserDTO.builder()
+                .id("null")
+                .userName("null")
+                .firstName("firstName")
+                .lastName("lastName")
+                .pesel("pesel")
+                .role(role)
+                .email("mail@email.com")
+                .build();
 
         //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
         tempWebClient.request("usermanagement-service")
@@ -56,6 +64,30 @@ public class UpdateUserTest {
     }
 
 
+    UserDTO createUserDTO(UserDTO.Role role) {
 
+        List subjects = Lists.newArrayList("subject1", "subject2");
+
+        CustomAttributesDTO attributesDTO = CustomAttributesDTO.builder()
+                .phoneNumber("132-234-234")
+                .middleName("middleName")
+                .relatedUser("example-user")
+                .group("example-group")
+                .subjects(subjects)
+                .build();
+
+        UserDTO userDTO = UserDTO.builder()
+                .id("null")
+                .userName("null")
+                .firstName("firstName")
+                .lastName("lastName")
+                .pesel("pesel")
+                .role(role)
+                .email("mail@email.com")
+                .customAttributes(attributesDTO)
+                .build();
+
+        return userDTO;
+    }
 
 }
