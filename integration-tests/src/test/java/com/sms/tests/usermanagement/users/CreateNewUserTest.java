@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
+import static com.sms.tests.usermanagement.TestUtils.TEST_PREFIX;
 
 class CreateNewUserTest {
 
@@ -25,9 +26,8 @@ class CreateNewUserTest {
     @BeforeEach
     @AfterEach
     public void cleanup() {
-        UserSearchParams params = new UserSearchParams().firstName("firstName");
+        UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
         List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-
         createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
     }
 
@@ -199,7 +199,7 @@ class CreateNewUserTest {
         //TODO delete user with API call
 
         //MAKE SURE THERE IS ONLY ONE USER WITH NAME lastName
-        UserSearchParams params = new UserSearchParams().lastName("lastName");
+        UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
         List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
         Assertions.assertEquals(1, createdUsers.size());
 
@@ -224,7 +224,7 @@ class CreateNewUserTest {
                 .id("null")
                 .userName("null")
                 .firstName("firstName")
-                .lastName("lastName")
+                .lastName(TEST_PREFIX + "lastName")
                 .pesel("pesel")
                 .role(role)
                 .email("mail@email.com")
