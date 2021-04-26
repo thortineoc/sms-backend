@@ -1,17 +1,16 @@
-package com.sms.usermanagementservice.boundary;
+package com.sms.usermanagementservice.groups.boundary;
 
 import com.sms.context.AuthRole;
 import com.sms.context.UserContext;
 
 import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagementservice.control.groups.GroupsService;
+import com.sms.usermanagementservice.groups.control.GroupsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 
 @RestController
