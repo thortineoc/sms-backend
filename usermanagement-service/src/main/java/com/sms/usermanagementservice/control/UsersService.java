@@ -3,6 +3,7 @@ package com.sms.usermanagementservice.control;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.context.UserContext;
+import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagement.UsersFiltersDTO;
 import com.sms.usermanagementservice.entity.CustomFilterParams;
@@ -40,7 +41,6 @@ public class UsersService {
         List<UserRepresentation> userList = userFilteringService.filterByKCParams(keyCloakFilterParams);
         return userFilteringService.customFilteringUsers(userList, customFilterParams);
     }
-
 
 
     public void createStudentWithParent(UserDTO user) {
@@ -143,7 +143,7 @@ public class UsersService {
         return true;
     }
 
-        public void updateUser(UserDTO userDTO) {
+    public void updateUser(UserDTO userDTO) {
         //find user
         UserSearchParams params = new UserSearchParams().username(userDTO.getUserName());
         UserRepresentation userRep = keycloakClient.getUsers(params)
@@ -157,11 +157,24 @@ public class UsersService {
         } else {
             userRep.setEmail("");
         }
-        //nie umiem odczytac atrybutow
-/*        Map<String, List<String>> attributes = new HashMap<>(userRep.getAttributes());
-        attributes.put("relatedUser", Collections.singletonList(createdStudent.getId()));
-        userRep.setAttributes(attributes);*/
-        //save in keycloak (?)
+        CustomAttributesDTO attributesDTO = userDTO.getCustomAttributes();
+        if (attributesDTO.getPhoneNumber().isPresent()) {
+            userRep.singleAttribute("phoneNumber", attributesDTO.getPhoneNumber().get());
+        } else {
+            userRep.singleAttribute("phoneNumber", "");
+        }
+        if (attributesDTO.getMiddleName().isPresent()) {
+            userRep.singleAttribute("middleName", attributesDTO.getMiddleName().get());
+        } else {
+            userRep.singleAttribute("middleName", "");
+        }
+        if (attributesDTO.getGroup().isPresent()) {
+            userRep.singleAttribute("group", attributesDTO.getGroup().get());
+        } else {
+            userRep.singleAttribute("group", "");
+        }
+
+        //save in keycloak
         if (!keycloakClient.updateUser(userRep.getId(), userRep)) {
             throw new IllegalStateException();
         }
@@ -176,4 +189,9 @@ public class UsersService {
         }*/
     }
 
+
+/*    public UserRepresentation setAttrib(CustomAttributesDTO attribsDTO, UserRepresentation userRep){
+        return userRep
+                .singleAttribute()
+    }*/
 }
