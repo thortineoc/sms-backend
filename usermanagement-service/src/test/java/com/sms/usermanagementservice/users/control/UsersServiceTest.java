@@ -1,9 +1,9 @@
-package com.sms.usermanagementservice.control;  // ← jak widać package się zgadza z tym w UsersService
+package com.sms.usermanagementservice.users.control;
 
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagement.UsersFiltersDTO;
-import com.sms.usermanagementservice.entity.CustomFilterParams;
-import com.sms.usermanagementservice.entity.KeyCloakFilterParams;
+import com.sms.usermanagementservice.users.entity.CustomFilterParams;
+import com.sms.usermanagementservice.users.entity.KeyCloakFilterParams;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.CredentialRepresentation;

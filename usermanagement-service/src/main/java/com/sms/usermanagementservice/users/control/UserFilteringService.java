@@ -1,10 +1,10 @@
-package com.sms.usermanagementservice.control;
+package com.sms.usermanagementservice.users.control;
 
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagementservice.entity.CustomFilterParams;
-import com.sms.usermanagementservice.entity.KeyCloakFilterParams;
+import com.sms.usermanagementservice.users.entity.CustomFilterParams;
+import com.sms.usermanagementservice.users.entity.KeyCloakFilterParams;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;

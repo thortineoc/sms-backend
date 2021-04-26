@@ -1,4 +1,4 @@
-package com.sms.usermanagementservice.control.subjects;
+package com.sms.usermanagementservice.subjects.control.repository;
 
 import javax.persistence.*;
 

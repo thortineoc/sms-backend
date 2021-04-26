@@ -1,13 +1,13 @@
-package com.sms.usermanagementservice.control;
+package com.sms.usermanagementservice.users.control;
 
 
 import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.ImmutableCustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagement.UsersFiltersDTO;
-import com.sms.usermanagementservice.entity.CustomFilterParams;
-import com.sms.usermanagementservice.entity.KeyCloakFilterParams;
-import com.sms.usermanagementservice.entity.User;
+import com.sms.usermanagementservice.users.entity.CustomFilterParams;
+import com.sms.usermanagementservice.users.entity.KeyCloakFilterParams;
+import com.sms.usermanagementservice.users.entity.User;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 

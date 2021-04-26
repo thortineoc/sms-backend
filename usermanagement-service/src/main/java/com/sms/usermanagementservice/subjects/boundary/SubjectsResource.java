@@ -1,8 +1,8 @@
-package com.sms.usermanagementservice.boundary;
+package com.sms.usermanagementservice.subjects.boundary;
 
 import com.sms.context.AuthRole;
 import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagementservice.control.subjects.SubjectsService;
+import com.sms.usermanagementservice.subjects.control.SubjectsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;

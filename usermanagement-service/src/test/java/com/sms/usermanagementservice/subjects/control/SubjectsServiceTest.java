@@ -1,7 +1,8 @@
-package com.sms.usermanagementservice.control.subjects;
+package com.sms.usermanagementservice.subjects.control;
 
 import com.google.common.collect.ImmutableMap;
 import com.sms.usermanagement.UserDTO;
+import com.sms.usermanagementservice.subjects.control.SubjectsService;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -1,19 +1,19 @@
-package com.sms.usermanagementservice.entity;
+package com.sms.usermanagementservice.groups.control.repository;
 
 import javax.persistence.*;
 
 @Entity
 @Table(name = "groups")
-public class Group {
+public class GroupJPA {
 
     @Id
     private String name;
 
-    public Group(String name) {
+    public GroupJPA(String name) {
         this.name = name;
     }
 
-    public Group() { }
+    public GroupJPA() { }
 
     public String getName() {
         return this.name;
