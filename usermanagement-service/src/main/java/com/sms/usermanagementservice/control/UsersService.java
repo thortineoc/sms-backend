@@ -156,19 +156,6 @@ public class UsersService {
         if (!keycloakClient.updateUser(userRep.getId(), userRep)) {
             throw new IllegalStateException();
         }
-
-        //update parent
-        if (userDTO.getCustomAttributes().getRelatedUser().isPresent()) {
-
-            UserRepresentation related = keycloakClient.getUser(
-                    userDTO.getCustomAttributes().getRelatedUser().get())
-                    .orElseThrow(() -> new IllegalStateException("User does not exist"));
-
-            related.setLastName(userDTO.getLastName());
-            if (keycloakClient.updateUser(userDTO.getCustomAttributes().getRelatedUser().get(), related)) {
-                throw new IllegalStateException();
-            }
-        }
     }
 
     public void setNewValues(UserDTO userDTO, UserRepresentation userRep) {
