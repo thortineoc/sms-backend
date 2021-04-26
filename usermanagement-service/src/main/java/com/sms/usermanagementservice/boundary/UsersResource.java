@@ -7,6 +7,7 @@ import com.sms.usermanagementservice.control.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -57,10 +58,14 @@ public class UsersResource {
         }
     }
 
-    @PostMapping("/update")
+/*    @PostMapping("/update")
     @AuthRole(UserDTO.Role.ADMIN)
+
+    */
+    @PutMapping("/update")
     public ResponseEntity<String> updateUser(@RequestBody UserDTO data) {
         usersService.updateUser(data);
         return ResponseEntity.ok().build();
     }
+
 }
