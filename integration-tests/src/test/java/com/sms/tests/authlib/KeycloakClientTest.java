@@ -3,13 +3,10 @@ package com.sms.tests.authlib;
 import com.sms.authlib.TokenDTO;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
-import org.checkerframework.checker.nullness.qual.AssertNonNullIfNonNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-
-import javax.validation.constraints.AssertTrue;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -93,10 +90,11 @@ class KeycloakClientTest {
 
         Optional<UserRepresentation> someUser = CLIENT.getUser("a43856df-96bf-4747-b947-0b2b127ae677");
         if(someUser.isPresent()) {
-           Map<String, List<String>> Atrybuty = someUser.get().getAttributes();
-           List<String> ROLA = Atrybuty.get("role");
-           List<String> GRUPA = Atrybuty.get("group");
-            assertNotNull(ROLA);
+           Map<String, List<String>> attributes = someUser.get().getAttributes();
+           List<String> role = attributes.get("role");
+           List<String> group = attributes.get("group");
+            assertNotNull(role);
+            assertNotNull(group);
         }
 
 

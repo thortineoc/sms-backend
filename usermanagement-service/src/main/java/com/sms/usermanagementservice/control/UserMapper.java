@@ -1,6 +1,12 @@
 package com.sms.usermanagementservice.control;
 
-import com.sms.usermanagement.*;
+
+import com.sms.usermanagement.CustomAttributesDTO;
+import com.sms.usermanagement.ImmutableCustomAttributesDTO;
+import com.sms.usermanagement.UserDTO;
+import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.usermanagementservice.entity.CustomFilterParams;
+import com.sms.usermanagementservice.entity.KeyCloakFilterParams;
 import com.sms.usermanagementservice.entity.User;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -24,6 +30,25 @@ public class UserMapper {
                 .build();
     }
 
+    public static UserDTO toDTO(UserRepresentation user){
+        return UserDTO.builder()
+                .id(user.getId())
+                .pesel(mapPesel(user))
+                .userName(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .role(UserDTO.Role.valueOf(user.getAttributes().get("role").get(0)))
+                .email(Optional.ofNullable(user.getEmail()))
+                .customAttributes(mapToUserAttributes(mapUserRepresentation(user)))
+                .build();
+    }
+
+    private static String mapPesel(UserRepresentation userRep) {
+        return Optional.ofNullable(userRep.getAttributes().get("pesel"))
+                .flatMap(list -> list.stream().findFirst())
+                .orElseThrow(() -> new IllegalStateException("peselu nie ma"));
+    }
+
     public static User toUser(UserDTO user) {
         return User.builder()
                 .username(user.getUserName())
@@ -35,57 +60,38 @@ public class UserMapper {
                 .build();
     }
 
-    public static User toUserFromUserRepresentation(UserRepresentation user) {
-        return   User.builder()
-                .username(user.getUsername())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .userAttributes(mapUserAttributesR(user))
-                .email(Optional.ofNullable(user.getEmail()))
-                .role(Role(user.getAttributes().get("role").get(0)))
+    public static KeyCloakFilterParams mapKeyCloakFilterParams(UsersFiltersDTO filterParamsDTO) {
+        return KeyCloakFilterParams.builder()
+                .firstName(filterParamsDTO.getFirstName())
+                .lastName(filterParamsDTO.getLastName())
+                .search(filterParamsDTO.getSearch())
+                .username(filterParamsDTO.getUsername())
+                .email(filterParamsDTO.getEmail())
                 .build();
     }
 
-
-    private static UserDTO.Role Role(String tmp) {
-        if (tmp.equalsIgnoreCase("student")) return UserDTO.Role.STUDENT;
-        if (tmp.equalsIgnoreCase("teacher")) return UserDTO.Role.TEACHER;
-        if (tmp.equalsIgnoreCase("parent")) return UserDTO.Role.PARENT;
-        else
-            return UserDTO.Role.ADMIN;
+    public static CustomFilterParams mapCustomFilterParams(UsersFiltersDTO filterParamsDTO) {
+        return CustomFilterParams.builder()
+                .pesel(filterParamsDTO.getPesel())
+                .phoneNumber(filterParamsDTO.getPhoneNumber())
+                .group(filterParamsDTO.getGroup())
+                .middleName(filterParamsDTO.getMiddleName())
+                .role(filterParamsDTO.getRole())
+                .build();
     }
 
-    public static Map<String, String> mapUserAttributesR(UserRepresentation user) {
-
-            Map<String, String> userAttributes = new HashMap<>();
-            Map<String, List<String>> customAttributes = user.getAttributes();
-            if(customAttributes.containsKey("pesel"))
-                userAttributes.put("pesel", customAttributes.get("pesel").get(0));
-            if(customAttributes.containsKey("role"))
-                userAttributes.put("role", Role(customAttributes.get("role").get(0)).toString());
-            if(customAttributes.containsKey("middleName"))
-                userAttributes.put("middleName", customAttributes.get("middleName").get(0));
-            if(customAttributes.containsKey("phoneNumber"))
-                userAttributes.put("phoneNumber", customAttributes.get("phoneNumber").get(0));
-
-            switch (Role(user.getAttributes().get("role").get(0))) {
-                case STUDENT:
-                    userAttributes.put("group", customAttributes.get("group").get(0));
-                    userAttributes.put("relatedUser", customAttributes.get("relatedUser").get(0));
-                    break;
-                case TEACHER:
-                    if (customAttributes.get("subjects") != null && !customAttributes.get("subjects").isEmpty()) {
-                        userAttributes.put("subjects", String.join(",", customAttributes.get("subjects")));
-                    }
-                    break;
-                case ADMIN:
-                case PARENT:
-                    break;
-            }
-
-            return userAttributes;
-        }
-
+    public static Map<String, String> mapUserRepresentation(UserRepresentation user) {
+        return user.getAttributes().entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> "subjects".equals(entry.getKey())
+                                ? String.join(",", entry.getValue())
+                                : entry.getValue().stream()
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalStateException("Missing parameter value"))
+                ));
+    }
 
     public static UserRepresentation toUserRepresentation(UserDTO user, String username, String password) {
         UserRepresentation userRep = new UserRepresentation();
@@ -99,8 +105,6 @@ public class UserMapper {
 
         return userRep;
     }
-
-
 
     public static UserRepresentation toParentRepresentationFromStudent(UserDTO user, String username, String password) {
         UserRepresentation userRep = new UserRepresentation();
@@ -136,7 +140,6 @@ public class UserMapper {
             case PARENT:
                 break;
         }
-
         return userAttributes;
     }
 
@@ -156,14 +159,33 @@ public class UserMapper {
         return credential;
     }
 
-    private static CustomAttributesDTO mapUserAttributes(Map<String, String> attributes) {
+    public static CustomAttributesDTO mapUserAttributes(Map<String, String> attributes) {
         return CustomAttributesDTO.builder()
                 .group(Optional.ofNullable(attributes.get("group")))
                 .middleName(Optional.ofNullable(attributes.get("middleName")))
                 .phoneNumber(Optional.ofNullable(attributes.get("phoneNumber")))
-                .subjects(Arrays.asList(attributes.get("subjects").split(",")))
+                .subjects(mapSubjects(attributes))
                 .relatedUser(Optional.ofNullable(attributes.get("relatedUser")))
                 .build();
+    }
+
+    public static CustomAttributesDTO mapToUserAttributes(Map<String, String> attributes) {
+        ImmutableCustomAttributesDTO.Builder builder = CustomAttributesDTO.builder();
+        Optional.ofNullable(attributes.get("group")).ifPresent(builder::group);
+        Optional.ofNullable(attributes.get("middleName")).ifPresent(builder::middleName);
+        Optional.ofNullable(attributes.get("phoneNumber")).ifPresent(builder::phoneNumber);
+        Optional.ofNullable(attributes.get("relatedUser")).ifPresent(builder::relatedUser);
+        Optional.ofNullable(attributes.get("subjects")).map(s -> s.split(","))
+                .map(Arrays::asList)
+                .ifPresent(builder::subjects);
+
+        return builder.build();
+    }
+
+    private static List<String> mapSubjects(Map<String, String> attributes) {
+        return Optional.ofNullable(attributes.get("subjects")).map(s -> s.split(","))
+                .map(Arrays::asList)
+                .orElse(Collections.emptyList());
     }
 
     private static Map<String, List<String>> asMultimap(Map<String, String> map) {

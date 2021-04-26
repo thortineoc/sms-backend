@@ -1,4 +1,4 @@
-package com.sms.tests.usermanagement;
+package com.sms.tests.usermanagement.users;
 
 import com.google.common.collect.Lists;
 import com.sms.clients.KeycloakClient;
@@ -6,6 +6,7 @@ import com.sms.clients.WebClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,17 +16,18 @@ import org.springframework.http.HttpStatus;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
+import static com.sms.tests.usermanagement.TestUtils.TEST_PREFIX;
 
-public class CreateNewUserTest {
+class CreateNewUserTest {
 
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
     private final static KeycloakClient KEYCLOAK_CLIENT = new KeycloakClient();
 
     @BeforeEach
+    @AfterEach
     public void cleanup() {
-        UserSearchParams params = new UserSearchParams().firstName("firstName");
+        UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
         List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-
         createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
     }
 
@@ -73,7 +75,7 @@ public class CreateNewUserTest {
                 .body(user)
                 .post("/users")
                 .then()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.NO_CONTENT.value());
 
         //TODO check details of created user with API call
         //TODO delete user with API call
@@ -97,7 +99,7 @@ public class CreateNewUserTest {
                 .body(user)
                 .post("/users")
                 .then()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.NO_CONTENT.value());
 
 
         //TODO check details of created user with API call
@@ -122,7 +124,7 @@ public class CreateNewUserTest {
                 .body(user)
                 .post("/users")
                 .then()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.NO_CONTENT.value());
 
 
         //TODO check details of created users with API call
@@ -150,7 +152,7 @@ public class CreateNewUserTest {
                 .body(user)
                 .post("/users")
                 .then()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.NO_CONTENT.value());
 
         //SHOULD RETURN CONFLICT WHEN CREATE SECOND USER
         CLIENT.request("usermanagement-service")
@@ -183,7 +185,7 @@ public class CreateNewUserTest {
                 .body(user)
                 .post("/users")
                 .then()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.NO_CONTENT.value());
 
         //SHOULD RETURN CONFLICT WHEN CREATE SECOND USER
         CLIENT.request("usermanagement-service")
@@ -197,7 +199,7 @@ public class CreateNewUserTest {
         //TODO delete user with API call
 
         //MAKE SURE THERE IS ONLY ONE USER WITH NAME lastName
-        UserSearchParams params = new UserSearchParams().lastName("lastName");
+        UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
         List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
         Assertions.assertEquals(1, createdUsers.size());
 
@@ -208,7 +210,7 @@ public class CreateNewUserTest {
 
     UserDTO createUserDTO(UserDTO.Role role) {
 
-        List subjects = Lists.newArrayList("subject1", "subject2");
+        List<String> subjects = Lists.newArrayList("subject1", "subject2");
 
         CustomAttributesDTO attributesDTO = CustomAttributesDTO.builder()
                 .phoneNumber("132-234-234")
@@ -222,7 +224,7 @@ public class CreateNewUserTest {
                 .id("null")
                 .userName("null")
                 .firstName("firstName")
-                .lastName("lastName")
+                .lastName(TEST_PREFIX + "lastName")
                 .pesel("pesel")
                 .role(role)
                 .email("mail@email.com")

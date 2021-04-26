@@ -26,6 +26,7 @@ public class KeycloakClient {
     private static final String ADMIN_CLIENT = "admin-cli";
     private static final String ADMIN_ACCOUNT_NAME = "kcuser";
     private static final String ADMIN_ACCOUNT_PASS = "kcuser";
+    private static final String BEARER = "Bearer ";
     private static final String TOKEN_URL = HAPROXY_URL + "/auth/realms/master/protocol/openid-connect/token";
     private static final String AUTHORIZATION = "Authorization";
 
@@ -38,10 +39,11 @@ public class KeycloakClient {
     // ################### USER API ###################
 
     public boolean createUser(UserRepresentation user) {
+        user.setEnabled(true);
         checkToken();
         Response response = client.target(KEYCLOAK_ADMIN_URL + "/users")
                 .request(MediaType.APPLICATION_JSON)
-                .header(AUTHORIZATION, "Bearer " + adminToken.getAccessToken())
+                .header(AUTHORIZATION, BEARER + adminToken.getAccessToken())
                 .post(Entity.entity(user, MediaType.APPLICATION_JSON));
 
         return isResponseSuccessful(response);
@@ -51,7 +53,7 @@ public class KeycloakClient {
         checkToken();
         Response response = client.target(KEYCLOAK_ADMIN_URL + "/users/" + userId)
                 .request(MediaType.APPLICATION_JSON)
-                .header(AUTHORIZATION, "Bearer " + adminToken.getAccessToken())
+                .header(AUTHORIZATION, BEARER + adminToken.getAccessToken())
                 .put(Entity.entity(user, MediaType.APPLICATION_JSON));
 
         return isResponseSuccessful(response);
@@ -61,7 +63,7 @@ public class KeycloakClient {
         checkToken();
         Response response = client.target(KEYCLOAK_ADMIN_URL + "/users/" + userId)
                 .request(MediaType.APPLICATION_JSON)
-                .header(AUTHORIZATION, "Bearer " + adminToken.getAccessToken())
+                .header(AUTHORIZATION, BEARER + adminToken.getAccessToken())
                 .get();
         if (isResponseSuccessful(response)) {
             return Optional.of(response.readEntity(UserRepresentation.class));
@@ -74,7 +76,7 @@ public class KeycloakClient {
         checkToken();
         Response response = client.target(KEYCLOAK_ADMIN_URL + "/users/" + userId)
                 .request(MediaType.APPLICATION_JSON)
-                .header(AUTHORIZATION, "Bearer " + adminToken.getAccessToken())
+                .header(AUTHORIZATION, BEARER + adminToken.getAccessToken())
                 .delete();
         return isResponseSuccessful(response);
     }
@@ -83,23 +85,14 @@ public class KeycloakClient {
         checkToken();
         WebTarget target = searchParams.addParams(client.target(KEYCLOAK_ADMIN_URL + "/users"));
         Response response = target.request(MediaType.APPLICATION_JSON)
-                .header(AUTHORIZATION, "Bearer " + adminToken.getAccessToken())
-                .get();
-        return Arrays.asList(response.readEntity(UserRepresentation[].class));
-    }
-
-    public List<UserRepresentation> getAllUsers() {
-        checkToken();
-        Response response = client.target(KEYCLOAK_ADMIN_URL + "/users")
-                .request(MediaType.APPLICATION_JSON)
-                .header(AUTHORIZATION, "Bearer " + adminToken.getAccessToken())
+                .header(AUTHORIZATION, BEARER + adminToken.getAccessToken())
                 .get();
         if (isResponseSuccessful(response)) {
             return Arrays.asList(response.readEntity(UserRepresentation[].class));
+        } else {
+            return Collections.emptyList();
         }
-        else return Collections.emptyList();
     }
-
 
     // TODO: public only for integration tests, fix this
     public TokenDTO obtainToken() {
