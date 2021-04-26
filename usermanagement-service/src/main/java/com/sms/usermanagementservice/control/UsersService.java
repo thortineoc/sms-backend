@@ -196,9 +196,4 @@ public class UsersService {
             userRep.singleAttribute("group", "");
         }
     }
-
-/*    public UserRepresentation setAttrib(CustomAttributesDTO attribsDTO, UserRepresentation userRep){
-        return userRep
-                .singleAttribute()
-    }*/
 }
