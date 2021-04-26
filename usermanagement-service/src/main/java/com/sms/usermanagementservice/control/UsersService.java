@@ -143,7 +143,7 @@ public class UsersService {
         return true;
     }
 
-    public void updateUser(UserDTO userDTO) {
+        public void updateUser(UserDTO userDTO) {
         //find user
         UserSearchParams params = new UserSearchParams().username(userDTO.getUserName());
         UserRepresentation userRep = keycloakClient.getUsers(params)
@@ -154,19 +154,26 @@ public class UsersService {
         userRep.setLastName(userDTO.getLastName());
         if (userDTO.getEmail().isPresent()) {
             userRep.setEmail(userDTO.getEmail().get());
+        } else {
+            userRep.setEmail("");
         }
-
-
+        //nie umiem odczytac atrybutow
+/*        Map<String, List<String>> attributes = new HashMap<>(userRep.getAttributes());
+        attributes.put("relatedUser", Collections.singletonList(createdStudent.getId()));
+        userRep.setAttributes(attributes);*/
         //save in keycloak (?)
         if (!keycloakClient.updateUser(userRep.getId(), userRep)) {
             throw new IllegalStateException();
         }
+
+        //parent - to troche jeszcze nie dziala
+/*
         if (userDTO.getCustomAttributes().getRelatedUser() != null) {   //this is intentional - if no related uer, then don't update him
             UserRepresentation related = UserMapper.toParentRepresentationFromStudent(userDTO, null, null);
             if (keycloakClient.updateUser(String.valueOf(userDTO.getCustomAttributes().getRelatedUser()), related)) {
                 throw new IllegalStateException();
             }
-        }
+        }*/
     }
 
 }
