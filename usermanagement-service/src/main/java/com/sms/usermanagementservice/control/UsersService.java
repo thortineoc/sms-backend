@@ -150,6 +150,28 @@ public class UsersService {
                 .stream().findFirst().orElseThrow(() -> new IllegalStateException("User does not exist"));
 
         //set new values
+        setNewValues(userDTO, userRep);
+
+        //save in keycloak
+        if (!keycloakClient.updateUser(userRep.getId(), userRep)) {
+            throw new IllegalStateException();
+        }
+
+        //update parent
+        if (userDTO.getCustomAttributes().getRelatedUser().isPresent()) {
+
+            UserRepresentation related = keycloakClient.getUser(
+                    userDTO.getCustomAttributes().getRelatedUser().get())
+                    .orElseThrow(() -> new IllegalStateException("User does not exist"));
+
+            related.setLastName(userDTO.getLastName());
+            if (keycloakClient.updateUser(userDTO.getCustomAttributes().getRelatedUser().get(), related)) {
+                throw new IllegalStateException();
+            }
+        }
+    }
+
+    public void setNewValues(UserDTO userDTO, UserRepresentation userRep) {
         userRep.setFirstName(userDTO.getFirstName());
         userRep.setLastName(userDTO.getLastName());
         if (userDTO.getEmail().isPresent()) {
@@ -173,22 +195,7 @@ public class UsersService {
         } else {
             userRep.singleAttribute("group", "");
         }
-
-        //save in keycloak
-        if (!keycloakClient.updateUser(userRep.getId(), userRep)) {
-            throw new IllegalStateException();
-        }
-
-        //parent - to troche jeszcze nie dziala
-/*
-        if (userDTO.getCustomAttributes().getRelatedUser() != null) {   //this is intentional - if no related uer, then don't update him
-            UserRepresentation related = UserMapper.toParentRepresentationFromStudent(userDTO, null, null);
-            if (keycloakClient.updateUser(String.valueOf(userDTO.getCustomAttributes().getRelatedUser()), related)) {
-                throw new IllegalStateException();
-            }
-        }*/
     }
-
 
 /*    public UserRepresentation setAttrib(CustomAttributesDTO attribsDTO, UserRepresentation userRep){
         return userRep
