@@ -22,6 +22,7 @@ public class GradeJPA {
 
     private Integer weight;
 
+
     public String getSubject() {
         return subject;
     }
@@ -67,6 +68,34 @@ public class GradeJPA {
     }
 
     public void setWeight(Integer weight) {
+        this.weight = weight;
+    }
+
+    public GradeJPA() {
+
+    }
+
+    public GradeJPA(String subject, String teacher_id, String student_id, Integer grade, String description, Integer weight) {
+        this.subject = subject;
+        this.teacher_id = teacher_id;
+        this.student_id = student_id;
+        this.grade = grade;
+        this.description = description;
+        this.weight = weight;
+    }
+
+    public GradeJPA(String subject, String teacher_id, String student_id, Integer grade) {
+        this.subject = subject;
+        this.teacher_id = teacher_id;
+        this.student_id = student_id;
+        this.grade = grade;
+    }
+
+    public GradeJPA(String subject, String teacher_id, String student_id, Integer grade, Integer weight) {
+        this.subject = subject;
+        this.teacher_id = teacher_id;
+        this.student_id = student_id;
+        this.grade = grade;
         this.weight = weight;
     }
 }
