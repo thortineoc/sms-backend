@@ -2,6 +2,7 @@ package com.sms.gradesservice.grades.control;
 
 import com.sms.context.UserContext;
 import com.sms.grades.GradeDTO;
+import com.sms.gradesservice.grades.control.repository.GradeJPA;
 import com.sms.gradesservice.grades.control.repository.GradesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -26,10 +27,7 @@ public class GradesService {
     public Map<String, List<GradeDTO>> getStudentGrades() {
         String studentId = userContext.getUserId();
         try {
-            return gradesRepository.findAllByStudentId(studentId)
-                    .stream()
-                    .map(GradesMapper::toDTO)
-                    .collect(Collectors.groupingBy(GradeDTO::getSubject));
+            return groupBySubject(gradesRepository.findAllByStudentId(studentId));
         } catch (EntityNotFoundException e) {
             return Collections.emptyMap();
         }
@@ -37,12 +35,17 @@ public class GradesService {
 
     public Map<String, List<GradeDTO>> getTeacherGrades(String subject, List<String> studentIds) {
         try {
-            return gradesRepository.findAllBySubjectAndStudentIdIn(subject, studentIds)
-                    .stream()
-                    .map(GradesMapper::toDTO)
-                    .collect(Collectors.groupingBy(GradeDTO::getStudentId));
+            return groupByStudentId(gradesRepository.findAllBySubjectAndStudentIdIn(subject, studentIds));
         } catch (EntityNotFoundException e) {
             return Collections.emptyMap();
         }
+    }
+
+    private Map<String, List<GradeDTO>> groupByStudentId(List<GradeJPA> grades) {
+        return grades.stream().map(GradesMapper::toDTO).collect(Collectors.groupingBy(GradeDTO::getStudentId));
+    }
+
+    private Map<String, List<GradeDTO>> groupBySubject(List<GradeJPA> grades) {
+        return grades.stream().map(GradesMapper::toDTO).collect(Collectors.groupingBy(GradeDTO::getSubject));
     }
 }
