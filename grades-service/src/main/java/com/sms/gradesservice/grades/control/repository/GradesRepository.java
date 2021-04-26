@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.Collection;
 import java.util.List;
 
-public interface GradesRepository extends CrudRepository<Long, GradeJPA> {
+public interface GradesRepository extends CrudRepository<GradeJPA, Long> {
 
     List<GradeJPA> findAllByStudentId(String studentId);
 

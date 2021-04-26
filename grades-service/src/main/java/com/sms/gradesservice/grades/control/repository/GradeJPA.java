@@ -3,8 +3,10 @@ package com.sms.gradesservice.grades.control.repository;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
+@Table(name = "grades")
 public class GradeJPA {
 
     @Column(name = "id")
