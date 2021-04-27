@@ -23,7 +23,7 @@ public class GradesResource {
     GradesService gradesService;
 
     @PostMapping("/student")
-    @AuthRole(UserDTO.Role.STUDENT)
+    @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.PARENT})
     public ResponseEntity<Map<String, List<GradeDTO>>> getStudentGrades() {
         Map<String, List<GradeDTO>> grades = gradesService.getStudentGrades();
         if (grades.isEmpty()) {

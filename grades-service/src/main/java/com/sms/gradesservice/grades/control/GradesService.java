@@ -92,9 +92,6 @@ public class GradesService {
     }
 
     private void validateGrade(GradeJPA grade) {
-        if (grade.getGrade() < 1) {
-            throw new IllegalArgumentException("Grade cannot be 0 or negative");
-        }
         if (grade.getWeight() < 1) {
             throw new IllegalArgumentException("Grade weight cannot be 0 or negative");
         }

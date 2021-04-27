@@ -1,6 +1,7 @@
 package com.sms.gradesservice.grades.control.repository;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "grades")
@@ -21,7 +22,7 @@ public class GradeJPA {
     private String studentId;
 
     @Column(name = "grade")
-    private Integer grade;
+    private BigDecimal grade;
 
     @Column(name = "description")
     private String description;
@@ -39,7 +40,7 @@ public class GradeJPA {
         this.description = description;
     }
 
-    public void setGrade(Integer grade) {
+    public void setGrade(BigDecimal grade) {
         this.grade = grade;
     }
 
@@ -63,7 +64,7 @@ public class GradeJPA {
         return id;
     }
 
-    public Integer getGrade() {
+    public BigDecimal getGrade() {
         return grade;
     }
 
@@ -90,7 +91,7 @@ public class GradeJPA {
     public GradeJPA() {
 
     }
-    public GradeJPA(Long id, String subject, String teacherId, String studentId, Integer grade, String description, Integer weight) {
+    public GradeJPA(Long id, String subject, String teacherId, String studentId, BigDecimal grade, String description, Integer weight) {
         this.id = id;
         this.subject = subject;
         this.teacherId = teacherId;
@@ -100,7 +101,7 @@ public class GradeJPA {
         this.weight = weight;
     }
 
-    public GradeJPA(String subject, String teacherId, String studentId, Integer grade, Integer weight) {
+    public GradeJPA(String subject, String teacherId, String studentId, BigDecimal grade, Integer weight) {
         this.subject = subject;
         this.teacherId = teacherId;
         this.studentId = studentId;
@@ -108,7 +109,7 @@ public class GradeJPA {
         this.weight = weight;
     }
 
-    public GradeJPA(String subject, String teacherId, String studentId, Integer grade) {
+    public GradeJPA(String subject, String teacherId, String studentId, BigDecimal grade) {
         this.subject = subject;
         this.teacherId = teacherId;
         this.studentId = studentId;
