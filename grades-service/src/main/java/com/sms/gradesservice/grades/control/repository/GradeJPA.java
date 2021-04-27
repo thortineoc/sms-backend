@@ -29,6 +29,8 @@ public class GradeJPA {
     @Column(name = "weight")
     private Integer weight;
 
+
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -83,5 +85,33 @@ public class GradeJPA {
 
     public String getTeacherId() {
         return teacherId;
+    }
+
+    public GradeJPA() {
+
+    }
+    public GradeJPA(Long id, String subject, String teacherId, String studentId, Integer grade, String description, Integer weight) {
+        this.id = id;
+        this.subject = subject;
+        this.teacherId = teacherId;
+        this.studentId = studentId;
+        this.grade = grade;
+        this.description = description;
+        this.weight = weight;
+    }
+
+    public GradeJPA(String subject, String teacherId, String studentId, Integer grade, Integer weight) {
+        this.subject = subject;
+        this.teacherId = teacherId;
+        this.studentId = studentId;
+        this.grade = grade;
+        this.weight = weight;
+    }
+
+    public GradeJPA(String subject, String teacherId, String studentId, Integer grade) {
+        this.subject = subject;
+        this.teacherId = teacherId;
+        this.studentId = studentId;
+        this.grade = grade;
     }
 }
