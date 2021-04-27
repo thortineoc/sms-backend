@@ -61,6 +61,9 @@ public class UsersResource {
     @PutMapping("/update")
     public ResponseEntity<String> updateUser(@RequestBody UserDTO data) {
         usersService.updateUser(data);
+        if(data.getId().isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.ok().build();
     }
 
