@@ -1,5 +1,6 @@
 package com.sms.clients;
 
+import com.sms.common.JDK8Mapper;
 import com.sms.context.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -18,7 +19,7 @@ public class ServiceClient {
     private static final String DEFAULT_HAPROXY_URL = "http://52.142.201.18:24020";
     private static String HAPROXY_URL = DEFAULT_HAPROXY_URL;
 
-    private final Client client = ClientBuilder.newClient();
+    private final Client client = ClientBuilder.newClient().register(new JDK8Mapper().getProvider());
 
     @Autowired
     UserContext userContext;

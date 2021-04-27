@@ -3,6 +3,7 @@ package com.sms.gradesservice.grades.boundary;
 
 import com.sms.context.AuthRole;
 import com.sms.grades.GradeDTO;
+import com.sms.grades.StudentGradesDTO;
 import com.sms.gradesservice.grades.control.GradesService;
 import com.sms.usermanagement.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,15 +26,23 @@ public class GradesResource {
     @AuthRole(UserDTO.Role.STUDENT)
     public ResponseEntity<Map<String, List<GradeDTO>>> getStudentGrades() {
         Map<String, List<GradeDTO>> grades = gradesService.getStudentGrades();
-        return ResponseEntity.ok(grades);
+        if (grades.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(grades);
+        }
     }
 
     @PostMapping("/teacher/{subject}")
     @AuthRole(UserDTO.Role.TEACHER)
-    public ResponseEntity<Map<String, List<GradeDTO>>> getTeacherGrades(@PathVariable("subject") String subject,
-                                                                        @RequestBody List<String> studentIds) {
-        Map<String, List<GradeDTO>> grades = gradesService.getTeacherGrades(subject, studentIds);
-        return ResponseEntity.ok(grades);
+    public ResponseEntity<List<StudentGradesDTO>> getTeacherGrades(@PathVariable("subject") String subject,
+                                                                   @RequestBody List<String> studentIds) {
+        List<StudentGradesDTO> grades = gradesService.getTeacherGrades(subject, studentIds);
+        if (grades.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(grades);
+        }
     }
 
     @PutMapping

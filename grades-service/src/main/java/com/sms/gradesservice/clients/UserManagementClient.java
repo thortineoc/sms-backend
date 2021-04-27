@@ -3,6 +3,7 @@ package com.sms.gradesservice.clients;
 import com.sms.clients.ServiceClient;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagement.UsersFiltersDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -20,12 +21,14 @@ import java.util.Optional;
 public class UserManagementClient {
 
     private static final String USERMANAGEMENT = "usermanagement-service";
-    private final ServiceClient serviceClient = new ServiceClient();
+
+    @Autowired
+    ServiceClient serviceClient;
 
     public List<UserDTO> getUsers(UsersFiltersDTO filters) {
         Response response = serviceClient.target(USERMANAGEMENT)
                 .path("users")
-                .path("filters")
+                .path("filter")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.entity(filters, MediaType.APPLICATION_JSON));
         if (response.getStatus() == HttpStatus.OK.value()) {

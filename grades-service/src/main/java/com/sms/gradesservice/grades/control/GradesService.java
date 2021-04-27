@@ -2,10 +2,12 @@ package com.sms.gradesservice.grades.control;
 
 import com.sms.context.UserContext;
 import com.sms.grades.GradeDTO;
+import com.sms.grades.StudentGradesDTO;
 import com.sms.gradesservice.clients.UserManagementClient;
 import com.sms.gradesservice.grades.control.repository.GradeJPA;
 import com.sms.gradesservice.grades.control.repository.GradesRepository;
 import com.sms.usermanagement.UserDTO;
+import com.sms.usermanagement.UsersFiltersDTO;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -16,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
@@ -40,11 +43,13 @@ public class GradesService {
         }
     }
 
-    public Map<String, List<GradeDTO>> getTeacherGrades(String subject, List<String> studentIds) {
+    public List<StudentGradesDTO> getTeacherGrades(String subject, List<String> studentIds) {
         try {
-            return groupByStudentId(gradesRepository.findAllBySubjectAndStudentIdIn(subject, studentIds));
+            Map<String, List<GradeDTO>> grades = groupByStudentId(gradesRepository.findAllBySubjectAndStudentIdIn(subject, studentIds));
+            Map<String, UserDTO> studentsByIds = getStudentsByIds();
+            return mapStudentsToGrades(grades, studentsByIds);
         } catch (EntityNotFoundException e) {
-            return Collections.emptyMap();
+            return Collections.emptyList();
         }
     }
 
@@ -55,10 +60,20 @@ public class GradesService {
         try {
             gradesRepository.save(grade);
         } catch (ConstraintViolationException e) {
-            throw new IllegalArgumentException("Saving grade: " + gradeDTO.getId() + " violated database constraints");
+            throw new IllegalArgumentException("Saving grade: " + gradeDTO.getId() + " violated database constraints: " + e.getConstraintName());
         } catch (EntityNotFoundException e) {
-            throw new IllegalStateException("Grade with ID: " + gradeDTO.getId() + "does not exist, can't update");
+            throw new IllegalStateException("Grade with ID: " + gradeDTO.getId() + " does not exist, can't update: " + e.getMessage());
         }
+    }
+
+    private List<StudentGradesDTO> mapStudentsToGrades(Map<String, List<GradeDTO>> grades, Map<String, UserDTO> students) {
+        return grades.keySet().stream()
+                .map(id -> StudentGradesDTO.builder()
+                        .grades(grades.get(id))
+                        .student(Optional.ofNullable(students.get(id))
+                                .orElseThrow(() -> new IllegalStateException("Grades assigned to non existing user: " + id + " found")))
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private Map<String, List<GradeDTO>> groupByStudentId(List<GradeJPA> grades) {
@@ -67,6 +82,13 @@ public class GradesService {
 
     private Map<String, List<GradeDTO>> groupBySubject(List<GradeJPA> grades) {
         return grades.stream().map(GradesMapper::toDTO).collect(Collectors.groupingBy(GradeDTO::getSubject));
+    }
+
+    private Map<String, UserDTO> getStudentsByIds() {
+        return userManagementClient.getUsers(UsersFiltersDTO.builder()
+                .role(UserDTO.Role.STUDENT.toString())
+                .build()).stream()
+                .collect(Collectors.toMap(UserDTO::getId, Function.identity()));
     }
 
     private void validateGrade(GradeJPA grade) {

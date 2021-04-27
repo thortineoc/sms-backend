@@ -52,6 +52,18 @@ class FilteringUsersTest {
     }
 
     @Test
+    void getUserById() {
+        Response response = getUsers(Collections.emptyMap());
+        UserDTO expectedUser = Arrays.stream(response.as(UserDTO[].class)).findFirst().get();
+
+        String userId = expectedUser.getId();
+
+        response = getUser(userId);
+        UserDTO realUser = response.as(UserDTO.class);
+        Assertions.assertEquals(expectedUser, realUser);
+    }
+
+    @Test
     void getAllUsers() {
         Response response = getUsers(Collections.emptyMap());
         assertUsersExist(response, FIRST_NAME, SECOND_NAME, THIRD_NAME, FOURTH_NAME);
@@ -137,6 +149,13 @@ class FilteringUsersTest {
                 .map(UserDTO::getFirstName).collect(Collectors.toList());
         Arrays.stream(lookingFor)
                 .forEach(name -> Assertions.assertTrue(savedUsers.contains(name)));
+    }
+
+    private Response getUser(String userId) {
+        return CLIENT.request(USER_MANAGEMENT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .log().all()
+                .get("/users/" + userId);
     }
 
     private Response getUsers(Map<String, String> filters) {
