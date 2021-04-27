@@ -8,5 +8,5 @@ import java.lang.annotation.*;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AuthRole {
-    UserDTO.Role value();
+    UserDTO.Role[] value();
 }
