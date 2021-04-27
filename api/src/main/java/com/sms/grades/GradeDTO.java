@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @Value.Immutable
@@ -24,7 +25,7 @@ public interface GradeDTO {
 
     String getStudentId();
 
-    Double getGrade();
+    BigDecimal getGrade();
 
     Optional<String> getDescription();
 
