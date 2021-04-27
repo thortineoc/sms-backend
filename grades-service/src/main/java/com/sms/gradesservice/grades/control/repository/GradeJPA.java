@@ -1,15 +1,14 @@
 package com.sms.gradesservice.grades.control.repository;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "grades")
 public class GradeJPA {
 
+    @Id
     @Column(name = "id")
+    @GeneratedValue(generator = "grades_id_seq")
     private Long id;
 
     @Column(name = "subject")
@@ -58,7 +57,6 @@ public class GradeJPA {
         this.weight = weight;
     }
 
-    @Id
     public Long getId() {
         return id;
     }
