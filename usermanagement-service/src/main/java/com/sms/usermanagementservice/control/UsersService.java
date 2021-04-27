@@ -145,42 +145,32 @@ public class UsersService {
 
     public void updateUser(UserDTO userDTO) {
         //find user
-        UserSearchParams params = new UserSearchParams().username(userDTO.getUserName());
+        /*UserSearchParams params = new UserSearchParams().username(userDTO.getUserName());
         UserRepresentation userRep = keycloakClient.getUsers(params)
                 .stream().findFirst().orElseThrow(() -> new IllegalStateException("User does not exist"));
+*/
 
+        UserRepresentation userRep = keycloakClient.getUser(userDTO.getId()).get();
+        //UserRepresentation userRep = new UserRepresentation();
+        //keycloakClient.getUser(userDTO.getId()).ifPresent(value -> userRep);
         //set new values
         setNewValues(userDTO, userRep);
 
         //save in keycloak
         if (!keycloakClient.updateUser(userRep.getId(), userRep)) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Could not update user");
         }
     }
 
-    public void setNewValues(UserDTO userDTO, UserRepresentation userRep) {
+    private void setNewValues(UserDTO userDTO, UserRepresentation userRep) {
         userRep.setFirstName(userDTO.getFirstName());
         userRep.setLastName(userDTO.getLastName());
         if (userDTO.getEmail().isPresent()) {
             userRep.setEmail(userDTO.getEmail().get());
-        } else {
-            userRep.setEmail("");
         }
         CustomAttributesDTO attributesDTO = userDTO.getCustomAttributes();
-        if (attributesDTO.getPhoneNumber().isPresent()) {
-            userRep.singleAttribute("phoneNumber", attributesDTO.getPhoneNumber().get());
-        } else {
-            userRep.singleAttribute("phoneNumber", "");
-        }
-        if (attributesDTO.getMiddleName().isPresent()) {
-            userRep.singleAttribute("middleName", attributesDTO.getMiddleName().get());
-        } else {
-            userRep.singleAttribute("middleName", "");
-        }
-        if (attributesDTO.getGroup().isPresent()) {
-            userRep.singleAttribute("group", attributesDTO.getGroup().get());
-        } else {
-            userRep.singleAttribute("group", "");
-        }
+        attributesDTO.getPhoneNumber().ifPresent(value -> userRep.singleAttribute("phoneNumber", value));
+        attributesDTO.getMiddleName().ifPresent(value -> userRep.singleAttribute("middleName", value));
+        attributesDTO.getGroup().ifPresent(value -> userRep.singleAttribute("group", value));
     }
 }
