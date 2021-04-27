@@ -145,14 +145,11 @@ public class UsersService {
 
     public void updateUser(UserDTO userDTO) {
         //find user
-        /*UserSearchParams params = new UserSearchParams().username(userDTO.getUserName());
-        UserRepresentation userRep = keycloakClient.getUsers(params)
-                .stream().findFirst().orElseThrow(() -> new IllegalStateException("User does not exist"));
-*/
-
+        if(!keycloakClient.getUser(userDTO.getId()).isPresent()) {
+            throw new IllegalStateException("User not found");
+        }
         UserRepresentation userRep = keycloakClient.getUser(userDTO.getId()).get();
-        //UserRepresentation userRep = new UserRepresentation();
-        //keycloakClient.getUser(userDTO.getId()).ifPresent(value -> userRep);
+
         //set new values
         setNewValues(userDTO, userRep);
 
