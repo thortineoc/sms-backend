@@ -56,4 +56,11 @@ public class UsersResource {
             return ResponseEntity.ok(users);
         }
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> getUser(@PathVariable("id") String id) {
+        return usersService.getUser(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
+    }
 }

@@ -14,10 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 @Scope("request")
@@ -30,7 +27,7 @@ public class UsersService {
     UserFilteringService userFilteringService;
 
     @Autowired
-    private UserContext context;
+    UserContext context;
 
     public List<UserDTO> filterUserByParameters(UsersFiltersDTO filterParamsDTO) {
         CustomFilterParams customFilterParams = UserMapper.mapCustomFilterParams(filterParamsDTO);
@@ -39,7 +36,9 @@ public class UsersService {
         return userFilteringService.customFilteringUsers(userList, customFilterParams);
     }
 
-
+    public Optional<UserDTO> getUser(String id) {
+        return keycloakClient.getUser(id).map(UserMapper::toDTO);
+    }
 
     public void createStudentWithParent(UserDTO user) {
         createUser(user);
