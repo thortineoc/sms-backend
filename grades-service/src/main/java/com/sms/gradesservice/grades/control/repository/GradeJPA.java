@@ -21,7 +21,7 @@ public class GradeJPA {
     private String studentId;
 
     @Column(name = "grade")
-    private Integer grade;
+    private Double grade;
 
     @Column(name = "description")
     private String description;
@@ -37,7 +37,7 @@ public class GradeJPA {
         this.description = description;
     }
 
-    public void setGrade(Integer grade) {
+    public void setGrade(Double grade) {
         this.grade = grade;
     }
 
@@ -61,7 +61,7 @@ public class GradeJPA {
         return id;
     }
 
-    public Integer getGrade() {
+    public Double getGrade() {
         return grade;
     }
 
