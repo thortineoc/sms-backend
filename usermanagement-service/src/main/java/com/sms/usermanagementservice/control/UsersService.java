@@ -17,10 +17,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 @Scope("request")
@@ -145,10 +142,11 @@ public class UsersService {
 
     public void updateUser(UserDTO userDTO) {
         //find user
-        if(!keycloakClient.getUser(userDTO.getId()).isPresent()) {
-            throw new IllegalStateException("User not found");
+        Optional<UserRepresentation> user = keycloakClient.getUser(userDTO.getId());
+        if(!user.isPresent()){
+            throw new IllegalStateException("User does not exist");
         }
-        UserRepresentation userRep = keycloakClient.getUser(userDTO.getId()).get();
+        UserRepresentation userRep = user.get();
 
         //set new values
         setNewValues(userDTO, userRep);
