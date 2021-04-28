@@ -33,15 +33,7 @@ class UpdateUserTest {
 
         //GIVEN
         WebClient tempWebClient = new WebClient();
-        UserDTO user = UserDTO.builder()
-                .id("null")
-                .userName("null")
-                .firstName("firstName")
-                .lastName("lastName")
-                .pesel("pesel")
-                .role(UserDTO.Role.STUDENT)
-                .email("mail@email.com")
-                .build();
+        UserDTO user = createUserDTO(UserDTO.Role.STUDENT);
 
         //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
         tempWebClient.request("usermanagement-service")
