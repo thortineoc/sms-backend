@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.Map;
 
 class UpdateUserTest {
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
@@ -82,12 +83,23 @@ class UpdateUserTest {
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
-        createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
+        createdUser = KEYCLOAK_CLIENT.getUser(createdUser.getId()).get();
 
         //CHECK CHANGES
         Assertions.assertEquals("newFirstName", createdUser.getFirstName());
         Assertions.assertEquals("newLastName", createdUser.getLastName());
         Assertions.assertEquals("newMail@email.com", createdUser.getEmail());
+
+        Map<String, List<String>> attributes = createdUser.getAttributes();
+
+        Assertions.assertEquals("789-987-879", attributes.get("phoneNumber").get(0));
+        Assertions.assertEquals("newMiddleName", attributes.get("middleName").get(0));
+        Assertions.assertEquals("newPESEL", attributes.get("pesel").get(0));
+        Assertions.assertEquals("new-example-group", attributes.get("group").get(0));
+        Assertions.assertEquals("example-user", attributes.get("relatedUser").get(0));
+        Assertions.assertEquals("STUDENT", attributes.get("role").get(0));
+
+
 
         //CLEANUP
         KEYCLOAK_CLIENT.deleteUser(createdUser.getId());
@@ -129,8 +141,8 @@ class UpdateUserTest {
         CustomAttributesDTO attributesDTO = CustomAttributesDTO.builder()
                 .phoneNumber("789-987-879")
                 .middleName("newMiddleName")
-                .relatedUser("example-user")
-                .group("example-group")
+                .relatedUser("new-example-user")
+                .group("new-example-group")
                 .subjects(subjects)
                 .build();
 
