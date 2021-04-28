@@ -55,6 +55,7 @@ public class GradesService {
 
     public void updateGrade(GradeDTO gradeDTO) {
         GradeJPA grade = GradesMapper.toJPA(gradeDTO);
+        grade.setTeacherId(userContext.getUserId());
         validateGrade(grade);
 
         try {
@@ -94,10 +95,6 @@ public class GradesService {
     private void validateGrade(GradeJPA grade) {
         if (grade.getWeight() < 1) {
             throw new IllegalArgumentException("Grade weight cannot be 0 or negative");
-        }
-        Optional<UserDTO> teacherUser = userManagementClient.getUser(grade.getTeacherId());
-        if (!teacherUser.isPresent()) {
-            throw new IllegalArgumentException("Teacher user: " + grade.getTeacherId() + " does not exist");
         }
         Optional<UserDTO> studentUser = userManagementClient.getUser(grade.getStudentId());
         if (!studentUser.isPresent()) {

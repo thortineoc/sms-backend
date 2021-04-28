@@ -25,9 +25,9 @@ public class GradesMapper {
         GradeJPA grade = new GradeJPA();
         grade.setGrade(gradeDTO.getGrade());
         grade.setStudentId(gradeDTO.getStudentId());
-        grade.setTeacherId(gradeDTO.getTeacherId());
         grade.setSubject(gradeDTO.getSubject());
         grade.setWeight(gradeDTO.getWeight());
+        gradeDTO.getTeacherId().ifPresent(grade::setTeacherId);
         gradeDTO.getId().ifPresent(grade::setId);
         gradeDTO.getDescription().ifPresent(grade::setDescription);
         return grade;
