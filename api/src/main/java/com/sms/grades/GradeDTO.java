@@ -21,7 +21,7 @@ public interface GradeDTO {
 
     String getSubject();
 
-    String getTeacherId();
+    Optional<String> getTeacherId();
 
     String getStudentId();
 

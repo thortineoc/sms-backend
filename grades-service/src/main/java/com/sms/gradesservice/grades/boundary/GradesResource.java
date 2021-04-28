@@ -22,7 +22,7 @@ public class GradesResource {
     @Autowired
     GradesService gradesService;
 
-    @PostMapping("/student")
+    @GetMapping("/student")
     @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.PARENT})
     public ResponseEntity<Map<String, List<GradeDTO>>> getStudentGrades() {
         Map<String, List<GradeDTO>> grades = gradesService.getStudentGrades();
