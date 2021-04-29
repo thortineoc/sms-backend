@@ -22,14 +22,14 @@ public class GradesClient {
     @Autowired
     ServiceClient serviceClient;
 
-
     public int deleteGrades(String id) {
-        UserDTO user=buildUser(id);
         Response response = serviceClient.target(GRADES)
                 .path("grades")
                 .path("delete")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .post(Entity.entity(user, MediaType.APPLICATION_JSON));
+                .path(id)
+                .request(MediaType.TEXT_PLAIN_TYPE)
+                .post(Entity.entity(id, MediaType.TEXT_PLAIN));
+
         if (response.getStatus() == HttpStatus.OK.value()) {
             return HttpStatus.NO_CONTENT.value();
         } else {
@@ -37,9 +37,4 @@ public class GradesClient {
         }
     }
 
-    private UserDTO buildUser(String id){
-        return UserDTO.builder()
-                .id(id)
-                .build();
-    }
 }

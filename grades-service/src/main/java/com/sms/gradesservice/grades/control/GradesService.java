@@ -73,23 +73,22 @@ public class GradesService {
         }catch (ConstraintViolationException e) {
             throw new IllegalArgumentException("Deleting grade: " + gradeDTO.getId() + " violated database constraints: " + e.getConstraintName());
         }catch (EmptyResultDataAccessException e){
-            throw new IllegalStateException("Grade with ID: " + gradeDTO.getId() + " does not exist, can't delete: " + e.getMessage());
+            throw new IllegalStateException("Grade with ID: " + gradeDTO.getId() + " does not exist, can't delete: ");
         }
     }
 
- /*   public void deleteAllGrades(String id){
-        GradeDTO gradeDTO = gradeFromId(id);
-        List<GradeJPA> studentGrades = gradesRepository.findAllByStudentId(gradeDTO.getStudentId());
+    public void deleteAllGrades(String id){
+        List<GradeJPA> studentGrades = gradesRepository.findAllByStudentId(id);
         for( GradeJPA grade : studentGrades ) {
             try {
-                gradesRepository.delete(grade);
+                gradesRepository.deleteById(grade.getId());
             } catch (ConstraintViolationException e) {
-                throw new IllegalArgumentException("Deleting grade: " + gradeDTO.getId() + " violated database constraints: " + e.getConstraintName());
-            } catch (EntityNotFoundException e) {
-                throw new IllegalStateException("Grade with ID: " + gradeDTO.getId() + " does not exist, can't delete: " + e.getMessage());
+                throw new IllegalArgumentException("Deleting grade: " + grade.getId() + " violated database constraints: " + e.getConstraintName());
+            } catch (EmptyResultDataAccessException  e) {
+                throw new IllegalStateException("Grade with ID: " + grade.getId() + " does not exist, can't delete: ");
             }
         }
-    }*/
+    }
 
     private List<StudentGradesDTO> mapStudentsToGrades(Map<String, List<GradeDTO>> grades, Map<String, UserDTO> students) {
         return grades.keySet().stream()

@@ -51,7 +51,7 @@ public class GradesResource {
     }
 
     @PutMapping
-    @AuthRole(UserDTO.Role.ADMIN)
+    @AuthRole(UserDTO.Role.TEACHER)
     public ResponseEntity<Object> updateGrade(@RequestBody GradeDTO grade) {
         gradesService.updateGrade(grade);
         return ResponseEntity.ok().build();
@@ -59,17 +59,17 @@ public class GradesResource {
 
 
     @DeleteMapping
-    @AuthRole(UserDTO.Role.ADMIN)
+    @AuthRole(UserDTO.Role.TEACHER)
     public ResponseEntity<Object> deleteGrade(@RequestBody GradeDTO grade) {
         gradesService.deleteGrade(grade);
         return ResponseEntity.ok().build();
     }
 
-  /*  @PostMapping("/delete")
+    @DeleteMapping("/{id}")
     @AuthRole(UserDTO.Role.ADMIN)
-    public ResponseEntity<Object> deleteAllGrades(@RequestBody UserDTO userDTO) {
-        gradesService.deleteAllGrades(userDTO.getId());
+    public ResponseEntity<Object> deleteAllGrades( @PathVariable("id") String id) {
+        gradesService.deleteAllGrades(id);
         return ResponseEntity.noContent().build();
     }
-*/
+
 }
