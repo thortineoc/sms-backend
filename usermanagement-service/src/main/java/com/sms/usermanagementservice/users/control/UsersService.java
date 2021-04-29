@@ -5,6 +5,7 @@ import com.sms.clients.entity.UserSearchParams;
 import com.sms.context.UserContext;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.usermanagementservice.clients.GradesClient;
 import com.sms.usermanagementservice.users.entity.CustomFilterParams;
 import com.sms.usermanagementservice.users.entity.KeyCloakFilterParams;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -28,6 +29,9 @@ public class UsersService {
 
     @Autowired
     UserContext context;
+
+    @Autowired
+    GradesClient gradesClient;
 
     public List<UserDTO> filterUserByParameters(UsersFiltersDTO filterParamsDTO) {
         CustomFilterParams customFilterParams = UserMapper.mapCustomFilterParams(filterParamsDTO);
@@ -121,6 +125,8 @@ public class UsersService {
         UserRepresentation userRepresentation = keycloakClient.getUser(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         Boolean isDeleted = deleteRelatedUser(userRepresentation);
+        //TODO
+        //gradesClient.deleteGrades(userId);
         if (!(keycloakClient.deleteUser(userId) && isDeleted)) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }

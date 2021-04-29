@@ -11,13 +11,13 @@ import com.sms.usermanagement.UsersFiltersDTO;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
+
 import javax.persistence.EntityNotFoundException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import javax.persistence.NoResultException;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -66,6 +66,31 @@ public class GradesService {
         }
     }
 
+    public void deleteGrade(GradeDTO gradeDTO){
+        GradeJPA grade = GradesMapper.toJPA(gradeDTO);
+        try{
+            gradesRepository.deleteById(grade.getId()); //usuwając po grade nie łapie wyjątku
+        }catch (ConstraintViolationException e) {
+            throw new IllegalArgumentException("Deleting grade: " + gradeDTO.getId() + " violated database constraints: " + e.getConstraintName());
+        }catch (EmptyResultDataAccessException e){
+            throw new IllegalStateException("Grade with ID: " + gradeDTO.getId() + " does not exist, can't delete: " + e.getMessage());
+        }
+    }
+
+ /*   public void deleteAllGrades(String id){
+        GradeDTO gradeDTO = gradeFromId(id);
+        List<GradeJPA> studentGrades = gradesRepository.findAllByStudentId(gradeDTO.getStudentId());
+        for( GradeJPA grade : studentGrades ) {
+            try {
+                gradesRepository.delete(grade);
+            } catch (ConstraintViolationException e) {
+                throw new IllegalArgumentException("Deleting grade: " + gradeDTO.getId() + " violated database constraints: " + e.getConstraintName());
+            } catch (EntityNotFoundException e) {
+                throw new IllegalStateException("Grade with ID: " + gradeDTO.getId() + " does not exist, can't delete: " + e.getMessage());
+            }
+        }
+    }*/
+
     private List<StudentGradesDTO> mapStudentsToGrades(Map<String, List<GradeDTO>> grades, Map<String, UserDTO> students) {
         return grades.keySet().stream()
                 .map(id -> StudentGradesDTO.builder()
@@ -74,6 +99,12 @@ public class GradesService {
                                 .orElseThrow(() -> new IllegalStateException("Grades assigned to non existing user: " + id + " found")))
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    private GradeDTO gradeFromId(String id){
+        return GradeDTO.builder()
+                .studentId(id)
+                .build();
     }
 
     private Map<String, List<GradeDTO>> groupByStudentId(List<GradeJPA> grades) {

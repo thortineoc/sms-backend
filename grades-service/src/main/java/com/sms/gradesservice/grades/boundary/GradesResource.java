@@ -4,13 +4,18 @@ package com.sms.gradesservice.grades.boundary;
 import com.sms.context.AuthRole;
 import com.sms.grades.GradeDTO;
 import com.sms.grades.StudentGradesDTO;
+import com.sms.gradesservice.grades.control.GradesMapper;
 import com.sms.gradesservice.grades.control.GradesService;
+import com.sms.gradesservice.grades.control.repository.GradeJPA;
 import com.sms.usermanagement.UserDTO;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
+import javax.ws.rs.PathParam;
 import java.util.List;
 import java.util.Map;
 
@@ -46,9 +51,25 @@ public class GradesResource {
     }
 
     @PutMapping
-    @AuthRole(UserDTO.Role.TEACHER)
+    @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<Object> updateGrade(@RequestBody GradeDTO grade) {
         gradesService.updateGrade(grade);
         return ResponseEntity.ok().build();
     }
+
+
+    @DeleteMapping
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<Object> deleteGrade(@RequestBody GradeDTO grade) {
+        gradesService.deleteGrade(grade);
+        return ResponseEntity.ok().build();
+    }
+
+  /*  @PostMapping("/delete")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<Object> deleteAllGrades(@RequestBody UserDTO userDTO) {
+        gradesService.deleteAllGrades(userDTO.getId());
+        return ResponseEntity.noContent().build();
+    }
+*/
 }
