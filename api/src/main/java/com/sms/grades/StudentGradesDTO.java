@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.sms.usermanagement.UserDTO;
 import org.immutables.value.Value;
 
-import java.util.List;
-
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonSerialize(as = ImmutableStudentGradesDTO.class)
@@ -19,7 +17,7 @@ public interface StudentGradesDTO {
 
     UserDTO getStudent();
 
-    List<GradeDTO> getGrades();
+    GradesDTO getGrades();
 }
 
 /*

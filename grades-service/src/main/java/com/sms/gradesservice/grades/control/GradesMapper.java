@@ -18,6 +18,7 @@ public class GradesMapper {
                 .subject(grade.getSubject())
                 .studentId(grade.getStudentId())
                 .teacherId(grade.getTeacherId())
+                .isFinal(grade.getFinal())
                 .build();
     }
 
@@ -27,6 +28,7 @@ public class GradesMapper {
         grade.setStudentId(gradeDTO.getStudentId());
         grade.setSubject(gradeDTO.getSubject());
         grade.setWeight(gradeDTO.getWeight());
+        grade.setIsFinal(gradeDTO.isFinal());
         gradeDTO.getTeacherId().ifPresent(grade::setTeacherId);
         gradeDTO.getId().ifPresent(grade::setId);
         gradeDTO.getDescription().ifPresent(grade::setDescription);
