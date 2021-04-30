@@ -1,4 +1,4 @@
-package com.sms.usermanagementservice.control;
+package com.sms.usermanagementservice.users.control;
 
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
@@ -6,15 +6,13 @@ import com.sms.context.UserContext;
 import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagement.UsersFiltersDTO;
-import com.sms.usermanagementservice.entity.CustomFilterParams;
-import com.sms.usermanagementservice.entity.KeyCloakFilterParams;
+import com.sms.usermanagementservice.users.entity.CustomFilterParams;
+import com.sms.usermanagementservice.users.entity.KeyCloakFilterParams;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;

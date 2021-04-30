@@ -39,6 +39,7 @@ public class KeycloakClient {
     // ################### USER API ###################
 
     public boolean createUser(UserRepresentation user) {
+        user.setEnabled(true);
         checkToken();
         Response response = client.target(KEYCLOAK_ADMIN_URL + "/users")
                 .request(MediaType.APPLICATION_JSON)

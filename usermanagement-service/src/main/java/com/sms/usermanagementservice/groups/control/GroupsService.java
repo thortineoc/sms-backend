@@ -1,16 +1,14 @@
-package com.sms.usermanagementservice.control.groups;
+package com.sms.usermanagementservice.groups.control;
 
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagementservice.entity.Group;
-import com.sms.usermanagementservice.entity.GroupRepository;
+import com.sms.usermanagementservice.groups.control.repository.GroupJPA;
+import com.sms.usermanagementservice.groups.control.repository.GroupRepository;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 
 import java.util.List;
@@ -36,13 +34,13 @@ public class GroupsService {
 
         return groupRepository.findAll()
                 .stream()
-                .map(Group::getName)
+                .map(GroupJPA::getName)
                 .collect(Collectors.toList());
     }
 
     public void create(String group) {
 
-        Group newGroup = new Group(group);
+        GroupJPA newGroup = new GroupJPA(group);
         groupRepository.save(newGroup);
 
     }

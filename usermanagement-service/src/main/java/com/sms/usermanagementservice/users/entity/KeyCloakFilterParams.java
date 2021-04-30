@@ -1,4 +1,4 @@
-package com.sms.usermanagementservice.entity;
+package com.sms.usermanagementservice.users.entity;
 
 import java.util.Optional;
 
