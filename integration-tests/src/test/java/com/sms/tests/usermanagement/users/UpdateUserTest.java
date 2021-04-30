@@ -12,6 +12,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.HttpStatus;
+import com.sms.usermanagement.*;
 
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -27,20 +28,40 @@ class UpdateUserTest {
         UserSearchParams params = new UserSearchParams().firstName("firstName");
         List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
         createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
+
+        params = new UserSearchParams().firstName("newFirstName");
+        createdUsers = KEYCLOAK_CLIENT.getUsers(params);
+        createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
     }
 
     @Test
     void shouldReturnForbiddenWhenNotAdmin() {
+        //GIVEN
+        UserDTO user = createUserDTO(UserDTO.Role.STUDENT);
+
+        //CREATE NEW STUDENT
+        CLIENT.request("usermanagement-service")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(user)
+                .post("/users")
+                .then()
+                .statusCode(HttpStatus.NO_CONTENT.value());
+
+        //FIND IN KEYCLOAK
+        UserSearchParams params = new UserSearchParams().firstName("firstName");
+        UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
+
+
 
         //GIVEN
-        WebClient tempWebClient = new WebClient();
-        UserDTO user = createUserDTO(UserDTO.Role.STUDENT);
+        WebClient tempWebClient = new WebClient("testbackenduser", "testbackenduser");
+        user = UserMapper.toDTO(createdUser);
 
         //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
         tempWebClient.request("usermanagement-service")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(user)
-                .post("/users/update")
+                .put("/users/update")
                 .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
     }
@@ -51,7 +72,7 @@ class UpdateUserTest {
         //SHOULD RETURN BAD_REQUEST WHEN BODY IS MISSING
         CLIENT.request("usermanagement-service")
                 .contentType(MediaType.APPLICATION_JSON)
-                .post("/users/update")
+                .put("/users/update")
                 .then()
                 .statusCode(HttpStatus.BAD_REQUEST.value());
 
