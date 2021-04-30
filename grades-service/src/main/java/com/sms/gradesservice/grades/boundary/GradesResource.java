@@ -3,6 +3,7 @@ package com.sms.gradesservice.grades.boundary;
 
 import com.sms.context.AuthRole;
 import com.sms.grades.GradeDTO;
+import com.sms.grades.GradesDTO;
 import com.sms.grades.StudentGradesDTO;
 import com.sms.gradesservice.grades.control.GradesService;
 import com.sms.usermanagement.UserDTO;
@@ -24,8 +25,8 @@ public class GradesResource {
 
     @GetMapping("/student")
     @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.PARENT})
-    public ResponseEntity<Map<String, List<GradeDTO>>> getStudentGrades() {
-        Map<String, List<GradeDTO>> grades = gradesService.getStudentGrades();
+    public ResponseEntity<Map<String, GradesDTO>> getStudentGrades() {
+        Map<String, GradesDTO> grades = gradesService.getStudentGrades();
         if (grades.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {

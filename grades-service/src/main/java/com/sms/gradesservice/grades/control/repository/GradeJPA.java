@@ -24,6 +24,9 @@ public class GradeJPA {
     @Column(name = "grade")
     private BigDecimal grade;
 
+    @Column(name = "final")
+    private Boolean isFinal;
+
     @Column(name = "description")
     private String description;
 
@@ -60,6 +63,10 @@ public class GradeJPA {
         this.weight = weight;
     }
 
+    public void setIsFinal(Boolean isFinal) {
+        this.isFinal = isFinal;
+    }
+
     public Long getId() {
         return id;
     }
@@ -86,6 +93,10 @@ public class GradeJPA {
 
     public String getTeacherId() {
         return teacherId;
+    }
+
+    public Boolean getFinal() {
+        return isFinal;
     }
 
     public GradeJPA() {

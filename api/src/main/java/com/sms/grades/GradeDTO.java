@@ -27,6 +27,11 @@ public interface GradeDTO {
 
     BigDecimal getGrade();
 
+    @Value.Default
+    default Boolean isFinal() {
+        return false;
+    }
+
     Optional<String> getDescription();
 
     @Value.Default
