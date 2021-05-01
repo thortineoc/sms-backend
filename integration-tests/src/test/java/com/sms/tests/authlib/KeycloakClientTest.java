@@ -92,15 +92,11 @@ class KeycloakClientTest {
         if(someUser.isPresent()) {
            Map<String, List<String>> attributes = someUser.get().getAttributes();
            List<String> role = attributes.get("role");
-           List<String> group = attributes.get("group");
             assertNotNull(role);
-            assertNotNull(group);
         }
-
 
         UserSearchParams params = new UserSearchParams().username(KOPYTKO54_USER);
         UserRepresentation createdUser = CLIENT.getUsers(params).get(0);
-
 
         assertUsersAreEqual(user, createdUser);
 

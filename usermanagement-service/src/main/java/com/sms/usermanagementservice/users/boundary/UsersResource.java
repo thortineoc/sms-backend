@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 
@@ -47,7 +48,7 @@ public class UsersResource {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/filter")
+    @PostMapping(value = "/filter", produces = MediaType.APPLICATION_JSON, consumes = MediaType.APPLICATION_JSON)
     public ResponseEntity<List<UserDTO>> filterUsers(@RequestBody UsersFiltersDTO filterParamsDTO) {
         List<UserDTO> users = usersService.filterUserByParameters(filterParamsDTO);
         if (users.isEmpty()) {
@@ -64,4 +65,11 @@ public class UsersResource {
         return ResponseEntity.noContent().build();
     }
 
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> getUser(@PathVariable("id") String id) {
+        return usersService.getUser(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
+    }
 }

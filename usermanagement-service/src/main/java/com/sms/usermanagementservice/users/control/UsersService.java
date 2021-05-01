@@ -28,7 +28,7 @@ public class UsersService {
     UserFilteringService userFilteringService;
 
     @Autowired
-    private UserContext context;
+    UserContext context;
 
     public List<UserDTO> filterUserByParameters(UsersFiltersDTO filterParamsDTO) {
         CustomFilterParams customFilterParams = UserMapper.mapCustomFilterParams(filterParamsDTO);
@@ -37,6 +37,9 @@ public class UsersService {
         return userFilteringService.customFilteringUsers(userList, customFilterParams);
     }
 
+    public Optional<UserDTO> getUser(String id) {
+        return keycloakClient.getUser(id).map(UserMapper::toDTO);
+    }
 
     public void createStudentWithParent(UserDTO user) {
         createUser(user);
