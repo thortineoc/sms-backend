@@ -15,9 +15,11 @@ import org.springframework.http.HttpStatus;
 import com.sms.usermanagement.*;
 
 import javax.ws.rs.core.MediaType;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 class UpdateUserTest {
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
@@ -26,11 +28,11 @@ class UpdateUserTest {
     @BeforeEach
     @AfterEach
     public void cleanup() {
-        UserSearchParams params = new UserSearchParams().firstName("firstName");
+        UserSearchParams params = new UserSearchParams().lastName("lastName");
         List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
         createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
 
-        params = new UserSearchParams().firstName("newFirstName");
+        params = new UserSearchParams().lastName("newLastName");
         createdUsers = KEYCLOAK_CLIENT.getUsers(params);
         createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
     }
@@ -47,12 +49,11 @@ class UpdateUserTest {
                 .post("/users")
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
-        //above returns 409 "conflict" for some reason
+        //returns 405 "method not allowed"
 
         //FIND IN KEYCLOAK
         UserSearchParams params = new UserSearchParams().firstName("firstName");
         UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
-
 
 
         //GIVEN
@@ -92,7 +93,7 @@ class UpdateUserTest {
                 .post("/users")
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
-        //returns 409 "conflict"
+        //returns 405 "method not allowed"
 
 
         //FIND IN KEYCLOAK
@@ -184,6 +185,8 @@ class UpdateUserTest {
 
         return userDTO;
     }
+
+    //below part could be removed, if I knew how to import UserMapper
     UserDTO toDTO(UserRepresentation user){
         return UserDTO.builder()
                 .id(user.getId())
@@ -193,12 +196,37 @@ class UpdateUserTest {
                 .lastName(user.getLastName())
                 .role(UserDTO.Role.valueOf(user.getAttributes().get("role").get(0)))
                 .email(Optional.ofNullable(user.getEmail()))
+                .customAttributes(mapToUserAttributes(mapUserRepresentation(user)))
                 .build();
     }
     String mapPesel(UserRepresentation userRep) {
         return Optional.ofNullable(userRep.getAttributes().get("pesel"))
                 .flatMap(list -> list.stream().findFirst())
                 .orElseThrow(() -> new IllegalStateException("peselu nie ma"));
+    }
+    CustomAttributesDTO mapToUserAttributes(Map<String, String> attributes) {
+        ImmutableCustomAttributesDTO.Builder builder = CustomAttributesDTO.builder();
+        Optional.ofNullable(attributes.get("group")).ifPresent(builder::group);
+        Optional.ofNullable(attributes.get("middleName")).ifPresent(builder::middleName);
+        Optional.ofNullable(attributes.get("phoneNumber")).ifPresent(builder::phoneNumber);
+        Optional.ofNullable(attributes.get("relatedUser")).ifPresent(builder::relatedUser);
+        Optional.ofNullable(attributes.get("subjects")).map(s -> s.split(","))
+                .map(Arrays::asList)
+                .ifPresent(builder::subjects);
+
+        return builder.build();
+    }
+    Map<String, String> mapUserRepresentation(UserRepresentation user) {
+        return user.getAttributes().entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> "subjects".equals(entry.getKey())
+                                ? String.join(",", entry.getValue())
+                                : entry.getValue().stream()
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalStateException("Missing parameter value"))
+                ));
     }
 
 }
