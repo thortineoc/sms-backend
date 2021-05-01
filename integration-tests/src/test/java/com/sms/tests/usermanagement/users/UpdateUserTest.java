@@ -17,6 +17,7 @@ import com.sms.usermanagement.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 class UpdateUserTest {
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
@@ -46,6 +47,7 @@ class UpdateUserTest {
                 .post("/users")
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
+        //above returns 409 "conflict" for some reason
 
         //FIND IN KEYCLOAK
         UserSearchParams params = new UserSearchParams().firstName("firstName");
@@ -55,7 +57,7 @@ class UpdateUserTest {
 
         //GIVEN
         WebClient tempWebClient = new WebClient("testbackenduser", "testbackenduser");
-        user = UserMapper.toDTO(createdUser);
+        user = toDTO(createdUser);
 
         //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
         tempWebClient.request("usermanagement-service")
@@ -75,7 +77,7 @@ class UpdateUserTest {
                 .put("/users/update")
                 .then()
                 .statusCode(HttpStatus.BAD_REQUEST.value());
-
+        //returns 405 "method not allowed"
     }
 
     @Test
@@ -90,6 +92,8 @@ class UpdateUserTest {
                 .post("/users")
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
+        //returns 409 "conflict"
+
 
         //FIND IN KEYCLOAK
         UserSearchParams params = new UserSearchParams().firstName("firstName");
@@ -179,6 +183,22 @@ class UpdateUserTest {
                 .build();
 
         return userDTO;
+    }
+    UserDTO toDTO(UserRepresentation user){
+        return UserDTO.builder()
+                .id(user.getId())
+                .pesel(mapPesel(user))
+                .userName(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .role(UserDTO.Role.valueOf(user.getAttributes().get("role").get(0)))
+                .email(Optional.ofNullable(user.getEmail()))
+                .build();
+    }
+    String mapPesel(UserRepresentation userRep) {
+        return Optional.ofNullable(userRep.getAttributes().get("pesel"))
+                .flatMap(list -> list.stream().findFirst())
+                .orElseThrow(() -> new IllegalStateException("peselu nie ma"));
     }
 
 }
