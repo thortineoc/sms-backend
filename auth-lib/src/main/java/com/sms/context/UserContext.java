@@ -3,14 +3,21 @@ package com.sms.context;
 import com.sms.authlib.UserAuthDTO;
 import com.sms.usermanagement.UserDTO;
 import org.keycloak.KeycloakPrincipal;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.Set;
 
 @Component
+@Scope("request")
 public class UserContext {
+
+    private static final String ROLE = "role";
+
+    public static ThreadLocal<UserContext> context = new ThreadLocal<>();
 
     private String userId;
     private String userName;
@@ -19,28 +26,27 @@ public class UserContext {
     private UserDTO.Role smsRole;
     private Map<String, Object> customAttributes;
 
-    void fromHttpRequest(HttpServletRequest request) {
-        if ("KEYCLOAK".equals(request.getAuthType())) {
-            KeycloakPrincipal<?> keycloakPrincipal = (KeycloakPrincipal<?>) request.getUserPrincipal();
+    @Autowired
+    SecurityConfig securityConfig;
 
-            this.customAttributes = keycloakPrincipal.getKeycloakSecurityContext().getToken().getOtherClaims();
-            if (customAttributes.containsKey("role")) {
-                this.smsRole = UserDTO.Role.valueOf(customAttributes.get("role").toString());
-            }
-            this.userId = keycloakPrincipal.getName();
-            this.token = keycloakPrincipal.getKeycloakSecurityContext().getTokenString();
-            this.kcRoles = keycloakPrincipal.getKeycloakSecurityContext().getToken().getRealmAccess().getRoles();
-            this.userName = keycloakPrincipal.getKeycloakSecurityContext().getToken().getPreferredUsername();
+    @PostConstruct
+    private void fromPrincipal() {
+        KeycloakPrincipal<?> keycloakPrincipal = securityConfig.getPrincipal();
+
+        this.customAttributes = keycloakPrincipal.getKeycloakSecurityContext().getToken().getOtherClaims();
+        if (customAttributes.containsKey(ROLE)) {
+            this.smsRole = UserDTO.Role.valueOf(customAttributes.get(ROLE).toString());
         }
+        this.userId = keycloakPrincipal.getName();
+        this.token = keycloakPrincipal.getKeycloakSecurityContext().getTokenString();
+        this.kcRoles = keycloakPrincipal.getKeycloakSecurityContext().getToken().getRealmAccess().getRoles();
+        this.userName = keycloakPrincipal.getKeycloakSecurityContext().getToken().getPreferredUsername();
+
+        UserContext.context.set(this);
     }
 
-    void clear() {
-        this.userId = null;
-        this.userName = null;
-        this.token = null;
-        this.kcRoles = null;
-        this.smsRole = null;
-        this.customAttributes = null;
+    public static UserContext get() {
+        return context.get();
     }
 
     public UserDTO.Role getSmsRole() {
