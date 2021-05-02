@@ -1,6 +1,7 @@
 package com.sms.usermanagementservice.subjects.boundary;
 
 import com.sms.context.AuthRole;
+import com.sms.context.UserContext;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagementservice.subjects.control.SubjectsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,9 @@ public class SubjectsResource {
 
     @Autowired
     private SubjectsService subjectsService;
+
+    @Autowired
+    UserContext userContext;
 
     @GetMapping
     public ResponseEntity<List<String>> getAllSubjects() {
