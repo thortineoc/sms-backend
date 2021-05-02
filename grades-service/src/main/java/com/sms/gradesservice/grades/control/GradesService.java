@@ -92,7 +92,6 @@ public class GradesService {
         }
     }
 
-    private List<StudentGradesDTO> mapStudentsToGrades(Map<String, List<GradeDTO>> grades, Map<String, UserDTO> students) {
     List<StudentGradesDTO> mapStudentsToGrades(Map<String, GradesDTO> grades, Map<String, UserDTO> students) {
         return grades.keySet().stream()
                 .map(id -> StudentGradesDTO.builder()
