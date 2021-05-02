@@ -161,9 +161,8 @@ public class UsersService {
     private void setNewValues(UserDTO userDTO, UserRepresentation userRep) {
         userRep.setFirstName(userDTO.getFirstName());
         userRep.setLastName(userDTO.getLastName());
-        if (userDTO.getEmail().isPresent()) {
-            userRep.setEmail(userDTO.getEmail().get());
-        }
+        userDTO.getEmail().ifPresent(userRep::setEmail);
+
         CustomAttributesDTO attributesDTO = userDTO.getCustomAttributes();
         attributesDTO.getPhoneNumber().ifPresent(value -> userRep.singleAttribute("phoneNumber", value));
         attributesDTO.getMiddleName().ifPresent(value -> userRep.singleAttribute("middleName", value));
