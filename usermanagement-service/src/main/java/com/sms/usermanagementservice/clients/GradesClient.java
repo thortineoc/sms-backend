@@ -27,7 +27,7 @@ public class GradesClient {
                 .request(MediaType.TEXT_PLAIN_TYPE)
                 .delete();
 
-        return response.getStatus() == HttpStatus.OK.value();
+        return response.getStatus() == HttpStatus.NO_CONTENT.value();
     }
 
 }
