@@ -1,4 +1,4 @@
-/*
+
 package com.sms.tests.grades;
 
 import com.sms.clients.WebClient;
@@ -100,4 +100,3 @@ public class DeleteGradeTest {
     }
 
 }
-*/
