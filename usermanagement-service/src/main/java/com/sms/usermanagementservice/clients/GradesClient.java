@@ -20,7 +20,7 @@ public class GradesClient {
     private static final String GRADES = "grades-service";
 
     public boolean deleteGrades(String id) {
-        Response response = serviceClient.overrideHaproxyUrl("http://localhost:24032").target(GRADES) // add ` overrideHaproxyUrl("http://localhost:24032") `
+        Response response = serviceClient.target(GRADES) // add ` overrideHaproxyUrl("http://localhost:24032") `
                 .path("grades")    // to test locally
                 .path("user")
                 .path(id)
