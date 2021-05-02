@@ -47,11 +47,11 @@ public class GradesService {
         }
     }
 
-    public List<StudentGradesDTO> getTeacherGrades(String subject, List<String> studentIds) {
+    public List<StudentGradesDTO> getTeacherGrades(String group, String subject) {
         try {
+            Map<String, UserDTO> studentsByIds = getStudentsByIds(group);
             Map<String, List<GradeDTO>> grades = groupGrades(GradeDTO::getStudentId,
-                    gradesRepository.findAllBySubjectAndStudentIdIn(subject, studentIds));
-            Map<String, UserDTO> studentsByIds = getStudentsByIds();
+                    gradesRepository.findAllBySubjectAndStudentIdIn(subject, studentsByIds.keySet()));
             return mapStudentsToGrades(extractFinalGrades(grades), studentsByIds);
         } catch (EntityNotFoundException e) {
             return Collections.emptyList();
@@ -124,9 +124,10 @@ public class GradesService {
                 .build();
     }
 
-    private Map<String, UserDTO> getStudentsByIds() {
+    private Map<String, UserDTO> getStudentsByIds(String group) {
         return userManagementClient.getUsers(UsersFiltersDTO.builder()
                 .role(UserDTO.Role.STUDENT.toString())
+                .group(group)
                 .build()).stream()
                 .collect(Collectors.toMap(UserDTO::getId, Function.identity()));
     }

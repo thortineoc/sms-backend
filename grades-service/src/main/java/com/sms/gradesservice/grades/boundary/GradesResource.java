@@ -34,11 +34,11 @@ public class GradesResource {
         }
     }
 
-    @PostMapping("/teacher/{subject}")
+    @GetMapping("/group/{groupName}/subject/{subjectName}")
     @AuthRole(UserDTO.Role.TEACHER)
-    public ResponseEntity<List<StudentGradesDTO>> getTeacherGrades(@PathVariable("subject") String subject,
-                                                                   @RequestBody List<String> studentIds) {
-        List<StudentGradesDTO> grades = gradesService.getTeacherGrades(subject, studentIds);
+    public ResponseEntity<List<StudentGradesDTO>> getTeacherGrades(@PathVariable("groupName") String groupName,
+                                                                   @PathVariable("subjectName") String subjectName) {
+        List<StudentGradesDTO> grades = gradesService.getTeacherGrades(groupName, subjectName);
         if (grades.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
