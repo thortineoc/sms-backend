@@ -13,13 +13,16 @@ import com.sms.usermanagement.UsersFiltersDTO;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import static com.sms.common.Util.*;
 
 @Component
@@ -74,7 +77,7 @@ public class GradesService {
             gradesRepository.deleteById(id);
         } catch (ConstraintViolationException e) {
             throw new IllegalArgumentException("Deleting grade: " + id + " violated database constraints: " + e.getConstraintName());
-        } catch (EmptyResultDataAccessException e) {
+        } catch (EntityNotFoundException e) {
             throw new IllegalStateException("Grade with ID: " + id + " does not exist, can't delete: ");
         }
     }
@@ -86,7 +89,7 @@ public class GradesService {
                 gradesRepository.deleteById(grade.getId());
             } catch (ConstraintViolationException e) {
                 throw new IllegalArgumentException("Deleting grade: " + grade.getId() + " violated database constraints: " + e.getConstraintName());
-            } catch (EmptyResultDataAccessException  e) {
+            } catch (EntityNotFoundException e) {
                 throw new IllegalStateException("Grade with ID: " + grade.getId() + " does not exist, can't delete: ");
             }
         }

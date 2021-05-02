@@ -21,7 +21,8 @@ public class GradesClient {
 
     public boolean deleteGrades(String id) {
         Response response = serviceClient.target(GRADES) // add ` overrideHaproxyUrl("http://localhost:24032") `
-                .path("grades")                          // to test locally
+                .path("grades")    // to test locally
+                .path("user")
                 .path(id)
                 .request(MediaType.TEXT_PLAIN_TYPE)
                 .delete();

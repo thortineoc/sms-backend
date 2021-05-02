@@ -20,7 +20,7 @@ public class DeleteGradeTest {
     void shouldThrowExceptionOnInvalidId() {
         // DELETE GRADE
         TEACHERCLIENT.request("grades-service")
-                .delete("/grades/delete/0")
+                .delete("/grades/0")
                 .then()
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
@@ -30,7 +30,7 @@ public class DeleteGradeTest {
         // DELETE GRADE
         ADMINCLIENT.request("grades-service")
                 .contentType(MediaType.APPLICATION_JSON)
-                .delete("/grades/delete/0")
+                .delete("/grades/0")
                 .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
     }
@@ -42,7 +42,7 @@ public class DeleteGradeTest {
         //DELETE GRADE
         TEACHERCLIENT.request("grades-service")
                 .contentType(MediaType.APPLICATION_JSON)
-                .delete("/grades/delete/" + gradeDTO.getId())
+                .delete("/grades/" + gradeDTO.getId())
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
@@ -58,7 +58,7 @@ public class DeleteGradeTest {
         //DELETE GRADE
         ADMINCLIENT.request("grades-service")
                 .contentType(MediaType.APPLICATION_JSON)
-                .delete("/grades/" + TESTBACKENDUSER)
+                .delete("/grades/user/" + TESTBACKENDUSER)
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
     }

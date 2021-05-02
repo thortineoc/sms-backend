@@ -53,14 +53,14 @@ public class GradesResource {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("delete/{id}")
+    @DeleteMapping("/{id}")
     @AuthRole(UserDTO.Role.TEACHER)
     public ResponseEntity<Object> deleteGrade(@PathVariable("id") Long id) {
         gradesService.deleteGrade(id);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/user/{id}")
     @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<Object> deleteAllGrades( @PathVariable("id") String id) {
         gradesService.deleteAllGrades(id);
