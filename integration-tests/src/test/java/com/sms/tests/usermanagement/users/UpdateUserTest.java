@@ -57,8 +57,14 @@ class UpdateUserTest {
 
 
         //GIVEN
-        WebClient tempWebClient = new WebClient("testbackenduser", "testbackenduser");
-        user = toDTO(createdUser);
+        WebClient tempWebClient = new WebClient();
+        //user = toDTO(createdUser);
+        user = (UserDTO) CLIENT.request("usermanagement-service")
+                .get("/"+createdUser.getId())
+                .then()
+                .statusCode(HttpStatus.NO_CONTENT.value());
+        //returns 404 "not found"
+
 
         //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
         tempWebClient.request("usermanagement-service")
@@ -109,23 +115,24 @@ class UpdateUserTest {
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
-        createdUser = KEYCLOAK_CLIENT.getUser(createdUser.getId()).get();
+        user = (UserDTO) CLIENT.request("usermanagement-service")
+                .get("/"+createdUser.getId())
+                .then()
+                .statusCode(HttpStatus.NO_CONTENT.value());
 
         //CHECK CHANGES
-        Assertions.assertEquals("newFirstName", createdUser.getFirstName());
-        Assertions.assertEquals("newLastName", createdUser.getLastName());
-        Assertions.assertEquals("newMail@email.com", createdUser.getEmail());
+        Assertions.assertEquals("newFirstName", user.getFirstName());
+        Assertions.assertEquals("newLastName", user.getLastName());
+        Assertions.assertEquals("newMail@email.com", user.getEmail().get());
+        Assertions.assertEquals("pesel", user.getPesel());
+        Assertions.assertEquals(UserDTO.Role.STUDENT, user.getRole());
 
-        Map<String, List<String>> attributes = createdUser.getAttributes();
+        CustomAttributesDTO attributes = user.getCustomAttributes();
 
-        Assertions.assertEquals("789-987-879", attributes.get("phoneNumber").get(0));
-        Assertions.assertEquals("newMiddleName", attributes.get("middleName").get(0));
-        Assertions.assertEquals("newPESEL", attributes.get("pesel").get(0));
-        Assertions.assertEquals("new-example-group", attributes.get("group").get(0));
-        Assertions.assertEquals("example-user", attributes.get("relatedUser").get(0));
-        Assertions.assertEquals("STUDENT", attributes.get("role").get(0));
-
-
+        Assertions.assertEquals("789-987-879", attributes.getPhoneNumber().get());
+        Assertions.assertEquals("newMiddleName", attributes.getMiddleName().get());
+        Assertions.assertEquals("new-example-group", attributes.getGroup().get());
+        Assertions.assertEquals("example-user", attributes.getRelatedUser().get());
 
         //CLEANUP
         KEYCLOAK_CLIENT.deleteUser(createdUser.getId());
@@ -185,48 +192,4 @@ class UpdateUserTest {
 
         return userDTO;
     }
-
-    //below part could be removed, if I knew how to import UserMapper
-    UserDTO toDTO(UserRepresentation user){
-        return UserDTO.builder()
-                .id(user.getId())
-                .pesel(mapPesel(user))
-                .userName(user.getUsername())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .role(UserDTO.Role.valueOf(user.getAttributes().get("role").get(0)))
-                .email(Optional.ofNullable(user.getEmail()))
-                .customAttributes(mapToUserAttributes(mapUserRepresentation(user)))
-                .build();
-    }
-    String mapPesel(UserRepresentation userRep) {
-        return Optional.ofNullable(userRep.getAttributes().get("pesel"))
-                .flatMap(list -> list.stream().findFirst())
-                .orElseThrow(() -> new IllegalStateException("peselu nie ma"));
-    }
-    CustomAttributesDTO mapToUserAttributes(Map<String, String> attributes) {
-        ImmutableCustomAttributesDTO.Builder builder = CustomAttributesDTO.builder();
-        Optional.ofNullable(attributes.get("group")).ifPresent(builder::group);
-        Optional.ofNullable(attributes.get("middleName")).ifPresent(builder::middleName);
-        Optional.ofNullable(attributes.get("phoneNumber")).ifPresent(builder::phoneNumber);
-        Optional.ofNullable(attributes.get("relatedUser")).ifPresent(builder::relatedUser);
-        Optional.ofNullable(attributes.get("subjects")).map(s -> s.split(","))
-                .map(Arrays::asList)
-                .ifPresent(builder::subjects);
-
-        return builder.build();
-    }
-    Map<String, String> mapUserRepresentation(UserRepresentation user) {
-        return user.getAttributes().entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> "subjects".equals(entry.getKey())
-                                ? String.join(",", entry.getValue())
-                                : entry.getValue().stream()
-                                .findFirst()
-                                .orElseThrow(() -> new IllegalStateException("Missing parameter value"))
-                ));
-    }
-
 }
