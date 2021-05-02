@@ -1,7 +1,9 @@
 package com.sms.gradesservice.grades.control;
 
+import com.sms.common.Util;
 import com.sms.context.UserContext;
 import com.sms.grades.GradeDTO;
+import com.sms.grades.GradesDTO;
 import com.sms.grades.StudentGradesDTO;
 import com.sms.gradesservice.clients.UserManagementClient;
 import com.sms.gradesservice.grades.control.repository.GradeJPA;
@@ -15,12 +17,10 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import static com.sms.common.Util.*;
 
 @Component
 @Scope("request")
@@ -35,10 +35,10 @@ public class GradesService {
     @Autowired
     UserManagementClient userManagementClient;
 
-    public Map<String, List<GradeDTO>> getStudentGrades() {
+    public Map<String, GradesDTO> getStudentGrades() {
         String studentId = userContext.getUserId();
         try {
-            return groupBySubject(gradesRepository.findAllByStudentId(studentId));
+            return extractFinalGrades(groupGrades(GradeDTO::getSubject, gradesRepository.findAllByStudentId(studentId)));
         } catch (EntityNotFoundException e) {
             return Collections.emptyMap();
         }
@@ -46,9 +46,10 @@ public class GradesService {
 
     public List<StudentGradesDTO> getTeacherGrades(String subject, List<String> studentIds) {
         try {
-            Map<String, List<GradeDTO>> grades = groupByStudentId(gradesRepository.findAllBySubjectAndStudentIdIn(subject, studentIds));
+            Map<String, List<GradeDTO>> grades = groupGrades(GradeDTO::getStudentId,
+                    gradesRepository.findAllBySubjectAndStudentIdIn(subject, studentIds));
             Map<String, UserDTO> studentsByIds = getStudentsByIds();
-            return mapStudentsToGrades(grades, studentsByIds);
+            return mapStudentsToGrades(extractFinalGrades(grades), studentsByIds);
         } catch (EntityNotFoundException e) {
             return Collections.emptyList();
         }
@@ -56,6 +57,7 @@ public class GradesService {
 
     public void updateGrade(GradeDTO gradeDTO) {
         GradeJPA grade = GradesMapper.toJPA(gradeDTO);
+        grade.setTeacherId(userContext.getUserId());
         validateGrade(grade);
 
         try {
@@ -91,21 +93,33 @@ public class GradesService {
     }
 
     private List<StudentGradesDTO> mapStudentsToGrades(Map<String, List<GradeDTO>> grades, Map<String, UserDTO> students) {
+    List<StudentGradesDTO> mapStudentsToGrades(Map<String, GradesDTO> grades, Map<String, UserDTO> students) {
         return grades.keySet().stream()
                 .map(id -> StudentGradesDTO.builder()
                         .grades(grades.get(id))
-                        .student(Optional.ofNullable(students.get(id))
-                                .orElseThrow(() -> new IllegalStateException("Grades assigned to non existing user: " + id + " found")))
+                        .student(getOrThrow(students, id,
+                                () -> new IllegalStateException("Grades assigned to non existing user: " + id + " found")))
                         .build())
                 .collect(Collectors.toList());
     }
 
-    private Map<String, List<GradeDTO>> groupByStudentId(List<GradeJPA> grades) {
-        return grades.stream().map(GradesMapper::toDTO).collect(Collectors.groupingBy(GradeDTO::getStudentId));
+    Map<String, List<GradeDTO>> groupGrades(Function<GradeDTO, String> classifier, List<GradeJPA> grades) {
+        return grades.stream().map(GradesMapper::toDTO).collect(Collectors.groupingBy(classifier));
     }
 
-    private Map<String, List<GradeDTO>> groupBySubject(List<GradeJPA> grades) {
-        return grades.stream().map(GradesMapper::toDTO).collect(Collectors.groupingBy(GradeDTO::getSubject));
+    Map<String, GradesDTO> extractFinalGrades(Map<String, List<GradeDTO>> grades) {
+        return grades.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, this::extractFinalGrade));
+    }
+
+    private GradesDTO extractFinalGrade(Map.Entry<String, List<GradeDTO>> grades) {
+        Map<Boolean, List<GradeDTO>> splitGrades = grades.getValue().stream()
+                .collect(Collectors.groupingBy(GradeDTO::isFinal));
+
+        return GradesDTO.builder()
+                .grades(getOrEmpty(splitGrades, Boolean.FALSE))
+                .finalGrade(getOpt(splitGrades, Boolean.TRUE).flatMap(Util::getFirst))
+                .build();
     }
 
     private Map<String, UserDTO> getStudentsByIds() {

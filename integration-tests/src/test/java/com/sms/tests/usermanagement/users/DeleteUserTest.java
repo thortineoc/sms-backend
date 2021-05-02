@@ -46,7 +46,7 @@ public class DeleteUserTest {
     void shouldDeleteStudentWithParentUser() {
         // GIVEN
         // create new user and validate it's creation
-        UserDTO user = createUserDTO(UserDTO.Role.STUDENT);
+        UserDTO user = createUserDTO(UserDTO.Role.STUDENT, "userName", "mail@email.com");
         createNewUser(user);
         // get user from kc with valid id
         UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
@@ -70,7 +70,7 @@ public class DeleteUserTest {
     void shouldDeleteTeacherUser() {
         // GIVEN
         // create new user and validate it's creation
-        UserDTO user = createUserDTO(UserDTO.Role.TEACHER);
+        UserDTO user = createUserDTO(UserDTO.Role.TEACHER, "userName", "mail@email.com");
         createNewUser(user);
         // get user from kc with valid id
         UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
@@ -90,6 +90,60 @@ public class DeleteUserTest {
         Assertions.assertEquals(0, createdUsers.size());
     }
 
+    @Test
+    void shouldThrowBadRequestIfAdminDeletesHimself(){
+        // GIVEN
+        // create new user and validate it's creation
+        UserDTO user = createUserDTO(UserDTO.Role.ADMIN, "userName", "mail@email.com");
+        createNewUser(user);
+        // get user from kc with valid id
+        UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
+        UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
+        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
+        Assertions.assertEquals(1, createdUsers.size());
+
+        // prepare second webclient
+        WebClient adminWebClient = new WebClient("a_pesel", "firsINTE");
+        // DELETE USER
+        adminWebClient.request("usermanagement-service")
+                .contentType(MediaType.APPLICATION_JSON)
+                .delete("/users/" + createdUser.getId())
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST.value());
+
+        // validate user has NOT been deleted
+        createdUsers = KEYCLOAK_CLIENT.getUsers(params);
+        Assertions.assertEquals(1, createdUsers.size());
+    }
+
+    @Test
+    void shouldThrowIfUserWithoutAdminRoleDeletesUser() {
+        // GIVEN
+        // create new user and validate it's creation
+        UserDTO user = createUserDTO(UserDTO.Role.TEACHER, "userName", "mail@email.com");
+        createNewUser(user);
+        UserDTO otherUser = createUserDTO(UserDTO.Role.STUDENT, "userName1", "mail1@email.com");
+        createNewUser(otherUser);
+        // get user from kc with valid id
+        UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
+        UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
+        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
+        Assertions.assertEquals(3, createdUsers.size()); // +1 for parent
+
+        // prepare second webclient
+        WebClient teacherWebClient = new WebClient("t_pesel", "firsINTE");
+        // DELETE USER
+        teacherWebClient.request("usermanagement-service")
+                .contentType(MediaType.APPLICATION_JSON)
+                .delete("/users/" + createdUser.getId())
+                .then()
+                .statusCode(HttpStatus.FORBIDDEN.value());
+
+        // validate user has NOT been deleted
+        createdUsers = KEYCLOAK_CLIENT.getUsers(params);
+        Assertions.assertEquals(3, createdUsers.size());
+    }
+
     void createNewUser(UserDTO user) {
         CLIENT.request("usermanagement-service")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -99,7 +153,7 @@ public class DeleteUserTest {
                 .statusCode(HttpStatus.NO_CONTENT.value());
     }
 
-    UserDTO createUserDTO(UserDTO.Role role) {
+    UserDTO createUserDTO(UserDTO.Role role, String userName, String mail) {
 
         List<String> subjects = Lists.newArrayList("subject1", "subject2");
         CustomAttributesDTO attributesDTO = CustomAttributesDTO.builder()
@@ -112,12 +166,12 @@ public class DeleteUserTest {
 
         return UserDTO.builder()
                 .id("null")
-                .userName("userName")
+                .userName(userName)
                 .firstName("firstName")
                 .lastName(TEST_PREFIX + "lastName")
                 .pesel("pesel")
                 .role(role)
-                .email("mail@email.com")
+                .email(mail)
                 .customAttributes(attributesDTO)
                 .build();
     }

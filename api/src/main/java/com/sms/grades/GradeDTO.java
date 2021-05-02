@@ -21,11 +21,16 @@ public interface GradeDTO {
 
     String getSubject();
 
-    String getTeacherId();
+    Optional<String> getTeacherId();
 
     String getStudentId();
 
     BigDecimal getGrade();
+
+    @Value.Default
+    default Boolean isFinal() {
+        return false;
+    }
 
     Optional<String> getDescription();
 
