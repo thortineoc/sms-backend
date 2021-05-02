@@ -41,8 +41,8 @@ public class UsersResource {
         return ResponseEntity.noContent().build();
     }
 
+    @AuthRole(UserDTO.Role.ADMIN)
     @DeleteMapping("/{id}")
-   // @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<Object> deleteUser(@PathVariable("id") String id) {
         usersService.deleteUser(id);
         return ResponseEntity.noContent().build();

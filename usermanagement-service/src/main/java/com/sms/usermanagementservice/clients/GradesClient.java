@@ -1,40 +1,32 @@
 package com.sms.usermanagementservice.clients;
 
 import com.sms.clients.ServiceClient;
-import com.sms.grades.GradeDTO;
-import com.sms.usermanagement.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-//TODO
-@Component
-@Scope("request")
-public class GradesClient {
 
-    private static final String GRADES= "grades-service";
+@Component
+@Scope("prototype")
+public class GradesClient {
 
     @Autowired
     ServiceClient serviceClient;
 
-    public int deleteGrades(String id) {
-        Response response = serviceClient.target(GRADES)
-                .path("grades")
-                .path("delete")
+    private static final String GRADES = "grades-service";
+
+    public boolean deleteGrades(String id) {
+        Response response = serviceClient.target(GRADES) // add ` overrideHaproxyUrl("http://localhost:24032") `
+                .path("grades")                          // to test locally
                 .path(id)
                 .request(MediaType.TEXT_PLAIN_TYPE)
-                .post(Entity.entity(id, MediaType.TEXT_PLAIN));
+                .delete();
 
-        if (response.getStatus() == HttpStatus.OK.value()) {
-            return HttpStatus.NO_CONTENT.value();
-        } else {
-            return HttpStatus.FORBIDDEN.value();
-        }
+        return response.getStatus() == HttpStatus.OK.value();
     }
 
 }

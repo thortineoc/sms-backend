@@ -63,6 +63,21 @@ public class UsersService {
         }
     }
 
+    public void deleteUser(String userId) {
+        if (context.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+        UserRepresentation userRepresentation = keycloakClient.getUser(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        Boolean areGradesDeleted = gradesClient.deleteGrades(userRepresentation.getId());
+        Boolean isDeleted = deleteRelatedUser(userRepresentation);
+
+        if (!(keycloakClient.deleteUser(userId) && isDeleted && areGradesDeleted)) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     private void createParent(UserDTO user, UserRepresentation createdStudent) {
 
         UserRepresentation parent = UserMapper
@@ -116,21 +131,6 @@ public class UsersService {
 
     private String calculateParentUsernameFromStudent(UserDTO user) {
         return "p_" + user.getPesel();
-    }
-
-    public void deleteUser(String userId) {
-        if (context.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-        UserRepresentation userRepresentation = keycloakClient.getUser(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        //TODO
-        gradesClient.deleteGrades(userRepresentation.getId());
-        Boolean isDeleted = deleteRelatedUser(userRepresentation);
-
-        if (!(keycloakClient.deleteUser(userId) && isDeleted)) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 
     private Boolean deleteRelatedUser(UserRepresentation userRepresentation) {

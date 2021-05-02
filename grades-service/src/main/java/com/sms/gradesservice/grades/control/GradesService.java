@@ -14,10 +14,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
-
 import javax.persistence.EntityNotFoundException;
-import javax.persistence.NoResultException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -66,14 +67,13 @@ public class GradesService {
         }
     }
 
-    public void deleteGrade(GradeDTO gradeDTO){
-        GradeJPA grade = GradesMapper.toJPA(gradeDTO);
-        try{
-            gradesRepository.deleteById(grade.getId()); //usuwając po grade nie łapie wyjątku
-        }catch (ConstraintViolationException e) {
-            throw new IllegalArgumentException("Deleting grade: " + gradeDTO.getId() + " violated database constraints: " + e.getConstraintName());
-        }catch (EmptyResultDataAccessException e){
-            throw new IllegalStateException("Grade with ID: " + gradeDTO.getId() + " does not exist, can't delete: ");
+    public void deleteGrade(Long id) {
+        try {
+            gradesRepository.deleteById(id);
+        } catch (ConstraintViolationException e) {
+            throw new IllegalArgumentException("Deleting grade: " + id + " violated database constraints: " + e.getConstraintName());
+        } catch (EmptyResultDataAccessException e) {
+            throw new IllegalStateException("Grade with ID: " + id + " does not exist, can't delete: ");
         }
     }
 
@@ -98,12 +98,6 @@ public class GradesService {
                                 .orElseThrow(() -> new IllegalStateException("Grades assigned to non existing user: " + id + " found")))
                         .build())
                 .collect(Collectors.toList());
-    }
-
-    private GradeDTO gradeFromId(String id){
-        return GradeDTO.builder()
-                .studentId(id)
-                .build();
     }
 
     private Map<String, List<GradeDTO>> groupByStudentId(List<GradeJPA> grades) {
