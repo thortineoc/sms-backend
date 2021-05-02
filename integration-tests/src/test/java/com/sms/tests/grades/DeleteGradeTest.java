@@ -1,14 +1,8 @@
 package com.sms.tests.grades;
 
-import com.sms.clients.KeycloakClient;
 import com.sms.clients.WebClient;
 import com.sms.grades.GradeDTO;
-import com.sms.grades.GradesDTO;
-import com.sms.gradesservice.grades.control.GradesService;
-import com.sms.gradesservice.grades.control.repository.GradesRepository;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import javax.ws.rs.core.MediaType;
