@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import com.sms.usermanagement.*;
 
 import javax.ws.rs.core.MediaType;
+import io.restassured.response.Response;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,6 @@ class UpdateUserTest {
                 .post("/users")
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
-        //returns 405 "method not allowed"
 
         //FIND IN KEYCLOAK
         UserSearchParams params = new UserSearchParams().firstName("firstName");
@@ -58,12 +58,13 @@ class UpdateUserTest {
 
         //GIVEN
         WebClient tempWebClient = new WebClient();
-        //user = toDTO(createdUser);
-        user = (UserDTO) CLIENT.request("usermanagement-service")
-                .get("/"+createdUser.getId())
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
-        //returns 404 "not found"
+
+        Response response = CLIENT.request("usermanagement-service")
+                .contentType(MediaType.APPLICATION_JSON)
+                .log().all()
+                .get("/users/"+createdUser.getId());
+
+        user = response.as(UserDTO.class);
 
 
         //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
@@ -84,7 +85,6 @@ class UpdateUserTest {
                 .put("/users/update")
                 .then()
                 .statusCode(HttpStatus.BAD_REQUEST.value());
-        //returns 405 "method not allowed"
     }
 
     @Test
@@ -99,7 +99,6 @@ class UpdateUserTest {
                 .post("/users")
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
-        //returns 405 "method not allowed"
 
 
         //FIND IN KEYCLOAK
@@ -115,15 +114,17 @@ class UpdateUserTest {
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
-        user = (UserDTO) CLIENT.request("usermanagement-service")
-                .get("/"+createdUser.getId())
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+        Response response = CLIENT.request("usermanagement-service")
+                .contentType(MediaType.APPLICATION_JSON)
+                .log().all()
+                .get("/users/"+createdUser.getId());
+
+        user = response.as(UserDTO.class);
 
         //CHECK CHANGES
         Assertions.assertEquals("newFirstName", user.getFirstName());
         Assertions.assertEquals("newLastName", user.getLastName());
-        Assertions.assertEquals("newMail@email.com", user.getEmail().get());
+        Assertions.assertEquals("newmail@email.com", user.getEmail().get());
         Assertions.assertEquals("pesel", user.getPesel());
         Assertions.assertEquals(UserDTO.Role.STUDENT, user.getRole());
 
@@ -132,7 +133,6 @@ class UpdateUserTest {
         Assertions.assertEquals("789-987-879", attributes.getPhoneNumber().get());
         Assertions.assertEquals("newMiddleName", attributes.getMiddleName().get());
         Assertions.assertEquals("new-example-group", attributes.getGroup().get());
-        Assertions.assertEquals("example-user", attributes.getRelatedUser().get());
 
         //CLEANUP
         KEYCLOAK_CLIENT.deleteUser(createdUser.getId());
