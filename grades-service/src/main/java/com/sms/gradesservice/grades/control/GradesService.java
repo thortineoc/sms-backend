@@ -16,9 +16,13 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import static com.sms.common.Util.*;
 
 @Component
@@ -66,6 +70,29 @@ public class GradesService {
             throw new IllegalArgumentException("Saving grade: " + gradeDTO.getId() + " violated database constraints: " + e.getConstraintName());
         } catch (EntityNotFoundException e) {
             throw new IllegalStateException("Grade with ID: " + gradeDTO.getId() + " does not exist, can't update: " + e.getMessage());
+        }
+    }
+
+    public void deleteGrade(Long id) {
+        try {
+            gradesRepository.deleteById(id);
+        } catch (ConstraintViolationException e) {
+            throw new IllegalArgumentException("Deleting grade: " + id + " violated database constraints: " + e.getConstraintName());
+        } catch (EntityNotFoundException e) {
+            throw new IllegalStateException("Grade with ID: " + id + " does not exist, can't delete: ");
+        }
+    }
+
+    public void deleteAllGrades(String id){
+        List<GradeJPA> studentGrades = gradesRepository.findAllByStudentId(id);
+        for( GradeJPA grade : studentGrades ) {
+            try {
+                gradesRepository.deleteById(grade.getId());
+            } catch (ConstraintViolationException e) {
+                throw new IllegalArgumentException("Deleting grade: " + grade.getId() + " violated database constraints: " + e.getConstraintName());
+            } catch (EntityNotFoundException e) {
+                throw new IllegalStateException("Grade with ID: " + grade.getId() + " does not exist, can't delete: ");
+            }
         }
     }
 
