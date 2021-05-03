@@ -2,35 +2,35 @@ package com.sms.tests.usermanagement.users;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.sms.clients.KeycloakClient;
 import com.sms.clients.WebClient;
-import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.HttpStatus;
 
 import javax.ws.rs.core.MediaType;
-import java.util.List;
+import java.util.Arrays;
 
 class UpdateUserTest {
+
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
-    private final static KeycloakClient KEYCLOAK_CLIENT = new KeycloakClient();
 
     @BeforeEach
     @AfterEach
     public void cleanup() {
-        UserSearchParams params = new UserSearchParams().lastName("lastName");
-        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-        createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
+        Response response = UserUtils.getUsers(ImmutableMap.of("lastName", "lastName"));
+        if (response.statusCode() == 200) {
+            Arrays.stream(response.as(UserDTO[].class)).map(UserDTO::getId).forEach(UserUtils::deleteUser);
+        }
 
-        params = new UserSearchParams().lastName("newLastName");
-        createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-        createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
+        response = UserUtils.getUsers(ImmutableMap.of("lastName", "newLastName"));
+        if (response.statusCode() == 200) {
+            Arrays.stream(response.as(UserDTO[].class)).map(UserDTO::getId).forEach(UserUtils::deleteUser);
+        }
     }
 
     @Test
@@ -49,12 +49,7 @@ class UpdateUserTest {
         WebClient tempWebClient = new WebClient();
 
         //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
-        tempWebClient.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(createdUser)
-                .put("/users/update")
-                .then()
-                .statusCode(HttpStatus.FORBIDDEN.value());
+        UserUtils.updateUser(tempWebClient, createdUser).then().statusCode(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
@@ -100,22 +95,11 @@ class UpdateUserTest {
         Assertions.assertEquals("new-example-group", attributes.getGroup().get());
 
         //CLEANUP
-        KEYCLOAK_CLIENT.deleteUser(createdUser.getId());
+        UserUtils.deleteUser(createdUser.getId()).then().statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     UserDTO createUserDTO(UserDTO.Role role) {
-
-        List subjects = Lists.newArrayList("subject1", "subject2");
-
-        CustomAttributesDTO attributesDTO = CustomAttributesDTO.builder()
-                .phoneNumber("132-234-234")
-                .middleName("middleName")
-                .relatedUser("example-user")
-                .group("example-group")
-                .subjects(subjects)
-                .build();
-
-        UserDTO userDTO = UserDTO.builder()
+        return UserDTO.builder()
                 .id("null")
                 .userName("null")
                 .firstName("firstName")
@@ -123,26 +107,18 @@ class UpdateUserTest {
                 .pesel("pesel")
                 .role(role)
                 .email("mail@email.com")
-                .customAttributes(attributesDTO)
+                .customAttributes(CustomAttributesDTO.builder()
+                        .phoneNumber("132-234-234")
+                        .middleName("middleName")
+                        .relatedUser("example-user")
+                        .group("example-group")
+                        .subjects(Lists.newArrayList("subject1", "subject2"))
+                        .build())
                 .build();
-
-        return userDTO;
     }
 
-
     UserDTO createNewUserDTO(UserDTO.Role role, String Id) {
-
-        List subjects = Lists.newArrayList("subject3", "subject4");
-
-        CustomAttributesDTO attributesDTO = CustomAttributesDTO.builder()
-                .phoneNumber("789-987-879")
-                .middleName("newMiddleName")
-                .relatedUser("new-example-user")
-                .group("new-example-group")
-                .subjects(subjects)
-                .build();
-
-        UserDTO userDTO = UserDTO.builder()
+        return UserDTO.builder()
                 .id(Id)
                 .userName("null")
                 .firstName("newFirstName")
@@ -150,9 +126,13 @@ class UpdateUserTest {
                 .pesel("newPESEL")
                 .role(role)
                 .email("newMail@email.com")
-                .customAttributes(attributesDTO)
+                .customAttributes(CustomAttributesDTO.builder()
+                        .phoneNumber("789-987-879")
+                        .middleName("newMiddleName")
+                        .relatedUser("new-example-user")
+                        .group("new-example-group")
+                        .subjects(Lists.newArrayList("subject3", "subject4"))
+                        .build())
                 .build();
-
-        return userDTO;
     }
 }
