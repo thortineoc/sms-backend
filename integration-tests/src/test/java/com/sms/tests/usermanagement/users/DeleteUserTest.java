@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.WebClient;
 import com.sms.clients.entity.UserSearchParams;
+import com.sms.grades.GradeDTO;
 import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
 import org.junit.jupiter.api.AfterEach;
@@ -14,13 +15,16 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.HttpStatus;
 
 import javax.ws.rs.core.MediaType;
+import java.math.BigDecimal;
 import java.util.List;
 
 import static com.sms.tests.usermanagement.TestUtils.TEST_PREFIX;
 
 public class DeleteUserTest {
+
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
     private final static KeycloakClient KEYCLOAK_CLIENT = new KeycloakClient();
+    private final static WebClient TEACHERCLIENT = new WebClient("T_82734927389", "teacher");
 
     @BeforeEach
     @AfterEach
@@ -52,6 +56,10 @@ public class DeleteUserTest {
         UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
         List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
         Assertions.assertEquals(2, createdUsers.size());
+
+        //ADD GRADES
+        GradeDTO gradeDTO = buildGrade(createdUser.getId());
+        createGrade(gradeDTO);
 
         // DELETE USER
         CLIENT.request("usermanagement-service")
@@ -174,4 +182,26 @@ public class DeleteUserTest {
                 .customAttributes(attributesDTO)
                 .build();
     }
+
+    private GradeDTO buildGrade(String id){
+        return GradeDTO.builder()
+                .grade(BigDecimal.valueOf(5))
+                .description("test")
+                .isFinal(false)
+                .subject("Math")
+                .weight(1)
+                .teacherId("d2364974-cfa8-45c0-b133-57df2c89a327")
+                .studentId(id)
+                .build();
+    }
+
+    private void createGrade(GradeDTO gradeDTO){
+        TEACHERCLIENT.request("grades-service")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(gradeDTO)
+                .put("/grades")
+                .then()
+                .statusCode(HttpStatus.OK.value());
+    }
+
 }

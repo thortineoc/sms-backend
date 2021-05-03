@@ -3,17 +3,20 @@ package com.sms.tests.grades;
 
 import com.sms.clients.WebClient;
 import com.sms.grades.GradeDTO;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
 import javax.ws.rs.core.MediaType;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public class DeleteGradeTest {
 
     private final static WebClient ADMINCLIENT = new WebClient("smsadmin", "smsadmin");
     private final static WebClient TEACHERCLIENT = new WebClient("T_82734927389", "teacher");
     private final static String TESTBACKENDUSER = "a43856df-96bf-4747-b947-0b2b127ae677";
+    private final static WebClient TESTBACKENDCLIENT = new WebClient("testbackenduser", "testbackenduser");
 
 
     @Test
@@ -40,9 +43,10 @@ public class DeleteGradeTest {
         GradeDTO gradeDTO= buildGrade();
         createGrade(gradeDTO);
         //DELETE GRADE
+        Assertions.assertEquals(gradeDTO.getId(), Optional.of(0L));
         TEACHERCLIENT.request("grades-service")
                 .contentType(MediaType.APPLICATION_JSON)
-                .delete("/grades/" + gradeDTO.getId())
+                .delete("/grades/0")
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
@@ -50,6 +54,7 @@ public class DeleteGradeTest {
 
     @Test
     void shouldDeleteAllUserGradesEndpoint(){
+
         GradeDTO gradeDTO= buildGrade();
         createGrade(gradeDTO);
         gradeDTO= buildGrade();
@@ -73,7 +78,7 @@ public class DeleteGradeTest {
         //DELETE GRADE
         ADMINCLIENT.request("usermanagement-service")
                 .contentType(MediaType.APPLICATION_JSON)
-                .delete("/users/" + TESTBACKENDUSER)
+                .delete("/users/" +)
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
     }
@@ -97,6 +102,15 @@ public class DeleteGradeTest {
                 .put("/grades")
                 .then()
                 .statusCode(HttpStatus.OK.value());
+    }
+
+    private Long getGradeId(){
+            TESTBACKENDCLIENT.request("grades-service")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .get("/grades")
+                    .then()
+                    .statusCode(HttpStatus.OK.value());
+        }
     }
 
 }
