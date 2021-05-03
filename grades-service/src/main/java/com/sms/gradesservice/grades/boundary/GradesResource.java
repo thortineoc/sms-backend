@@ -52,4 +52,20 @@ public class GradesResource {
         GradeDTO updatedGrade = gradesService.updateGrade(grade);
         return ResponseEntity.ok(updatedGrade);
     }
+
+    @DeleteMapping("/{id}")
+    @AuthRole(UserDTO.Role.TEACHER)
+    public ResponseEntity<Object> deleteGrade(@PathVariable("id") Long id) {
+        gradesService.deleteGrade(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/user/{id}")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<Object> deleteAllGrades( @PathVariable("id") String id) {
+        gradesService.deleteAllGrades(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
 }

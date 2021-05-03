@@ -6,6 +6,7 @@ import com.sms.context.UserContext;
 import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.usermanagementservice.clients.GradesClient;
 import com.sms.usermanagementservice.users.entity.CustomFilterParams;
 import com.sms.usermanagementservice.users.entity.KeyCloakFilterParams;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -29,6 +30,9 @@ public class UsersService {
 
     @Autowired
     UserContext context;
+
+    @Autowired
+    GradesClient gradesClient;
 
     public List<UserDTO> filterUserByParameters(UsersFiltersDTO filterParamsDTO) {
         CustomFilterParams customFilterParams = UserMapper.mapCustomFilterParams(filterParamsDTO);
@@ -57,6 +61,21 @@ public class UsersService {
 
         if (!keycloakClient.createUser(userRep)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+    }
+
+    public void deleteUser(String userId) {
+        if (context.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+        UserRepresentation userRepresentation = keycloakClient.getUser(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if( gradesClient.deleteGrades(userRepresentation.getId())) {
+            Boolean isDeleted = deleteRelatedUser(userRepresentation);
+            if (!(keycloakClient.deleteUser(userId) && isDeleted)) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
@@ -113,18 +132,6 @@ public class UsersService {
 
     private String calculateParentUsernameFromStudent(UserDTO user) {
         return "p_" + user.getPesel();
-    }
-
-    public void deleteUser(String userId) {
-        if (context.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-        UserRepresentation userRepresentation = keycloakClient.getUser(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        Boolean isDeleted = deleteRelatedUser(userRepresentation);
-        if (!(keycloakClient.deleteUser(userId) && isDeleted)) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 
     private Boolean deleteRelatedUser(UserRepresentation userRepresentation) {
