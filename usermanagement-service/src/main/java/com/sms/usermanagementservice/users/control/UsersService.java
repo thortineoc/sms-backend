@@ -3,6 +3,7 @@ package com.sms.usermanagementservice.users.control;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.context.UserContext;
+import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
 import com.sms.usermanagement.UsersFiltersDTO;
 import com.sms.usermanagementservice.users.entity.CustomFilterParams;
@@ -138,5 +139,33 @@ public class UsersService {
             return keycloakClient.deleteUser(relatedUserId);
         }
         return true;
+    }
+
+    public void updateUser(UserDTO userDTO) {
+        //find user
+        Optional<UserRepresentation> user = keycloakClient.getUser(userDTO.getId());
+        if(!user.isPresent()){
+            throw new IllegalStateException("User does not exist");
+        }
+        UserRepresentation userRep = user.get();
+
+        //set new values
+        setNewValues(userDTO, userRep);
+
+        //save in keycloak
+        if (!keycloakClient.updateUser(userRep.getId(), userRep)) {
+            throw new IllegalStateException("Could not update user");
+        }
+    }
+
+    private void setNewValues(UserDTO userDTO, UserRepresentation userRep) {
+        userRep.setFirstName(userDTO.getFirstName());
+        userRep.setLastName(userDTO.getLastName());
+        userDTO.getEmail().ifPresent(userRep::setEmail);
+
+        CustomAttributesDTO attributesDTO = userDTO.getCustomAttributes();
+        attributesDTO.getPhoneNumber().ifPresent(value -> userRep.singleAttribute("phoneNumber", value));
+        attributesDTO.getMiddleName().ifPresent(value -> userRep.singleAttribute("middleName", value));
+        attributesDTO.getGroup().ifPresent(value -> userRep.singleAttribute("group", value));
     }
 }
