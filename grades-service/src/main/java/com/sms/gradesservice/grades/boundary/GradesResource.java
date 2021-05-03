@@ -48,8 +48,8 @@ public class GradesResource {
 
     @PutMapping
     @AuthRole(UserDTO.Role.TEACHER)
-    public ResponseEntity<Object> updateGrade(@RequestBody GradeDTO grade) {
-        gradesService.updateGrade(grade);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<GradeDTO> updateGrade(@RequestBody GradeDTO grade) {
+        GradeDTO updatedGrade = gradesService.updateGrade(grade);
+        return ResponseEntity.ok(updatedGrade);
     }
 }

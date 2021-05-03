@@ -1,5 +1,6 @@
 package com.sms.tests.usermanagement.users;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.WebClient;
@@ -12,15 +13,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.HttpStatus;
-import com.sms.usermanagement.*;
 
 import javax.ws.rs.core.MediaType;
-import io.restassured.response.Response;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 class UpdateUserTest {
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
@@ -44,33 +39,19 @@ class UpdateUserTest {
         UserDTO user = createUserDTO(UserDTO.Role.STUDENT);
 
         //CREATE NEW STUDENT
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(user)
-                .post("/users")
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+        UserUtils.createUser(user).then().statusCode(HttpStatus.NO_CONTENT.value());
 
         //FIND IN KEYCLOAK
-        UserSearchParams params = new UserSearchParams().firstName("firstName");
-        UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
-
+        UserDTO createdUser = UserUtils.getUsers(ImmutableMap.of("firstName", "firstName"))
+                .as(UserDTO[].class)[0];
 
         //GIVEN
         WebClient tempWebClient = new WebClient();
 
-        Response response = CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .log().all()
-                .get("/users/"+createdUser.getId());
-
-        user = response.as(UserDTO.class);
-
-
         //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
         tempWebClient.request("usermanagement-service")
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(user)
+                .body(createdUser)
                 .put("/users/update")
                 .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
@@ -93,42 +74,26 @@ class UpdateUserTest {
         UserDTO user = createUserDTO(UserDTO.Role.STUDENT);
 
         //CREATE NEW STUDENT
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(user)
-                .post("/users")
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
-
+        UserUtils.createUser(user).then().statusCode(HttpStatus.NO_CONTENT.value());
 
         //FIND IN KEYCLOAK
-        UserSearchParams params = new UserSearchParams().firstName("firstName");
-        UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
+        UserDTO createdUser = UserUtils.getUsers(ImmutableMap.of("firstName", "firstName"))
+                .as(UserDTO[].class)[0];
 
         //UPDATE USER
         UserDTO newUser = createNewUserDTO(UserDTO.Role.TEACHER, createdUser.getId());
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(newUser)
-                .put("/users/update")
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+        UserUtils.updateUser(newUser).then().statusCode(HttpStatus.NO_CONTENT.value());
 
-        Response response = CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .log().all()
-                .get("/users/"+createdUser.getId());
-
-        user = response.as(UserDTO.class);
+        UserDTO updatedUser = UserUtils.getUser(createdUser.getId()).as(UserDTO.class);
 
         //CHECK CHANGES
-        Assertions.assertEquals("newFirstName", user.getFirstName());
-        Assertions.assertEquals("newLastName", user.getLastName());
-        Assertions.assertEquals("newmail@email.com", user.getEmail().get());
-        Assertions.assertEquals("pesel", user.getPesel());
-        Assertions.assertEquals(UserDTO.Role.STUDENT, user.getRole());
+        Assertions.assertEquals("newFirstName", updatedUser.getFirstName());
+        Assertions.assertEquals("newLastName", updatedUser.getLastName());
+        Assertions.assertEquals("newmail@email.com", updatedUser.getEmail().get());
+        Assertions.assertEquals("pesel", updatedUser.getPesel());
+        Assertions.assertEquals(UserDTO.Role.STUDENT, updatedUser.getRole());
 
-        CustomAttributesDTO attributes = user.getCustomAttributes();
+        CustomAttributesDTO attributes = updatedUser.getCustomAttributes();
 
         Assertions.assertEquals("789-987-879", attributes.getPhoneNumber().get());
         Assertions.assertEquals("newMiddleName", attributes.getMiddleName().get());
@@ -137,8 +102,6 @@ class UpdateUserTest {
         //CLEANUP
         KEYCLOAK_CLIENT.deleteUser(createdUser.getId());
     }
-
-
 
     UserDTO createUserDTO(UserDTO.Role role) {
 
