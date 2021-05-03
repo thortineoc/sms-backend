@@ -58,6 +58,14 @@ public class UsersResource {
         }
     }
 
+    @PutMapping("/update")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<String> updateUser(@RequestBody UserDTO data) {
+        usersService.updateUser(data);
+        return ResponseEntity.noContent().build();
+    }
+
+
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUser(@PathVariable("id") String id) {
         return usersService.getUser(id)

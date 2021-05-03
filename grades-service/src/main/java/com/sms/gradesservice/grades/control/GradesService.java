@@ -58,13 +58,14 @@ public class GradesService {
         }
     }
 
-    public void updateGrade(GradeDTO gradeDTO) {
+    public GradeDTO updateGrade(GradeDTO gradeDTO) {
         GradeJPA grade = GradesMapper.toJPA(gradeDTO);
         grade.setTeacherId(userContext.getUserId());
         validateGrade(grade);
 
         try {
-            gradesRepository.save(grade);
+            GradeJPA updatedGrade = gradesRepository.save(grade);
+            return GradesMapper.toDTO(updatedGrade);
         } catch (ConstraintViolationException e) {
             throw new IllegalArgumentException("Saving grade: " + gradeDTO.getId() + " violated database constraints: " + e.getConstraintName());
         } catch (EntityNotFoundException e) {
