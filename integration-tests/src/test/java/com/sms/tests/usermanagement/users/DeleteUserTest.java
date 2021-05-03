@@ -1,12 +1,13 @@
 package com.sms.tests.usermanagement.users;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.WebClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
-import jdk.nashorn.internal.ir.annotations.Ignore;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,13 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.HttpStatus;
 
-import javax.ws.rs.core.MediaType;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.sms.tests.usermanagement.TestUtils.TEST_PREFIX;
 
 public class DeleteUserTest {
-    private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
+
     private final static KeycloakClient KEYCLOAK_CLIENT = new KeycloakClient();
 
     @BeforeEach
@@ -35,35 +36,32 @@ public class DeleteUserTest {
     @Test
     void shouldThrowExceptionOnInvalidId() {
         // DELETE USER
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .delete("/users/123123")
-                .then()
-                .statusCode(HttpStatus.NOT_FOUND.value());
+        UserUtils.deleteUser("123455").then().statusCode(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
     void shouldDeleteStudentWithParentUser() {
         // GIVEN
-        // create new user and validate it's creation
+        // create new user and validate its creation
         UserDTO user = createUserDTO(UserDTO.Role.STUDENT, "userName", "mail@email.com");
-        createNewUser(user);
-        // get user from kc with valid id
-        UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
-        UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
-        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-        Assertions.assertEquals(2, createdUsers.size());
+        UserUtils.createUser(user).then().statusCode(HttpStatus.NO_CONTENT.value());
 
-        // DELETE USER
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .delete("/users/" + createdUser.getId())
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+        // get user from kc with valid id
+        UserDTO createdStudent = Arrays.stream(UserUtils.getUsers(ImmutableMap.of(
+                "lastName", TEST_PREFIX + "lastName",
+                "role", "STUDENT"
+        )).as(UserDTO[].class)).findFirst().orElseThrow(() -> new RuntimeException("Student wasn't created"));
+        UserDTO createdParent = Arrays.stream(UserUtils.getUsers(ImmutableMap.of(
+                "lastName", TEST_PREFIX + "lastName",
+                "role", "PARENT"
+        )).as(UserDTO[].class)).findFirst().orElseThrow(() -> new RuntimeException("Parent wasn't created"));
+
+        // DELETE STUDENT USER
+        UserUtils.deleteUser(createdStudent.getId()).then().statusCode(HttpStatus.NO_CONTENT.value());
 
         // validate parent and student have been deleted
-        createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-        Assertions.assertEquals(0, createdUsers.size());
+        Response response = UserUtils.getUsers(ImmutableMap.of("lastName", TEST_PREFIX + "lastName"));
+        response.then().statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     @Test
@@ -71,23 +69,20 @@ public class DeleteUserTest {
         // GIVEN
         // create new user and validate it's creation
         UserDTO user = createUserDTO(UserDTO.Role.TEACHER, "userName", "mail@email.com");
-        createNewUser(user);
+        UserUtils.createUser(user).then().statusCode(HttpStatus.NO_CONTENT.value());
+
         // get user from kc with valid id
-        UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
-        UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
-        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-        Assertions.assertEquals(1, createdUsers.size());
+        UserDTO[] createdUsers = UserUtils.getUsers(ImmutableMap.of("lastName", TEST_PREFIX + "lastName"))
+                .as(UserDTO[].class);
+        Assertions.assertEquals(1, createdUsers.length);
+        UserDTO createdUser = createdUsers[0];
 
         // DELETE USER
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .delete("/users/" + createdUser.getId())
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+        UserUtils.deleteUser(createdUser.getId());
 
         // validate user has been deleted
-        createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-        Assertions.assertEquals(0, createdUsers.size());
+        UserUtils.getUsers(ImmutableMap.of("lastName", TEST_PREFIX + "lastName"))
+                .then().statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     @Test
@@ -95,25 +90,29 @@ public class DeleteUserTest {
         // GIVEN
         // create new user and validate it's creation
         UserDTO user = createUserDTO(UserDTO.Role.ADMIN, "userName", "mail@email.com");
-        createNewUser(user);
+        UserUtils.createUser(user).then().statusCode(HttpStatus.NO_CONTENT.value());
+
         // get user from kc with valid id
-        UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
-        UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
-        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-        Assertions.assertEquals(1, createdUsers.size());
+        UserDTO[] createdUsers = UserUtils.getUsers(ImmutableMap.of("lastName", TEST_PREFIX + "lastName"))
+                .as(UserDTO[].class);
+        Assertions.assertEquals(1, createdUsers.length);
+        UserDTO createdUser = createdUsers[0];
 
         // prepare second webclient
         WebClient adminWebClient = new WebClient("a_pesel", "firsINTE");
-        // DELETE USER
-        adminWebClient.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .delete("/users/" + createdUser.getId())
-                .then()
-                .statusCode(HttpStatus.BAD_REQUEST.value());
+
+        // TRY TO DELETE USER
+        UserUtils.deleteUser(adminWebClient, createdUser.getId())
+                .then().statusCode(HttpStatus.BAD_REQUEST.value());
 
         // validate user has NOT been deleted
-        createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-        Assertions.assertEquals(1, createdUsers.size());
+        Response response = UserUtils.getUser(createdUser.getId());
+        response.then().statusCode(HttpStatus.OK.value());
+        UserDTO adminUser = response.as(UserDTO.class);
+
+        // DELETE SECOND ADMIN USER
+        UserUtils.deleteUser(createdUser.getId())
+                .then().statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     @Test
@@ -121,36 +120,26 @@ public class DeleteUserTest {
         // GIVEN
         // create new user and validate it's creation
         UserDTO user = createUserDTO(UserDTO.Role.TEACHER, "userName", "mail@email.com");
-        createNewUser(user);
         UserDTO otherUser = createUserDTO(UserDTO.Role.STUDENT, "userName1", "mail1@email.com");
-        createNewUser(otherUser);
+        UserUtils.createUser(user);
+        UserUtils.createUser(otherUser);
+
         // get user from kc with valid id
-        UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
-        UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
-        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
+        List<UserDTO> createdUsers = Arrays.asList(UserUtils.getUsers(ImmutableMap
+                .of("lastName", TEST_PREFIX + "lastName")).as(UserDTO[].class));
+        UserDTO createdUser = createdUsers.get(0);
         Assertions.assertEquals(3, createdUsers.size()); // +1 for parent
 
         // prepare second webclient
         WebClient teacherWebClient = new WebClient("t_pesel", "firsINTE");
         // DELETE USER
-        teacherWebClient.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .delete("/users/" + createdUser.getId())
-                .then()
-                .statusCode(HttpStatus.FORBIDDEN.value());
+        UserUtils.deleteUser(teacherWebClient, createdUser.getId())
+                .then().statusCode(HttpStatus.FORBIDDEN.value());
 
         // validate user has NOT been deleted
-        createdUsers = KEYCLOAK_CLIENT.getUsers(params);
+        createdUsers = Arrays.asList(UserUtils.getUsers(ImmutableMap
+                .of("lastName", TEST_PREFIX + "lastName")).as(UserDTO[].class));
         Assertions.assertEquals(3, createdUsers.size());
-    }
-
-    void createNewUser(UserDTO user) {
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(user)
-                .post("/users")
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     UserDTO createUserDTO(UserDTO.Role role, String userName, String mail) {

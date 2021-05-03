@@ -35,6 +35,47 @@ public class UserUtils {
                 .forEach(name -> Assertions.assertTrue(savedUsers.contains(name)));
     }
 
+    public static void assertTeachersAreEqual(UserDTO first, UserDTO second) {
+        CustomAttributesDTO firstAttributes = first.getCustomAttributes();
+        CustomAttributesDTO secondAttributes = second.getCustomAttributes();
+
+        Assertions.assertEquals(first.getFirstName(), second.getFirstName());
+        Assertions.assertEquals(first.getLastName(), second.getLastName());
+        Assertions.assertEquals(first.getEmail(), second.getEmail());
+        Assertions.assertEquals(first.getPesel(), second.getPesel());
+        Assertions.assertEquals(first.getRole(), second.getRole());
+        Assertions.assertEquals(firstAttributes.getMiddleName(), secondAttributes.getMiddleName());
+        Assertions.assertEquals(firstAttributes.getSubjects(), secondAttributes.getSubjects());
+        Assertions.assertEquals(firstAttributes.getPhoneNumber(), secondAttributes.getPhoneNumber());
+    }
+
+    public static void assertAdminsAreEqual(UserDTO first, UserDTO second) {
+        CustomAttributesDTO firstAttributes = first.getCustomAttributes();
+        CustomAttributesDTO secondAttributes = second.getCustomAttributes();
+
+        Assertions.assertEquals(first.getFirstName(), second.getFirstName());
+        Assertions.assertEquals(first.getLastName(), second.getLastName());
+        Assertions.assertEquals(first.getEmail(), second.getEmail());
+        Assertions.assertEquals(first.getPesel(), second.getPesel());
+        Assertions.assertEquals(first.getRole(), second.getRole());
+        Assertions.assertEquals(firstAttributes.getMiddleName(), secondAttributes.getMiddleName());
+        Assertions.assertEquals(firstAttributes.getPhoneNumber(), secondAttributes.getPhoneNumber());
+    }
+
+    public static void assertStudentsAreEqual(UserDTO first, UserDTO second) {
+        CustomAttributesDTO firstAttributes = first.getCustomAttributes();
+        CustomAttributesDTO secondAttributes = second.getCustomAttributes();
+
+        Assertions.assertEquals(first.getFirstName(), second.getFirstName());
+        Assertions.assertEquals(first.getLastName(), second.getLastName());
+        Assertions.assertEquals(first.getEmail(), second.getEmail());
+        Assertions.assertEquals(first.getPesel(), second.getPesel());
+        Assertions.assertEquals(first.getRole(), second.getRole());
+        Assertions.assertEquals(firstAttributes.getGroup(), secondAttributes.getGroup());
+        Assertions.assertEquals(firstAttributes.getMiddleName(), secondAttributes.getMiddleName());
+        Assertions.assertEquals(firstAttributes.getPhoneNumber(), secondAttributes.getPhoneNumber());
+    }
+
     public static Response getUser(String userId) {
         return ADMIN.request(USER_MANAGEMENT)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -48,6 +89,16 @@ public class UserUtils {
                 .log().all()
                 .body(getFilters(filters))
                 .post("/users/filter");
+    }
+
+    public static Response deleteUser(String id) {
+        return deleteUser(ADMIN, id);
+    }
+
+    public static Response deleteUser(WebClient client, String id) {
+        return client.request("usermanagement-service")
+                .contentType(MediaType.APPLICATION_JSON)
+                .delete("/users/" + id);
     }
 
     public static UsersFiltersDTO getFilters(Map<String, String> filters) {
@@ -65,7 +116,11 @@ public class UserUtils {
     }
 
     public static Response createUser(UserDTO user) {
-        return ADMIN.request(USER_MANAGEMENT)
+        return createUser(ADMIN, user);
+    }
+
+    public static Response createUser(WebClient client, UserDTO user) {
+        return client.request(USER_MANAGEMENT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .log().all()
                 .body(user)
@@ -73,7 +128,11 @@ public class UserUtils {
     }
 
     public static Response updateUser(UserDTO user) {
-        return ADMIN.request(USER_MANAGEMENT)
+        return updateUser(ADMIN, user);
+    }
+
+    public static Response updateUser(WebClient client, UserDTO user) {
+        return client.request(USER_MANAGEMENT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .log().all()
                 .body(user)
