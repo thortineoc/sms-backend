@@ -3,6 +3,7 @@ package com.sms.tests.grades;
 
 import com.sms.clients.WebClient;
 import com.sms.grades.GradeDTO;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -16,8 +17,6 @@ public class DeleteGradeTest {
     private final static WebClient ADMINCLIENT = new WebClient("smsadmin", "smsadmin");
     private final static WebClient TEACHERCLIENT = new WebClient("T_82734927389", "teacher");
     private final static String TESTBACKENDUSER = "a43856df-96bf-4747-b947-0b2b127ae677";
-    private final static WebClient TESTBACKENDCLIENT = new WebClient("testbackenduser", "testbackenduser");
-
 
     @Test
     void shouldThrowExceptionOnInvalidId() {
@@ -40,16 +39,14 @@ public class DeleteGradeTest {
 
     @Test
     void shouldDeleteUserGrade(){
-        GradeDTO gradeDTO= buildGrade();
-        createGrade(gradeDTO);
+        GradeDTO gradeDTO = buildGrade();
+        Long id = createGrade(gradeDTO);
         //DELETE GRADE
-        Assertions.assertEquals(gradeDTO.getId(), Optional.of(0L));
         TEACHERCLIENT.request("grades-service")
                 .contentType(MediaType.APPLICATION_JSON)
-                .delete("/grades/0")
+                .delete("/grades/" + id)
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
-
     }
 
     @Test
@@ -68,20 +65,6 @@ public class DeleteGradeTest {
                 .statusCode(HttpStatus.NO_CONTENT.value());
     }
 
-    @Test
-    void shouldDeleteAllUserGrades(){
-        GradeDTO gradeDTO= buildGrade();
-        createGrade(gradeDTO);
-        gradeDTO= buildGrade();
-        createGrade(gradeDTO);
-
-        //DELETE GRADE
-        ADMINCLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .delete("/users/" +)
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
-    }
 
     private GradeDTO buildGrade(){
         return GradeDTO.builder()
@@ -95,22 +78,17 @@ public class DeleteGradeTest {
                 .build();
     }
 
-    private void createGrade(GradeDTO gradeDTO){
-         TEACHERCLIENT.request("grades-service")
+    private Long createGrade(GradeDTO gradeDTO) {
+        Response response = TEACHERCLIENT.request("grades-service")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(gradeDTO)
-                .put("/grades")
-                .then()
-                .statusCode(HttpStatus.OK.value());
-    }
+                .put("/grades");
 
-    private Long getGradeId(){
-            TESTBACKENDCLIENT.request("grades-service")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .get("/grades")
-                    .then()
-                    .statusCode(HttpStatus.OK.value());
-        }
+        Assertions.assertEquals(HttpStatus.OK.value(), response.getStatusCode());
+        Optional<Long> id = response.getBody().as(GradeDTO.class).getId();
+        return id.get();
     }
 
 }
+
+
