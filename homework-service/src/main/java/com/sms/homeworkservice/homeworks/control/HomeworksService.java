@@ -34,6 +34,8 @@ public class HomeworksService {
             throw new IllegalArgumentException("Saving grade: " + homework.getId() + " violated database constraints: " + e.getConstraintName());
         } catch (EntityNotFoundException e) {
             throw new IllegalStateException("Grade with ID: " + homework.getId() + " does not exist, can't update: " + e.getMessage());
+        } catch (Exception e){
+            throw new IllegalStateException(e);
         }
 
     }
