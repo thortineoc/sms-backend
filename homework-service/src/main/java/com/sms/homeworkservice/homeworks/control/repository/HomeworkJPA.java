@@ -1,6 +1,7 @@
 package com.sms.homeworkservice.homeworks.control.repository;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Entity
@@ -25,13 +26,13 @@ public class HomeworkJPA {
     private String subject;
 
     @Column(name = "deadline")
-    private LocalDateTime deadline;
+    private Timestamp deadline;
 
     @Column(name = "file")
     private Byte[] file;
 
     @Column(name = "teacher_id")
-    private String teacher_id;
+    private String teacherid;
 
     @Column(name = "toevaluate")
     private Boolean toevaluate;
@@ -54,7 +55,7 @@ public class HomeworkJPA {
         this.subject = subject;
     }
 
-    public void setDeadline(LocalDateTime deadline) {
+    public void setDeadline(Timestamp deadline) {
         this.deadline = deadline;
     }
 
@@ -62,7 +63,7 @@ public class HomeworkJPA {
         this.file = file;
     }
 
-    public void setTeacher_id(String id) { this.teacher_id=id; }
+    public void setTeacherid(String id) { this.teacherid=id; }
 
     public void setToevaluate(Boolean evaluate) { this.toevaluate=evaluate; }
 
@@ -88,7 +89,7 @@ public class HomeworkJPA {
         return subject;
     }
 
-    public LocalDateTime getDeadline() {
+    public Timestamp getDeadline() {
         return deadline;
     }
 
@@ -96,7 +97,7 @@ public class HomeworkJPA {
         return file;
     }
 
-    public String getTeacher_id(){ return teacher_id; }
+    public String getTeacherid(){ return teacherid; }
 
     public Boolean getToevaluate() { return toevaluate; }
 

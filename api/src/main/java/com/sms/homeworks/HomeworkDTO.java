@@ -2,10 +2,9 @@ package com.sms.homeworks;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.sms.grades.ImmutableGradeDTO;
 import org.immutables.value.Value;
 
-import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -15,7 +14,9 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableHomeworkDTO.class, builder = ImmutableHomeworkDTO.Builder.class)
 public interface HomeworkDTO {
 
-    static ImmutableHomeworkDTO.Builder builder() { return new ImmutableHomeworkDTO.Builder(); }
+    static ImmutableHomeworkDTO.Builder builder() {
+        return new ImmutableHomeworkDTO.Builder();
+    }
 
     Optional<Long> getId();
 
@@ -23,18 +24,23 @@ public interface HomeworkDTO {
 
     String getDescription();
 
-    LocalDateTime getDeadline();
+    String getGroup();
 
     String getSubject();
 
-    Optional<String> getTeacherId();
+    String getDeadline();
 
     Optional<Byte[]> getFile();
 
+    Optional<String> getTeacherId();
 
-
-
+    @Value.Default
+    default Boolean getToEvaluate() {
+        return true;
     }
+
+
+}
 
 
 

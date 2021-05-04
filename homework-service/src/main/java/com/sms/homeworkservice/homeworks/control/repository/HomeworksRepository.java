@@ -14,6 +14,6 @@ public interface HomeworksRepository extends  CrudRepository<HomeworkJPA, Long>{
 
         List<HomeworkJPA> findAllByGroup(String group);
 
-        List<HomeworkJPA> findAllByTeacherId(String teacherId);
+        List<HomeworkJPA> findAllByTeacherid(String teacher_id);
 
 }
