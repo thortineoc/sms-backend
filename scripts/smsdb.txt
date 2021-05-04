@@ -78,13 +78,12 @@ CREATE TABLE Homeworks
     toEvaluate      boolean   DEFAULT false
 );
 
-CREATE TABLE Presences
-(
-    id         SERIAL PRIMARY KEY,
-    student_id varchar(63) NOT NULL,
-    class_id   int         NOT NULL,
-    day        date        NOT NULL,
-    type       presence_type DEFAULT 'present'
+CREATE TABLE Presences (
+                           id		SERIAL PRIMARY KEY,
+                           student_id	varchar(63)	NOT NULL,
+                           class_id	int		NOT NULL,
+                           day		date		NOT NULL,
+                           type		presence_type	DEFAULT 'present'
 );
 
 CREATE TABLE Subjects
@@ -130,8 +129,8 @@ ALTER TABLE Homeworks
 
 ALTER TABLE Presences
     ADD CONSTRAINT fk_presences_class_id
-        FOREIGN KEY (class_id)
-            REFERENCES Classes (id)
+        FOREIGN KEY(class_id)
+            REFERENCES Classes(id)
             ON DELETE CASCADE;
 
 

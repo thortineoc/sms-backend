@@ -96,8 +96,7 @@ class SubjectsTest {
         UserDTO user = TestUtils.getTeacherWithSubjectDTO(firstName, subject);
         return CLIENT.request(USER_MANAGEMENT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .log().body()
-                .log().uri()
+                .log().all()
                 .body(user)
                 .post("/users");
     }
@@ -109,8 +108,7 @@ class SubjectsTest {
     private List<String> getSubjects() {
         return Arrays.asList(CLIENT.request(USER_MANAGEMENT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .log().body()
-                .log().uri()
+                .log().all()
                 .get("/subjects")
                 .as(String[].class));
     }
@@ -119,8 +117,7 @@ class SubjectsTest {
         String path = "/subjects/" + name;
         return CLIENT.request(USER_MANAGEMENT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .log().body()
-                .log().uri()
+                .log().all()
                 .delete(path);
     }
 
@@ -128,8 +125,7 @@ class SubjectsTest {
         String path = "/subjects/" + name;
         return CLIENT.request(USER_MANAGEMENT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .log().body()
-                .log().uri()
+                .log().all()
                 .post(path);
     }
 

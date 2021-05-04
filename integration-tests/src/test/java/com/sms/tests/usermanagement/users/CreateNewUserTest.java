@@ -1,66 +1,57 @@
 package com.sms.tests.usermanagement.users;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.sms.clients.KeycloakClient;
 import com.sms.clients.WebClient;
-import com.sms.clients.entity.UserSearchParams;
 import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.HttpStatus;
 
 import javax.ws.rs.core.MediaType;
-import java.util.List;
+
+import java.util.Arrays;
 
 import static com.sms.tests.usermanagement.TestUtils.TEST_PREFIX;
 
 class CreateNewUserTest {
 
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
-    private final static KeycloakClient KEYCLOAK_CLIENT = new KeycloakClient();
 
     @BeforeEach
     @AfterEach
     public void cleanup() {
-        UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
-        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-        createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
+        Response response = UserUtils.getUsers(ImmutableMap.of("lastName", TEST_PREFIX + "lastName"));
+        if (response.statusCode() == 200) {
+            Arrays.stream(response.as(UserDTO[].class)).map(UserDTO::getId).forEach(UserUtils::deleteUser);
+        }
     }
 
     @Test
     void shouldReturnForbiddenWhenNotAdmin() {
 
-        //GIVEN
-
+        // GIVEN
         WebClient tempWebClient = new WebClient();
 
         UserDTO user = createUserDTO(UserDTO.Role.TEACHER);
 
-        //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
-        tempWebClient.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(user)
-                .post("/users")
-                .then()
-                .statusCode(HttpStatus.FORBIDDEN.value());
-
+        // SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
+        UserUtils.createUser(tempWebClient, user).then().statusCode(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
     void shouldReturnBadRequestWhenMissingBody() {
 
-        //SHOULD RETURN BAD_REQUEST WHEN BODY IS MISSING
-
+        // SHOULD RETURN BAD_REQUEST WHEN BODY IS MISSING
         CLIENT.request("usermanagement-service")
                 .contentType(MediaType.APPLICATION_JSON)
                 .post("/users")
                 .then()
                 .statusCode(HttpStatus.BAD_REQUEST.value());
-
     }
 
     @Test
@@ -70,21 +61,14 @@ class CreateNewUserTest {
         UserDTO user = createUserDTO(UserDTO.Role.TEACHER);
 
         //CREATE NEW TEACHER
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(user)
-                .post("/users")
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+        UserUtils.createUser(user).then().statusCode(HttpStatus.NO_CONTENT.value());
 
-        //TODO check details of created user with API call
-        //TODO delete user with API call
+        //CHECK USER
+        UserDTO createdUser = getOneByFirstName("firstName");
+        UserUtils.assertTeachersAreEqual(user, createdUser);
 
         //DELETE CREATED TEACHER
-        UserSearchParams params = new UserSearchParams().firstName("firstName");
-        UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
-
-        KEYCLOAK_CLIENT.deleteUser(createdUser.getId());
+        UserUtils.deleteUser(createdUser.getId()).then().statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     @Test
@@ -94,22 +78,14 @@ class CreateNewUserTest {
         UserDTO user = createUserDTO(UserDTO.Role.ADMIN);
 
         //CREATE NEW ADMIN
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(user)
-                .post("/users")
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+        UserUtils.createUser(user).then().statusCode(HttpStatus.NO_CONTENT.value());
 
-
-        //TODO check details of created user with API call
-        //TODO delete user with API call
+        //CHECK USER
+        UserDTO createdUser = getOneByFirstName("firstName");
+        UserUtils.assertAdminsAreEqual(user, createdUser);
 
         //DELETE CREATED ADMIN
-        UserSearchParams params = new UserSearchParams().firstName("firstName");
-        UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
-
-        KEYCLOAK_CLIENT.deleteUser(createdUser.getId());
+        UserUtils.deleteUser(createdUser.getId()).then().statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     @Test
@@ -119,25 +95,14 @@ class CreateNewUserTest {
         UserDTO user = createUserDTO(UserDTO.Role.STUDENT);
 
         //CREATE STUDENT WITH PARENT
-        CLIENT.request("usermanagement-service")
-                .contentType("application/json")
-                .body(user)
-                .post("/users")
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+        UserUtils.createUser(user).then().statusCode(HttpStatus.NO_CONTENT.value());
 
+        //CHECK USER
+        UserDTO createdUser = getOneByFirstName("firstName");
+        UserUtils.assertStudentsAreEqual(user, createdUser);
 
-        //TODO check details of created users with API call
-        //TODO delete user with API call
-
-        //DELETE CREATED PARENT AND STUDENT
-        UserSearchParams paramsStudent = new UserSearchParams().firstName("firstName");
-        UserRepresentation createdStudent = KEYCLOAK_CLIENT.getUsers(paramsStudent).get(0);
-        KEYCLOAK_CLIENT.deleteUser(createdStudent.getId());
-
-        UserSearchParams paramsParent = new UserSearchParams().lastName("lastName");
-        UserRepresentation createdParent = KEYCLOAK_CLIENT.getUsers(paramsParent).get(0);
-        KEYCLOAK_CLIENT.deleteUser(createdParent.getId());
+        //DELETE CREATED PARENT AND STUDENT (parent gets deleted automatically)
+        UserUtils.deleteUser(createdUser.getId()).then().statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     @Test
@@ -147,29 +112,16 @@ class CreateNewUserTest {
         UserDTO user = createUserDTO(UserDTO.Role.ADMIN);
 
         //CREATING FIRST USER
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(user)
-                .post("/users")
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+        UserUtils.createUser(user).then().statusCode(HttpStatus.NO_CONTENT.value());
 
         //SHOULD RETURN CONFLICT WHEN CREATE SECOND USER
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(user)
-                .post("/users")
-                .then()
-                .statusCode(HttpStatus.CONFLICT.value());
+        UserUtils.createUser(user).then().statusCode(HttpStatus.CONFLICT.value());
 
+        // GET FIRST USER
+        UserDTO createdUser = getOneByFirstName("firstName");
 
-        //TODO delete user with API call
-
-        //DELETE FIRST USER
-        UserSearchParams params = new UserSearchParams().firstName("firstName");
-        UserRepresentation createdUser = KEYCLOAK_CLIENT.getUsers(params).get(0);
-        KEYCLOAK_CLIENT.deleteUser(createdUser.getId());
-
+        // DELETE
+        UserUtils.deleteUser(createdUser.getId()).then().statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     @Test
@@ -180,47 +132,34 @@ class CreateNewUserTest {
         UserDTO student = createUserDTO(UserDTO.Role.STUDENT);
 
         //CREATING FIRST USER
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(user)
-                .post("/users")
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+        UserUtils.createUser(user).then().statusCode(HttpStatus.NO_CONTENT.value());
 
         //SHOULD RETURN CONFLICT WHEN CREATE SECOND USER
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(student)
-                .post("/users")
-                .then()
-                .statusCode(HttpStatus.CONFLICT.value());
-
-
-        //TODO delete user with API call
+        UserUtils.createUser(student).then().statusCode(HttpStatus.CONFLICT.value());
 
         //MAKE SURE THERE IS ONLY ONE USER WITH NAME lastName
-        UserSearchParams params = new UserSearchParams().lastName(TEST_PREFIX + "lastName");
-        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-        Assertions.assertEquals(1, createdUsers.size());
+        UserDTO createdUser = getOneByLastName(TEST_PREFIX + "lastName");
 
         //DELETE CREATED USER
-        KEYCLOAK_CLIENT.deleteUser(createdUsers.get(0).getId());
-
+        UserUtils.deleteUser(createdUser.getId()).then().statusCode(HttpStatus.NO_CONTENT.value());
     }
 
-    UserDTO createUserDTO(UserDTO.Role role) {
+    private UserDTO getOneByFirstName(String firstName) {
+        UserDTO[] createdUsers = UserUtils.getUsers(ImmutableMap.of("firstName", firstName))
+                .as(UserDTO[].class);
+        Assertions.assertEquals(1, createdUsers.length);
+        return createdUsers[0];
+    }
 
-        List<String> subjects = Lists.newArrayList("subject1", "subject2");
+    private UserDTO getOneByLastName(String lastName) {
+        UserDTO[] createdUsers = UserUtils.getUsers(ImmutableMap.of("lastName", lastName))
+                .as(UserDTO[].class);
+        Assertions.assertEquals(1, createdUsers.length);
+        return createdUsers[0];
+    }
 
-        CustomAttributesDTO attributesDTO = CustomAttributesDTO.builder()
-                .phoneNumber("132-234-234")
-                .middleName("middleName")
-                .relatedUser("example-user")
-                .group("example-group")
-                .subjects(subjects)
-                .build();
-
-        UserDTO userDTO = UserDTO.builder()
+    private UserDTO createUserDTO(UserDTO.Role role) {
+        return UserDTO.builder()
                 .id("null")
                 .userName("null")
                 .firstName("firstName")
@@ -228,9 +167,12 @@ class CreateNewUserTest {
                 .pesel("pesel")
                 .role(role)
                 .email("mail@email.com")
-                .customAttributes(attributesDTO)
+                .customAttributes(CustomAttributesDTO.builder()
+                        .phoneNumber("132-234-234")
+                        .middleName("middleName")
+                        .group("example-group")
+                        .subjects(Lists.newArrayList("subject1", "subject2"))
+                        .build())
                 .build();
-
-        return userDTO;
     }
 }

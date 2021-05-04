@@ -27,7 +27,7 @@ public enum Environment {
      //  put(PRESENCE, "http://localhost:24028");
      //  put(TIMETABLE, "http://localhost:24030");
      //  put(USERMANAGEMENT, "http://localhost:24034");
-     //  put(GRADES, "http://localhost:24032");
+        //  put(GRADES, "http://localhost:24032");
     }};
 
     Environment() {

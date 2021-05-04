@@ -41,8 +41,8 @@ public class UsersResource {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}")
     @AuthRole(UserDTO.Role.ADMIN)
+    @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteUser(@PathVariable("id") String id) {
         usersService.deleteUser(id);
         return ResponseEntity.noContent().build();
@@ -57,6 +57,14 @@ public class UsersResource {
             return ResponseEntity.ok(users);
         }
     }
+
+    @PutMapping("/update")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<String> updateUser(@RequestBody UserDTO data) {
+        usersService.updateUser(data);
+        return ResponseEntity.noContent().build();
+    }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUser(@PathVariable("id") String id) {

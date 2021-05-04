@@ -34,11 +34,11 @@ public class GradesResource {
         }
     }
 
-    @PostMapping("/teacher/{subject}")
+    @GetMapping("/group/{groupName}/subject/{subjectName}")
     @AuthRole(UserDTO.Role.TEACHER)
-    public ResponseEntity<List<StudentGradesDTO>> getTeacherGrades(@PathVariable("subject") String subject,
-                                                                   @RequestBody List<String> studentIds) {
-        List<StudentGradesDTO> grades = gradesService.getTeacherGrades(subject, studentIds);
+    public ResponseEntity<List<StudentGradesDTO>> getTeacherGrades(@PathVariable("groupName") String groupName,
+                                                                   @PathVariable("subjectName") String subjectName) {
+        List<StudentGradesDTO> grades = gradesService.getTeacherGrades(groupName, subjectName);
         if (grades.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
@@ -48,8 +48,24 @@ public class GradesResource {
 
     @PutMapping
     @AuthRole(UserDTO.Role.TEACHER)
-    public ResponseEntity<Object> updateGrade(@RequestBody GradeDTO grade) {
-        gradesService.updateGrade(grade);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<GradeDTO> updateGrade(@RequestBody GradeDTO grade) {
+        GradeDTO updatedGrade = gradesService.updateGrade(grade);
+        return ResponseEntity.ok(updatedGrade);
     }
+
+    @DeleteMapping("/{id}")
+    @AuthRole(UserDTO.Role.TEACHER)
+    public ResponseEntity<Object> deleteGrade(@PathVariable("id") Long id) {
+        gradesService.deleteGrade(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/user/{id}")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<Object> deleteAllGrades( @PathVariable("id") String id) {
+        gradesService.deleteAllGrades(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
 }

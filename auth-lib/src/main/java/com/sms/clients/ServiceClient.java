@@ -13,7 +13,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 
 @Component
-@Scope("prototype")
+@Scope("request")
 public class ServiceClient {
 
     private static final String DEFAULT_HAPROXY_URL = "http://52.142.201.18:24020";

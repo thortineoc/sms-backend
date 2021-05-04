@@ -4,7 +4,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Named;
 import java.util.Collection;
 import java.util.List;
 
