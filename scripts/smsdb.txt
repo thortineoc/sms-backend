@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS grades CASCADE;
+DROP TABLE IF EXISTS Grades CASCADE;
 DROP TABLE IF EXISTS Answers CASCADE;
 DROP TABLE IF EXISTS Presences CASCADE;
 DROP TABLE IF EXISTS Homeworks CASCADE;
@@ -17,20 +17,23 @@ CREATE TYPE presence_type AS ENUM (
     );
 
 
-CREATE TABLE Subjects
-(
-    name varchar(63) PRIMARY KEY
-);
 
-CREATE TABLE Groups
+CREATE TABLE Answers
 (
-    name varchar(15) PRIMARY KEY
+    id              SERIAL PRIMARY KEY,
+    homework_id     int         NOT NULL,
+    student_id      varchar(63) NOT NULL,
+    review          TEXT,
+    file            bytea,
+    createdTime     timestamp DEFAULT now(),
+    lastUpdatedTime timestamp DEFAULT now(),
+    isRated         boolean   DEFAULT false
 );
 
 CREATE TABLE Classes
 (
     id         SERIAL PRIMARY KEY,
-    groups      varchar(16) NOT NULL,
+    groups     varchar(15) NOT NULL,
     subject    varchar(63) NOT NULL,
     teacher_id varchar(63) NOT NULL,
     weekday    int         NOT NULL,
@@ -42,22 +45,37 @@ CREATE TABLE Classes
 
 CREATE TABLE Grades
 (
-    id          SERIAL PRIMARY KEY,
-    class_id    int         NOT NULL,
-    student_id  varchar(63) NOT NULL,
-    grade       int         NOT NULL,
-    description TEXT,
-    weight      int DEFAULT 1
+    id              SERIAL PRIMARY KEY,
+    subject         varchar(63)   NOT NULL,
+    teacher_id      varchar(63)   NOT NULL,
+    student_id      varchar(63)   NOT NULL,
+    grade           numeric(3, 2) NOT NULL,
+    description     TEXT,
+    weight          int       DEFAULT 1,
+    final           boolean   DEFAULT false,
+    createdTime     timestamp DEFAULT now(),
+    lastUpdatedTime timestamp DEFAULT now()
 );
+
+CREATE TABLE Groups
+(
+    name varchar(15) PRIMARY KEY
+);
+
 
 CREATE TABLE Homeworks
 (
-    id          SERIAL PRIMARY KEY,
-    title       varchar(255) NOT NULL,
-    description TEXT,
-    deadline    timestamp    NOT NULL,
-    file        bytea,
-    class_id    int          NOT NULL
+    id              SERIAL PRIMARY KEY,
+    title           varchar(255) NOT NULL,
+    groups          varchar(15)  NOT NULL,
+    subject         varchar(63)  NOT NULL,
+    deadline        timestamp    NOT NULL,
+    teacher_id      varchar(63)  NOT NULL,
+    description     TEXT,
+    file            bytea,
+    createdTime     timestamp DEFAULT now(),
+    lastUpdatedTime timestamp DEFAULT now(),
+    toEvaluate      boolean   DEFAULT false
 );
 
 CREATE TABLE Presences
@@ -69,21 +87,16 @@ CREATE TABLE Presences
     type       presence_type DEFAULT 'present'
 );
 
-CREATE TABLE Answers
+CREATE TABLE Subjects
 (
-    id          SERIAL PRIMARY KEY,
-    homework_id int         NOT NULL,
-    student_id  varchar(63) NOT NULL,
-    review      TEXT,
-    file        bytea
+    name varchar(63) PRIMARY KEY
 );
 
-
-ALTER TABLE Grades
-    ADD CONSTRAINT fk_grades_class_id
-        FOREIGN KEY (class_id)
-            REFERENCES Classes (id)
-            ON DELETE SET NULL;
+ALTER TABLE Answers
+    ADD CONSTRAINT fk_answers_homework_id
+        FOREIGN KEY (homework_id)
+            REFERENCES Homeworks (id)
+            ON DELETE CASCADE;
 
 ALTER TABLE Classes
     ADD CONSTRAINT fk_classes_subject
@@ -97,21 +110,57 @@ ALTER TABLE Classes
             REFERENCES Groups (name)
             ON DELETE CASCADE;
 
+ALTER TABLE Grades
+    ADD CONSTRAINT fk_grades_subject
+        FOREIGN KEY (subject)
+            REFERENCES Subjects (name)
+            ON DELETE SET NULL;
+
+ALTER TABLE Homeworks
+    ADD CONSTRAINT fk_homeworks_subject
+        FOREIGN KEY (subject)
+            REFERENCES Subjects (name)
+            ON DELETE CASCADE;
+
+ALTER TABLE Homeworks
+    ADD CONSTRAINT fk_homeworks_group
+        FOREIGN KEY (groups)
+            REFERENCES Groups (name)
+            ON DELETE CASCADE;
+
 ALTER TABLE Presences
     ADD CONSTRAINT fk_presences_class_id
         FOREIGN KEY (class_id)
             REFERENCES Classes (id)
             ON DELETE CASCADE;
 
-ALTER TABLE Homeworks
-    ADD CONSTRAINT fk_homeworks_class_id
-        FOREIGN KEY (class_id)
-            REFERENCES Classes (id)
-            ON DELETE CASCADE;
 
-ALTER TABLE Answers
-    ADD CONSTRAINT fk_answers_homework_id
-        FOREIGN KEY (homework_id)
-            REFERENCES Homeworks (id)
-            ON DELETE CASCADE;
+CREATE OR REPLACE FUNCTION update_lastUpdatedTime()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    NEW.lastUpdatedTime = now();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
 
+CREATE TRIGGER updateAnswersTimestamp
+    BEFORE UPDATE
+    ON Answers
+    FOR EACH ROW
+EXECUTE PROCEDURE
+    update_lastUpdatedTime();
+
+CREATE TRIGGER updateGradesTimestamp
+    BEFORE UPDATE
+    ON Grades
+    FOR EACH ROW
+EXECUTE PROCEDURE
+    update_lastUpdatedTime();
+
+CREATE TRIGGER updateHomeworksTimestamp
+    BEFORE UPDATE
+    ON Homeworks
+    FOR EACH ROW
+EXECUTE PROCEDURE
+    update_lastUpdatedTime();
