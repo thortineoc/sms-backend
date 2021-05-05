@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Value.Immutable
@@ -22,6 +23,10 @@ public interface GradeDTO {
     String getSubject();
 
     Optional<String> getTeacherId();
+
+    Optional<LocalDateTime> getModifyTime();
+
+    Optional<LocalDateTime> getCreatedTime();
 
     String getStudentId();
 

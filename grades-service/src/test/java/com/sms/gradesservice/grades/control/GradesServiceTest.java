@@ -12,6 +12,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -122,6 +125,8 @@ class GradesServiceTest {
 
     private GradeJPA getGradeJPA(String subject, String studentId, boolean isFinal) {
         GradeJPA grade = new GradeJPA();
+        grade.setLastUpdateTime(Timestamp.from(Instant.now()));
+        grade.setCreatedTime(Timestamp.from(Instant.now()));
         grade.setGrade(BigDecimal.ONE);
         grade.setStudentId(studentId);
         grade.setTeacherId(UUID.randomUUID().toString());
@@ -135,6 +140,7 @@ class GradesServiceTest {
         return GradeDTO.builder()
                 .subject(subject)
                 .description(UUID.randomUUID().toString())
+                .createdTime(LocalDateTime.now())
                 .grade(BigDecimal.ONE)
                 .isFinal(isFinal)
                 .studentId(studentId)
