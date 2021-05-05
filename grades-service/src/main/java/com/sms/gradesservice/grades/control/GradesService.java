@@ -16,10 +16,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -118,9 +115,12 @@ public class GradesService {
     private GradesDTO extractFinalGrade(Map.Entry<String, List<GradeDTO>> grades) {
         Map<Boolean, List<GradeDTO>> splitGrades = grades.getValue().stream()
                 .collect(Collectors.groupingBy(GradeDTO::isFinal));
-
+        List<GradeDTO> sortedRegulars = getOrEmpty(splitGrades, Boolean.FALSE).stream()
+                .sorted(Comparator.comparing(g -> g.getCreatedTime()
+                        .orElseThrow(() -> new IllegalStateException("Missing creation time on grade: " + g.getId()))))
+                .collect(Collectors.toList());
         return GradesDTO.builder()
-                .grades(getOrEmpty(splitGrades, Boolean.FALSE))
+                .grades(sortedRegulars)
                 .finalGrade(getOpt(splitGrades, Boolean.TRUE).flatMap(Util::getFirst))
                 .build();
     }
