@@ -6,7 +6,9 @@ DROP TABLE IF EXISTS Classes CASCADE;
 DROP TABLE IF EXISTS Subjects CASCADE;
 DROP TABLE IF EXISTS Groups CASCADE;
 DROP TYPE IF EXISTS presence_type;
-
+DROP FUNCTION IF EXISTS update_lastUpdatedTime() CASCADE;
+DROP FUNCTION IF EXISTS preventCreatedTimeChange() CASCADE;
+DROP FUNCTION IF EXISTS setTimes() CASCADE;
 
 
 CREATE TYPE presence_type AS ENUM (
@@ -28,6 +30,15 @@ CREATE TABLE Answers
     createdTime     timestamp DEFAULT now(),
     lastUpdatedTime timestamp DEFAULT now(),
     isRated         boolean   DEFAULT false
+);
+
+CREATE TABLE AnswersFiles
+(
+    id        SERIAL PRIMARY KEY,
+    answer_id int  NOT NULL,
+    filename  varchar(255) NOT NULL,
+    size      int          NOT NULL,
+    file      bytea        NOT NULL
 );
 
 CREATE TABLE Classes
@@ -78,6 +89,15 @@ CREATE TABLE Homeworks
     toEvaluate      boolean   DEFAULT false
 );
 
+CREATE TABLE HomeworksFiles
+(
+    id          SERIAL PRIMARY KEY,
+    homework_id int  NOT NULL,
+    filename    varchar(255) NOT NULL,
+    size        int          NOT NULL,
+    file        bytea        NOT NULL
+);
+
 CREATE TABLE Presences
 (
     id         SERIAL PRIMARY KEY,
@@ -92,10 +112,19 @@ CREATE TABLE Subjects
     name varchar(63) PRIMARY KEY
 );
 
+
+
+
 ALTER TABLE Answers
     ADD CONSTRAINT fk_answers_homework_id
         FOREIGN KEY (homework_id)
             REFERENCES Homeworks (id)
+            ON DELETE CASCADE;
+
+ALTER TABLE AnswersFiles
+    ADD CONSTRAINT fk_answersfiles_answer_id
+        FOREIGN KEY (answer_id)
+            REFERENCES Answers (id)
             ON DELETE CASCADE;
 
 ALTER TABLE Classes
@@ -128,11 +157,19 @@ ALTER TABLE Homeworks
             REFERENCES Groups (name)
             ON DELETE CASCADE;
 
+ALTER TABLE HomeworksFiles
+    ADD CONSTRAINT fk_homeworksfiles_homework_id
+        FOREIGN KEY (homework_id)
+            REFERENCES Homeworks (id)
+            ON DELETE CASCADE;
+
 ALTER TABLE Presences
     ADD CONSTRAINT fk_presences_class_id
         FOREIGN KEY (class_id)
             REFERENCES Classes (id)
             ON DELETE CASCADE;
+
+
 
 
 CREATE OR REPLACE FUNCTION update_lastUpdatedTime()
@@ -164,3 +201,66 @@ CREATE TRIGGER updateHomeworksTimestamp
     FOR EACH ROW
 EXECUTE PROCEDURE
     update_lastUpdatedTime();
+
+
+CREATE OR REPLACE FUNCTION set_Times()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    NEW.lastUpdatedTime = now();
+    NEW.createdTime = now();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER setGradesTimes
+    BEFORE INSERT
+    ON Grades
+    FOR EACH ROW
+EXECUTE PROCEDURE
+    set_Times();
+
+CREATE TRIGGER setHomeworksTimes
+    BEFORE INSERT
+    ON Homeworks
+    FOR EACH ROW
+EXECUTE PROCEDURE
+    set_Times();
+
+CREATE TRIGGER setAnswersTimes
+    BEFORE INSERT
+    ON Answers
+    FOR EACH ROW
+EXECUTE PROCEDURE
+    set_Times();
+
+
+CREATE OR REPLACE FUNCTION prevent_CreatedTimeChange()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    NEW.createdTime = OLD.createdTime;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER preventAnswersCreatedTimeChange
+    BEFORE INSERT
+    ON Answers
+    FOR EACH ROW
+EXECUTE PROCEDURE
+    prevent_CreatedTimeChange();
+
+CREATE TRIGGER preventGradesCreatedTimeChange
+    BEFORE INSERT
+    ON Grades
+    FOR EACH ROW
+EXECUTE PROCEDURE
+    prevent_CreatedTimeChange();
+
+CREATE TRIGGER preventHomeworksCreatedTimeChange
+    BEFORE INSERT
+    ON Homeworks
+    FOR EACH ROW
+EXECUTE PROCEDURE
+    prevent_CreatedTimeChange();
