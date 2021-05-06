@@ -21,7 +21,9 @@ public class GradesMapper {
                 .weight(grade.getWeight())
                 .studentId(grade.getStudentId())
                 .teacherId(grade.getTeacherId())
-                .createdTime(grade.getCreatedTime().toLocalDateTime())
+                .createdTime(grade.getCreatedTime() == null
+                        ? grade.getLastUpdateTime().toLocalDateTime()
+                        : grade.getCreatedTime().toLocalDateTime())
                 .modifyTime(grade.getLastUpdateTime().toLocalDateTime())
                 .isFinal(grade.getFinal())
                 .build();
