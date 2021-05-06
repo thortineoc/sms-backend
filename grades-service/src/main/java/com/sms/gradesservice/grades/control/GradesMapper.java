@@ -18,6 +18,7 @@ public class GradesMapper {
                 .description(Optional.ofNullable(grade.getDescription()))
                 .grade(grade.getGrade())
                 .subject(grade.getSubject())
+                .weight(grade.getWeight())
                 .studentId(grade.getStudentId())
                 .teacherId(grade.getTeacherId())
                 .createdTime(grade.getCreatedTime().toLocalDateTime())
