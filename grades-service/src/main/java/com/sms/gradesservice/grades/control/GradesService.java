@@ -35,8 +35,18 @@ public class GradesService {
     @Autowired
     UserManagementClient userManagementClient;
 
+    public Optional<GradeDTO> getGrade(Long id) {
+        try {
+            return gradesRepository.findById(id).map(GradesMapper::toDTO);
+        } catch (EntityNotFoundException e) {
+            return Optional.empty();
+        }
+    }
+
     public Map<String, GradesDTO> getStudentGrades() {
-        String studentId = userContext.getUserId();
+        String studentId = UserDTO.Role.STUDENT.equals(userContext.getSmsRole())
+                ? userContext.getUserId()
+                : (String) userContext.getCustomAttributes().get("relatedUser");
         try {
             return extractFinalGrades(groupGrades(GradeDTO::getSubject, gradesRepository.findAllByStudentId(studentId)));
         } catch (EntityNotFoundException e) {
@@ -80,16 +90,11 @@ public class GradesService {
         }
     }
 
-    public void deleteAllGrades(String id){
-        List<GradeJPA> studentGrades = gradesRepository.findAllByStudentId(id);
-        for( GradeJPA grade : studentGrades ) {
-            try {
-                gradesRepository.deleteById(grade.getId());
-            } catch (ConstraintViolationException e) {
-                throw new IllegalArgumentException("Deleting grade: " + grade.getId() + " violated database constraints: " + e.getConstraintName());
-            } catch (EntityNotFoundException e) {
-                throw new IllegalStateException("Grade with ID: " + grade.getId() + " does not exist, can't delete: ");
-            }
+    public void deleteAllGrades(String id) {
+        try {
+            gradesRepository.deleteAllByStudentId(id);
+        } catch (ConstraintViolationException e) {
+            throw new IllegalArgumentException("Deleting grade violated database constraints: " + e.getConstraintName());
         }
     }
 

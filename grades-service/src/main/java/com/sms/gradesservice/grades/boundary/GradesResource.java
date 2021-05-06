@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/grades")
@@ -22,6 +23,13 @@ public class GradesResource {
 
     @Autowired
     GradesService gradesService;
+
+    @GetMapping("/{id}")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<GradeDTO> getGradeById(@PathVariable("id") Long id) {
+        Optional<GradeDTO> grade = gradesService.getGrade(id);
+        return grade.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.noContent().build());
+    }
 
     @GetMapping("/student")
     @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.PARENT})

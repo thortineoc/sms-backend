@@ -15,6 +15,8 @@ public interface GradesRepository extends CrudRepository<GradeJPA, Long> {
 
     List<GradeJPA> findAllByStudentId(String studentId);
 
+    void deleteAllByStudentId(String studentId);
+
     List<GradeJPA> findAllBySubjectAndStudentIdIn(String subject, Collection<String> studentIds);
 
     List<GradeJPA> findAllByTeacherId(String teacherId);
