@@ -55,5 +55,4 @@ public class GroupsResource {
             return ResponseEntity.badRequest().body(studentsWithGroups);
         }
     }
-
 }

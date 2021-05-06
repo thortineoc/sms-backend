@@ -16,6 +16,7 @@ public class GradesMapper {
                 .description(Optional.ofNullable(grade.getDescription()))
                 .grade(grade.getGrade())
                 .subject(grade.getSubject())
+                .weight(grade.getWeight())
                 .studentId(grade.getStudentId())
                 .teacherId(grade.getTeacherId())
                 .isFinal(grade.getFinal())

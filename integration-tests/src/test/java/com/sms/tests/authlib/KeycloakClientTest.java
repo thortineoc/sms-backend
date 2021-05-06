@@ -4,6 +4,7 @@ import com.sms.authlib.TokenDTO;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -14,14 +15,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class KeycloakClientTest {
 
     private final static KeycloakClient CLIENT = new KeycloakClient();
-    private final static String TEST_USER_ID = "a43856df-96bf-4747-b947-0b2b127ae677";
     private final static String PREFIX = "INTEGRATION_TESTS_";
-    private final static String KOPYTKO54_USER = PREFIX + "kopytko54";
+    private final static String TEST_USERNAME = (PREFIX + UUID.randomUUID().toString()).toLowerCase();
 
     @AfterAll
+    @BeforeAll
     static void cleanup() {
 
-        UserSearchParams params = new UserSearchParams().username(KOPYTKO54_USER);
+        UserSearchParams params = new UserSearchParams().username(TEST_USERNAME);
         Optional<UserRepresentation> testUser = CLIENT.getUsers(params).stream().findFirst();
         testUser.ifPresent(userRepresentation -> CLIENT.deleteUser(userRepresentation.getId()));
     }
@@ -48,39 +49,12 @@ class KeycloakClientTest {
     }
 
     @Test
-    void shouldGetKeycloakUserById() {
-        // WHEN
-        Optional<UserRepresentation> user = CLIENT.getUser(TEST_USER_ID);
-
-        // THEN
-        assertTrue(user.isPresent());
-        assertEquals("testbackenduser", user.get().getUsername());
-        assertEquals(TEST_USER_ID, user.get().getId());
-    }
-
-    @Test
-    void shouldGetKeycloakUserByUsername() {
-        // GIVEN
-        UserSearchParams params = new UserSearchParams().username("testbackenduser");
-
-        // WHEN
-        List<UserRepresentation> users = CLIENT.getUsers(params);
-
-        // THEN
-        assertEquals(1, users.size());
-
-        UserRepresentation user = users.get(0);
-        assertEquals("testbackenduser", user.getUsername());
-        assertEquals(TEST_USER_ID, user.getId());
-    }
-
-    @Test
     void shouldCreateUserInKeycloak() {
         // GIVEN
-        UserRepresentation user = createUserRep(KOPYTKO54_USER, "kopytko54", "Tomasz", "Wojna",
-                "twojna@interia.pl", "3a", "STUDENT");
-        UserRepresentation updatedUser = createUserRep(KOPYTKO54_USER, "kopytko54", "Michał", "Stadryniak",
-                "twojna@interia.pl", "2g", "TEACHER");
+        UserRepresentation user = createUserRep(TEST_USERNAME, "kopytko54", "Tomasz", "Wojna",
+                TEST_USERNAME + "@" + TEST_USERNAME, "3a", "STUDENT");
+        UserRepresentation updatedUser = createUserRep(TEST_USERNAME, "kopytko54", "Michał", "Stadryniak",
+                TEST_USERNAME + "@" + TEST_USERNAME, "2g", "TEACHER");
 
         // CREATE THE USER
         boolean result = CLIENT.createUser(user);
@@ -88,17 +62,12 @@ class KeycloakClientTest {
         // USER SHOULD BE CREATED IN KEYCLOAK
         assertTrue(result);
 
-        Optional<UserRepresentation> someUser = CLIENT.getUser("a43856df-96bf-4747-b947-0b2b127ae677");
-        if(someUser.isPresent()) {
-           Map<String, List<String>> attributes = someUser.get().getAttributes();
-           List<String> role = attributes.get("role");
-            assertNotNull(role);
-        }
-
-        UserSearchParams params = new UserSearchParams().username(KOPYTKO54_USER);
+        UserSearchParams params = new UserSearchParams().username(TEST_USERNAME);
         UserRepresentation createdUser = CLIENT.getUsers(params).get(0);
-
         assertUsersAreEqual(user, createdUser);
+
+        UserRepresentation userQueriedById = CLIENT.getUser(createdUser.getId()).get();
+        assertUsersAreEqual(user, userQueriedById);
 
         // UPDATE USER DETAILS
         result = CLIENT.updateUser(createdUser.getId(), updatedUser);
