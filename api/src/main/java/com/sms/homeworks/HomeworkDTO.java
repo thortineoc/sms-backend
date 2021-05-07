@@ -22,7 +22,7 @@ public interface HomeworkDTO {
 
     String getTitle();
 
-    String getDescription();
+    Optional<String> getDescription();
 
     String getGroup();
 

@@ -15,28 +15,28 @@ public class HomeworkMapper {
     public static HomeworkDTO toDTO(HomeworkJPA homeworkJPA) {
         return HomeworkDTO.builder()
                 .id(Optional.ofNullable(homeworkJPA.getId()))
-                .description(homeworkJPA.getDescription())
+                .description(Optional.ofNullable(homeworkJPA.getDescription()))
                 .title(homeworkJPA.getTitle())
                 .subject(homeworkJPA.getSubject())
                 .teacherId(homeworkJPA.getTeacherid())
                 .deadline(timestampToDeadline(homeworkJPA.getDeadline()))
                 .toEvaluate(homeworkJPA.getToevaluate())
                 .file(homeworkJPA.getFile())
-                .group(homeworkJPA.getGroup())
+                .group(homeworkJPA.getGroups())
                 .build();
     }
 
     public static HomeworkJPA toJPA(HomeworkDTO homeworkDTO) {
         HomeworkJPA homeworkJPA = new HomeworkJPA();
         homeworkDTO.getId().ifPresent(homeworkJPA::setId);
-        homeworkJPA.setDescription(homeworkDTO.getDescription());
+        homeworkDTO.getDescription().ifPresent(homeworkJPA::setDescription);
         homeworkJPA.setTitle(homeworkDTO.getTitle());
         homeworkJPA.setSubject(homeworkDTO.getSubject());
         homeworkDTO.getTeacherId().ifPresent(homeworkJPA::setTeacherid);
         homeworkJPA.setDeadline(deadlineToTimestamp(homeworkDTO.getDeadline()));
         homeworkJPA.setToevaluate(homeworkDTO.getToEvaluate());
         homeworkDTO.getFile().ifPresent(homeworkJPA::setFile);
-        homeworkJPA.setGroup(homeworkDTO.getGroup());
+        homeworkJPA.setGroups(homeworkDTO.getGroup());
         return homeworkJPA;
     }
 

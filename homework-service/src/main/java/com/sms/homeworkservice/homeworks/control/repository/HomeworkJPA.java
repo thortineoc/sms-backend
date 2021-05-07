@@ -2,7 +2,6 @@ package com.sms.homeworkservice.homeworks.control.repository;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "homeworks")
@@ -20,7 +19,7 @@ public class HomeworkJPA {
     private String description;
 
     @Column(name = "groups")
-    private String group;
+    private String groups;
 
     @Column(name = "subject")
     private String subject;
@@ -49,7 +48,7 @@ public class HomeworkJPA {
         this.description = description;
     }
 
-    public void setGroup(String group) { this.group = group; }
+    public void setGroups(String group) { this.groups = group; }
 
     public void setSubject(String subject) {
         this.subject = subject;
@@ -81,8 +80,8 @@ public class HomeworkJPA {
         return description;
     }
 
-    public String getGroup() {
-        return group;
+    public String getGroups() {
+        return groups;
     }
 
     public String getSubject() {
