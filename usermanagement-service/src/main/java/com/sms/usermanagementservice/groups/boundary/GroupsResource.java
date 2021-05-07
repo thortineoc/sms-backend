@@ -46,13 +46,11 @@ public class GroupsResource {
     @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<List<String>> deleteGroup(@PathVariable String name) {
 
-        List<String> studentsWithGroups = groupsService.getStudentsWithGroups(name);
-
-        if (studentsWithGroups.isEmpty()) {
-            groupsService.delete(name);
+        List<String> failedStudents = groupsService.delete(name);
+        if (failedStudents.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.badRequest().body(studentsWithGroups);
+            return ResponseEntity.status(500).body(failedStudents);
         }
     }
 }

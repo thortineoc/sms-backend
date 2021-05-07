@@ -24,4 +24,18 @@ public class TestUtils {
                 .pesel(UUID.randomUUID().toString())
                 .build();
     }
+
+    public static UserDTO getStudentWithGroupDTO(String lastName, String group) {
+        return UserDTO.builder()
+                .customAttributes(CustomAttributesDTO.builder()
+                        .group(group)
+                        .build())
+                .role(UserDTO.Role.STUDENT)
+                .userName(UUID.randomUUID().toString())
+                .id(UUID.randomUUID().toString())
+                .firstName(UUID.randomUUID().toString())
+                .lastName(lastName)
+                .pesel(UUID.randomUUID().toString())
+                .build();
+    }
 }

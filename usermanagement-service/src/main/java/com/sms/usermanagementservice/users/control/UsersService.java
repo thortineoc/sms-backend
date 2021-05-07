@@ -71,7 +71,7 @@ public class UsersService {
         UserRepresentation userRepresentation = keycloakClient.getUser(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        if( gradesClient.deleteGrades(userRepresentation.getId())) {
+        if (gradesClient.deleteGrades(userRepresentation.getId())) {
             Boolean isDeleted = deleteRelatedUser(userRepresentation);
             if (!(keycloakClient.deleteUser(userId) && isDeleted)) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);

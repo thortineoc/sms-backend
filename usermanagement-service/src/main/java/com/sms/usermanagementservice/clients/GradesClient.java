@@ -30,4 +30,14 @@ public class GradesClient {
         return response.getStatus() == HttpStatus.NO_CONTENT.value();
     }
 
+    public boolean deleteGradesBySubject(String subject) {
+        Response response = serviceClient.target(GRADES)
+                .path("grades")
+                .path("subject")
+                .path(subject)
+                .request(MediaType.TEXT_PLAIN_TYPE)
+                .delete();
+
+        return response.getStatus() == HttpStatus.NO_CONTENT.value();
+    }
 }

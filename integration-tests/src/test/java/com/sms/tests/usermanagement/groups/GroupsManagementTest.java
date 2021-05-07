@@ -1,32 +1,28 @@
 package com.sms.tests.usermanagement.groups;
 
-import com.sms.clients.KeycloakClient;
+import com.google.common.collect.ImmutableMap;
 import com.sms.clients.WebClient;
-import com.sms.clients.entity.UserSearchParams;
-import com.sms.usermanagement.CustomAttributesDTO;
+import com.sms.tests.usermanagement.users.UserUtils;
 import com.sms.usermanagement.UserDTO;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.keycloak.representations.idm.UserRepresentation;
+import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 
-import javax.ws.rs.core.MediaType;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 
+import static com.sms.tests.usermanagement.TestUtils.TEST_PREFIX;
+import static com.sms.tests.usermanagement.TestUtils.getStudentWithGroupDTO;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GroupsManagementTest {
 
-    private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
-    private final static KeycloakClient KEYCLOAK_CLIENT = new KeycloakClient();
-    private static final String TEST_LAST_NAME = "temp_user_group_test";
-    private static final String TEST_GROUP_1 = "temp_group1";
-    private static final String TEST_GROUP_2 = "temp_group2";
-    private static final String TEST_GROUP_3 = "temp_group3";
-
+    private static final String TEST_LAST_NAME = TEST_PREFIX + UUID.randomUUID().toString();
+    private static final String TEST_GROUP_1 = "TEST_" + getRandomGroup();
+    private static final String TEST_GROUP_2 = "TEST_" + getRandomGroup();
+    private static final String TEST_GROUP_3 = "TEST_" + getRandomGroup();
 
     @AfterAll
     @BeforeAll
@@ -36,94 +32,93 @@ public class GroupsManagementTest {
         GroupUtils.deleteGroup(TEST_GROUP_2);
         GroupUtils.deleteGroup(TEST_GROUP_3);
 
-        UserSearchParams params = new UserSearchParams().lastName(TEST_LAST_NAME);
-        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-        createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
+        Response response = UserUtils.getUsers(ImmutableMap.of("lastName", TEST_LAST_NAME,
+                "role", "STUDENT"));
+        if (response.statusCode() == 200) {
+            String id = response.as(UserDTO[].class)[0].getId();
+            UserUtils.deleteUser(id);
+        }
     }
 
     @Test
-    void shouldReturnForbiddenWhenNotAdmin() {
-
+    @Order(1)
+    void onlyAdminCanCreateAndDeleteGroups() {
         //GIVEN
         WebClient tempWebClient = new WebClient();
 
-        //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
         GroupUtils.createGroup(tempWebClient, TEST_GROUP_1).then().statusCode(HttpStatus.FORBIDDEN.value());
-
-        //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
         GroupUtils.deleteGroup(tempWebClient, TEST_GROUP_1).then().statusCode(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
-    void shouldCreateQueryAndDeleteGroups() {
-
+    @Order(2)
+    void adminCanCreateGroups() {
         GroupUtils.createGroup(TEST_GROUP_1)
                 .then().statusCode(HttpStatus.NO_CONTENT.value());
         GroupUtils.createGroup(TEST_GROUP_2)
                 .then().statusCode(HttpStatus.NO_CONTENT.value());
         GroupUtils.createGroup(TEST_GROUP_3)
                 .then().statusCode(HttpStatus.NO_CONTENT.value());
-
-        //FETCH GROUPS
-        Response response = GroupUtils.getGroups();
-        response.then().statusCode(HttpStatus.OK.value());
-
-        //CHECK RESPONSE BODY
-        List<String> list = Arrays.asList(response.getBody().as(String[].class));
-        Assertions.assertTrue(list.containsAll(Arrays.asList(TEST_GROUP_1, TEST_GROUP_2, TEST_GROUP_3)));
-
-        GroupUtils.deleteGroup(TEST_GROUP_1)
-                .then().statusCode(HttpStatus.NO_CONTENT.value());
-        GroupUtils.deleteGroup(TEST_GROUP_2)
-                .then().statusCode(HttpStatus.NO_CONTENT.value());
-        GroupUtils.deleteGroup(TEST_GROUP_3)
-                .then().statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     @Test
-    void shouldReturnConflictWhenGroupIsUsed(){
+    @Order(3)
+    void adminCanSeeAllGroups() {
+        Response response = GroupUtils.getGroups();
+        response.then().statusCode(HttpStatus.OK.value());
 
+        List<String> list = Arrays.asList(response.getBody().as(String[].class));
+        Assertions.assertTrue(list.containsAll(Arrays.asList(TEST_GROUP_1, TEST_GROUP_2, TEST_GROUP_3)));
+    }
+
+    @Test
+    @Order(4)
+    void adminCannotCreateTwoSameGroups() {
         GroupUtils.createGroup(TEST_GROUP_1)
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+                .then().statusCode(HttpStatus.CONFLICT.value());
+    }
 
-        //CREATE USER
-        CustomAttributesDTO attributesDTO = CustomAttributesDTO.builder()
-                .group(TEST_GROUP_1)
-                .build();
+    @Test
+    @Order(5)
+    void adminCanCreateStudentAssignedToAGroup() {
+        UserDTO student = getStudentWithGroupDTO(TEST_LAST_NAME, TEST_GROUP_1);
+        UserUtils.createUser(student);
 
-        UserDTO userDTO = UserDTO.builder()
-                .id("null")
-                .userName("null")
-                .firstName("firstName")
-                .lastName(TEST_LAST_NAME)
-                .pesel("pesel")
-                .role(UserDTO.Role.STUDENT)
-                .email("mail@email.com")
-                .customAttributes(attributesDTO)
-                .build();
+        Response response = UserUtils.getUsers(ImmutableMap.of("lastName", TEST_LAST_NAME,
+                "role", "STUDENT"));
+        assertHasGroup(response, TEST_GROUP_1);
+    }
 
-        CLIENT.request("usermanagement-service")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(userDTO)
-                .post("/users")
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+    @Test
+    @Order(6)
+    void adminCanDeleteAGroup() {
+        GroupUtils.deleteGroup(TEST_GROUP_1).then().statusCode(HttpStatus.NO_CONTENT.value());
 
-        //TRY TO DELETE GROUP
-        GroupUtils.deleteGroup(TEST_GROUP_1)
-                .then()
-                .statusCode(HttpStatus.BAD_REQUEST.value());
+        Response response = UserUtils.getUsers(ImmutableMap.of("lastName", TEST_LAST_NAME,
+                "role", "STUDENT"));
+        assertHasNoGroup(response);
+    }
 
-        //DELETE USER
-        UserSearchParams params = new UserSearchParams().lastName(TEST_LAST_NAME);
-        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-        createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
+    private void assertHasGroup(Response response, String group) {
+        response.then().statusCode(HttpStatus.OK.value());
 
-        //TRY TO DELETE GROUP AGAIN
-        GroupUtils.deleteGroup(TEST_GROUP_1)
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+        UserDTO teacher = response.as(UserDTO[].class)[0];
+        Assertions.assertTrue(teacher.getCustomAttributes().getGroup().isPresent());
+        String userGroup = teacher.getCustomAttributes().getGroup().get();
+        Assertions.assertEquals(group, userGroup);
+    }
 
+    private void assertHasNoGroup(Response response) {
+        response.then().statusCode(HttpStatus.OK.value());
+
+        UserDTO teacher = response.as(UserDTO[].class)[0];
+        Assertions.assertFalse(teacher.getCustomAttributes().getGroup().isPresent());
+    }
+
+    private static String getRandomGroup() {
+        return new Random().ints('a', 'z' + 1)
+                .limit(4)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
     }
 }
