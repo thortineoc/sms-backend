@@ -2,6 +2,7 @@ package com.sms.gradesservice.grades.control.repository;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "grades")
@@ -33,10 +34,22 @@ public class GradeJPA {
     @Column(name = "weight")
     private Integer weight;
 
+    @Column(name = "createdtime", updatable = false, insertable = false)
+    private Timestamp createdTime;
 
+    @Column(name = "lastupdatedtime")
+    private Timestamp lastUpdateTime;
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Timestamp getCreatedTime() {
+        return createdTime;
+    }
+
+    public Timestamp getLastUpdateTime() {
+        return lastUpdateTime;
     }
 
     public void setDescription(String description) {
@@ -45,6 +58,14 @@ public class GradeJPA {
 
     public void setGrade(BigDecimal grade) {
         this.grade = grade;
+    }
+
+    public void setLastUpdateTime(Timestamp lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public void setCreatedTime(Timestamp createdTime) {
+        this.createdTime = createdTime;
     }
 
     public void setStudentId(String studentId) {

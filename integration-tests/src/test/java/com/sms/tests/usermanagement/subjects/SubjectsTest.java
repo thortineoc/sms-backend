@@ -43,20 +43,20 @@ class SubjectsTest {
                 .map(UserRepresentation::getId)
                 .ifPresent(KC_CLIENT::deleteUser);
 
-        TEST_SUBJECTS.forEach(SubjectsTest::deleteSubject);
+        TEST_SUBJECTS.forEach(SubjectUtils::deleteSubject);
     }
 
     @Test
     void subjectsCRUDTest() {
         // CREATE A FEW SUBJECTS
         List<Response> responses = TEST_SUBJECTS.stream()
-                .map(this::createSubject)
+                .map(SubjectUtils::createSubject)
                 .filter(this::isFailed)
                 .collect(Collectors.toList());
         assertTrue(responses.isEmpty());
 
         // CHECK IF SUBJECTS WERE SAVED
-        List<String> subjects = getSubjects();
+        List<String> subjects = Arrays.asList(SubjectUtils.getSubjects().as(String[].class));
         subjects.containsAll(TEST_SUBJECTS);
 
         // CREATE USER WITH ONE OF THE SUBJECTS
@@ -70,7 +70,7 @@ class SubjectsTest {
         assertTrue(user.getAttributes().get(SUBJECTS).contains(TEST_MATHS_SUBJECT));
 
         // TRY TO DELETE THE SUBJECT
-        Response deleteResponse = deleteSubject(TEST_MATHS_SUBJECT);
+        Response deleteResponse = SubjectUtils.deleteSubject(TEST_MATHS_SUBJECT);
         assertTrue(isFailed(deleteResponse));
 
         List<String> usersWithSubject = Arrays.asList(deleteResponse.as(String[].class));
@@ -80,12 +80,12 @@ class SubjectsTest {
         assertEquals(user.getId(), usersWithSubject.get(0));
 
         // ... AND THE SUBJECT WAS NOT DELETED
-        List<String> subjectsAfterDeleting = getSubjects();
+        List<String> subjectsAfterDeleting = Arrays.asList(SubjectUtils.getSubjects().as(String[].class));
         assertTrue(subjectsAfterDeleting.contains(TEST_MATHS_SUBJECT));
 
         // DELETE THE TEST USER AND SUBJECTS
         boolean userDeleted = KC_CLIENT.deleteUser(user.getId());
-        boolean subjectsDeleted = TEST_SUBJECTS.stream().map(SubjectsTest::deleteSubject)
+        boolean subjectsDeleted = TEST_SUBJECTS.stream().map(SubjectUtils::deleteSubject)
                 .noneMatch(this::isFailed);
 
         assertTrue(userDeleted);
@@ -103,30 +103,6 @@ class SubjectsTest {
 
     private List<UserRepresentation> getUser(String firstName) {
         return KC_CLIENT.getUsers(new UserSearchParams().firstName(firstName));
-    }
-
-    private List<String> getSubjects() {
-        return Arrays.asList(CLIENT.request(USER_MANAGEMENT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .log().all()
-                .get("/subjects")
-                .as(String[].class));
-    }
-
-    private static Response deleteSubject(String name) {
-        String path = "/subjects/" + name;
-        return CLIENT.request(USER_MANAGEMENT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .log().all()
-                .delete(path);
-    }
-
-    private Response createSubject(String name) {
-        String path = "/subjects/" + name;
-        return CLIENT.request(USER_MANAGEMENT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .log().all()
-                .post(path);
     }
 
     private boolean isFailed(Response response) {

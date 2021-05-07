@@ -32,9 +32,9 @@ public class GroupsManagementTest {
     @BeforeAll
     static void cleanup(){
 
-        deleteGroup(TEST_GROUP_1);
-        deleteGroup(TEST_GROUP_2);
-        deleteGroup(TEST_GROUP_3);
+        GroupUtils.deleteGroup(TEST_GROUP_1);
+        GroupUtils.deleteGroup(TEST_GROUP_2);
+        GroupUtils.deleteGroup(TEST_GROUP_3);
 
         UserSearchParams params = new UserSearchParams().lastName(TEST_LAST_NAME);
         List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
@@ -48,60 +48,42 @@ public class GroupsManagementTest {
         WebClient tempWebClient = new WebClient();
 
         //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
-        tempWebClient.request("usermanagement-service")
-                .post("/groups/" + TEST_GROUP_1)
-                .then()
-                .statusCode(HttpStatus.FORBIDDEN.value());
+        GroupUtils.createGroup(tempWebClient, TEST_GROUP_1).then().statusCode(HttpStatus.FORBIDDEN.value());
 
         //SHOULD RETURN FORBIDDEN WHEN USER IS NOT AN ADMIN
-        tempWebClient.request("usermanagement-service")
-                .delete("/groups/" + TEST_GROUP_1)
-                .then()
-                .statusCode(HttpStatus.FORBIDDEN.value());
+        GroupUtils.deleteGroup(tempWebClient, TEST_GROUP_1).then().statusCode(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
     void shouldCreateQueryAndDeleteGroups() {
 
-        createGroup(TEST_GROUP_1)
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
-
-        createGroup(TEST_GROUP_2)
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
-
-        createGroup(TEST_GROUP_3)
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
+        GroupUtils.createGroup(TEST_GROUP_1)
+                .then().statusCode(HttpStatus.NO_CONTENT.value());
+        GroupUtils.createGroup(TEST_GROUP_2)
+                .then().statusCode(HttpStatus.NO_CONTENT.value());
+        GroupUtils.createGroup(TEST_GROUP_3)
+                .then().statusCode(HttpStatus.NO_CONTENT.value());
 
         //FETCH GROUPS
-        Response response = CLIENT.request("usermanagement-service").get("/groups");
-        Assertions.assertEquals(HttpStatus.OK.value(), response.statusCode());
+        Response response = GroupUtils.getGroups();
+        response.then().statusCode(HttpStatus.OK.value());
 
         //CHECK RESPONSE BODY
-        String[] array = response.getBody().as(String[].class);
-        List<String> list = Arrays.asList(array);
+        List<String> list = Arrays.asList(response.getBody().as(String[].class));
         Assertions.assertTrue(list.containsAll(Arrays.asList(TEST_GROUP_1, TEST_GROUP_2, TEST_GROUP_3)));
 
-        deleteGroup(TEST_GROUP_1)
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
-
-        deleteGroup(TEST_GROUP_2)
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
-
-        deleteGroup(TEST_GROUP_3)
-                .then()
-                .statusCode(HttpStatus.NO_CONTENT.value());
-
+        GroupUtils.deleteGroup(TEST_GROUP_1)
+                .then().statusCode(HttpStatus.NO_CONTENT.value());
+        GroupUtils.deleteGroup(TEST_GROUP_2)
+                .then().statusCode(HttpStatus.NO_CONTENT.value());
+        GroupUtils.deleteGroup(TEST_GROUP_3)
+                .then().statusCode(HttpStatus.NO_CONTENT.value());
     }
 
     @Test
     void shouldReturnConflictWhenGroupIsUsed(){
 
-        createGroup(TEST_GROUP_1)
+        GroupUtils.createGroup(TEST_GROUP_1)
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
@@ -129,7 +111,7 @@ public class GroupsManagementTest {
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
         //TRY TO DELETE GROUP
-        deleteGroup(TEST_GROUP_1)
+        GroupUtils.deleteGroup(TEST_GROUP_1)
                 .then()
                 .statusCode(HttpStatus.BAD_REQUEST.value());
 
@@ -139,21 +121,9 @@ public class GroupsManagementTest {
         createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
 
         //TRY TO DELETE GROUP AGAIN
-        deleteGroup(TEST_GROUP_1)
+        GroupUtils.deleteGroup(TEST_GROUP_1)
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value());
 
     }
-
-    private static Response deleteGroup(String name){
-        return CLIENT.request("usermanagement-service")
-                .delete("/groups/" + name);
-    }
-
-    private static Response createGroup(String name){
-        return CLIENT.request("usermanagement-service")
-                .post("/groups/" + name);
-    }
-
-
 }

@@ -16,10 +16,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -97,13 +94,17 @@ public class GradesService {
     }
 
     List<StudentGradesDTO> mapStudentsToGrades(Map<String, GradesDTO> grades, Map<String, UserDTO> students) {
-        return grades.keySet().stream()
+        return students.keySet().stream()
                 .map(id -> StudentGradesDTO.builder()
-                        .grades(grades.get(id))
-                        .student(getOrThrow(students, id,
-                                () -> new IllegalStateException("Grades assigned to non existing user: " + id + " found")))
+                        .grades(grades.getOrDefault(id, getEmptyGrades()))
+                        .student(students.get(id))
                         .build())
+                .sorted(compareStudents())
                 .collect(Collectors.toList());
+    }
+
+    private Comparator<StudentGradesDTO> compareStudents() {
+        return Comparator.comparing(s -> s.getStudent().getLastName());
     }
 
     Map<String, List<GradeDTO>> groupGrades(Function<GradeDTO, String> classifier, List<GradeJPA> grades) {
@@ -118,18 +119,21 @@ public class GradesService {
     private GradesDTO extractFinalGrade(Map.Entry<String, List<GradeDTO>> grades) {
         Map<Boolean, List<GradeDTO>> splitGrades = grades.getValue().stream()
                 .collect(Collectors.groupingBy(GradeDTO::isFinal));
-
+        List<GradeDTO> sortedRegulars = getOrEmpty(splitGrades, Boolean.FALSE).stream()
+                .sorted(Comparator.comparing(g -> g.getCreatedTime()
+                        .orElseThrow(() -> new IllegalStateException("Missing creation time on grade: " + g.getId()))))
+                .collect(Collectors.toList());
         return GradesDTO.builder()
-                .grades(getOrEmpty(splitGrades, Boolean.FALSE))
+                .grades(sortedRegulars)
                 .finalGrade(getOpt(splitGrades, Boolean.TRUE).flatMap(Util::getFirst))
                 .build();
     }
 
     private Map<String, UserDTO> getStudentsByIds(String group) {
         return userManagementClient.getUsers(UsersFiltersDTO.builder()
-                .role(UserDTO.Role.STUDENT.toString())
-                .group(group)
-                .build()).stream()
+                        .role(UserDTO.Role.STUDENT.toString())
+                        .group(group)
+                        .build()).stream()
                 .collect(Collectors.toMap(UserDTO::getId, Function.identity()));
     }
 
@@ -141,5 +145,11 @@ public class GradesService {
         if (!studentUser.isPresent()) {
             throw new IllegalArgumentException("Student user: " + grade.getStudentId() + " does not exist");
         }
+    }
+
+    private GradesDTO getEmptyGrades() {
+        return GradesDTO.builder()
+                .grades(Collections.emptyList())
+                .build();
     }
 }
