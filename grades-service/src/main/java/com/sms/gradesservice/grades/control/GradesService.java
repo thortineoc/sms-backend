@@ -90,6 +90,14 @@ public class GradesService {
         }
     }
 
+    public void deleteBySubject(String subject) {
+        try {
+            gradesRepository.deleteAllBySubject(subject);
+        } catch (ConstraintViolationException e) {
+            throw new IllegalArgumentException("Deleting grades by subject: " + subject + " violated database constraints: " + e.getConstraintName());
+        }
+    }
+
     public void deleteAllGrades(String id) {
         try {
             gradesRepository.deleteAllByStudentId(id);

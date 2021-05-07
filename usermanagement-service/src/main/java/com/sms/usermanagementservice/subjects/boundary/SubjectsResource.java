@@ -42,12 +42,11 @@ public class SubjectsResource {
     @DeleteMapping("/{name}")
     @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<List<String>> deleteSubject(@PathVariable("name") String name) {
-        List<String> teachersWithSubject = subjectsService.getTeachersWithSubject(name);
-        if (teachersWithSubject.isEmpty()) {
-            subjectsService.delete(name);
+        List<String> failedTeacherIds = subjectsService.delete(name);
+        if (failedTeacherIds.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.badRequest().body(teachersWithSubject);
+            return ResponseEntity.status(500).body(failedTeacherIds);
         }
     }
 

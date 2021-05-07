@@ -22,6 +22,7 @@ public class GradesMapper {
                 .studentId(grade.getStudentId())
                 .teacherId(grade.getTeacherId())
                 .createdTime(grade.getCreatedTime() == null
+                        // FIXME: saving a grade does not return it's createdTime
                         ? grade.getLastUpdateTime().toLocalDateTime()
                         : grade.getCreatedTime().toLocalDateTime())
                 .modifyTime(grade.getLastUpdateTime().toLocalDateTime())

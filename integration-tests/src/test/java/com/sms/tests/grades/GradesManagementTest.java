@@ -263,16 +263,18 @@ class GradesManagementTest {
 
         UserUtils.deleteUser(SECOND_USER.getId()).then().statusCode(HttpStatus.NO_CONTENT.value());
 
-        gradeIds.stream()
-                .map(GradeUtils::getGrade)
-                .forEach(this::isNoContent);
+        gradeIds.stream().map(GradeUtils::getGrade).forEach(this::isNoContent);
     }
 
     @Test
     @Order(10)
-    void cannotDeleteSubjectIfGradeWithReferenceToItExists() {
+    void allGradesAreDeletedWhenTheirSubjectIsDeleted() {
 
-        SubjectUtils.deleteSubject(BIOLOGY).then().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        SubjectUtils.deleteSubject(BIOLOGY).then().statusCode(HttpStatus.NO_CONTENT.value());
+
+        // (first has no grades from test (8), second doesn't exist anymore
+        new GradesAssert(studentGetGrades(THIRD_CLIENT)).assertHasNoGrades(BIOLOGY);
+        new GradesAssert(studentGetGrades(FOURTH_CLIENT)).assertHasNoGrades(BIOLOGY);
     }
 
     private void isOk(Response response) {

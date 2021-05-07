@@ -6,26 +6,26 @@ import com.sms.clients.WebClient;
 import com.sms.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.UserDTO;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 
 import javax.ws.rs.core.MediaType;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import static com.sms.tests.usermanagement.TestUtils.TEST_PREFIX;
 
 class CreateNewUserTest {
 
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
+    private static final String FIRST_NAME = UUID.randomUUID().toString();
+    private static final String LAST_NAME = UUID.randomUUID().toString();
 
-    @BeforeEach
-    @AfterEach
-    public void cleanup() {
-        Response response = UserUtils.getUsers(ImmutableMap.of("lastName", TEST_PREFIX + "lastName"));
+    @BeforeAll
+    @AfterAll
+    static void cleanup() {
+        Response response = UserUtils.getUsers(ImmutableMap.of("middleName", TEST_PREFIX));
         if (response.statusCode() == 200) {
             Arrays.stream(response.as(UserDTO[].class)).map(UserDTO::getId).forEach(UserUtils::deleteUser);
         }
@@ -64,7 +64,7 @@ class CreateNewUserTest {
         UserUtils.createUser(user).then().statusCode(HttpStatus.NO_CONTENT.value());
 
         //CHECK USER
-        UserDTO createdUser = getOneByFirstName("firstName");
+        UserDTO createdUser = getOneByFirstName(FIRST_NAME);
         UserUtils.assertTeachersAreEqual(user, createdUser);
 
         //DELETE CREATED TEACHER
@@ -81,7 +81,7 @@ class CreateNewUserTest {
         UserUtils.createUser(user).then().statusCode(HttpStatus.NO_CONTENT.value());
 
         //CHECK USER
-        UserDTO createdUser = getOneByFirstName("firstName");
+        UserDTO createdUser = getOneByFirstName(FIRST_NAME);
         UserUtils.assertAdminsAreEqual(user, createdUser);
 
         //DELETE CREATED ADMIN
@@ -98,7 +98,7 @@ class CreateNewUserTest {
         UserUtils.createUser(user).then().statusCode(HttpStatus.NO_CONTENT.value());
 
         //CHECK USER
-        UserDTO createdUser = getOneByFirstName("firstName");
+        UserDTO createdUser = getOneByFirstName(FIRST_NAME);
         UserUtils.assertStudentsAreEqual(user, createdUser);
 
         //DELETE CREATED PARENT AND STUDENT (parent gets deleted automatically)
@@ -118,7 +118,7 @@ class CreateNewUserTest {
         UserUtils.createUser(user).then().statusCode(HttpStatus.CONFLICT.value());
 
         // GET FIRST USER
-        UserDTO createdUser = getOneByFirstName("firstName");
+        UserDTO createdUser = getOneByFirstName(FIRST_NAME);
 
         // DELETE
         UserUtils.deleteUser(createdUser.getId()).then().statusCode(HttpStatus.NO_CONTENT.value());
@@ -138,7 +138,7 @@ class CreateNewUserTest {
         UserUtils.createUser(student).then().statusCode(HttpStatus.CONFLICT.value());
 
         //MAKE SURE THERE IS ONLY ONE USER WITH NAME lastName
-        UserDTO createdUser = getOneByLastName(TEST_PREFIX + "lastName");
+        UserDTO createdUser = getOneByLastName(LAST_NAME);
 
         //DELETE CREATED USER
         UserUtils.deleteUser(createdUser.getId()).then().statusCode(HttpStatus.NO_CONTENT.value());
@@ -162,14 +162,14 @@ class CreateNewUserTest {
         return UserDTO.builder()
                 .id("null")
                 .userName("null")
-                .firstName("firstName")
-                .lastName(TEST_PREFIX + "lastName")
+                .firstName(FIRST_NAME)
+                .lastName(LAST_NAME)
                 .pesel("pesel")
                 .role(role)
-                .email("mail@email.com")
+                .email(FIRST_NAME + "@" + LAST_NAME)
                 .customAttributes(CustomAttributesDTO.builder()
                         .phoneNumber("132-234-234")
-                        .middleName("middleName")
+                        .middleName(TEST_PREFIX + UUID.randomUUID().toString())
                         .group("example-group")
                         .subjects(Lists.newArrayList("subject1", "subject2"))
                         .build())
