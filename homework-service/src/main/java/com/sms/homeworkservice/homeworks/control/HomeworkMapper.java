@@ -21,7 +21,7 @@ public class HomeworkMapper {
                 .teacherId(homeworkJPA.getTeacherid())
                 .deadline(timestampToDeadline(homeworkJPA.getDeadline()))
                 .toEvaluate(homeworkJPA.getToevaluate())
-                .file(homeworkJPA.getFile())
+                .file(Optional.ofNullable(homeworkJPA.getFile()))
                 .group(homeworkJPA.getGroups())
                 .build();
     }

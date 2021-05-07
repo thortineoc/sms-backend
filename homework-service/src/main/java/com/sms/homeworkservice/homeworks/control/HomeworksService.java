@@ -34,12 +34,13 @@ public class HomeworksService {
     @Autowired
     HomeworksFilesRepository homeworksFilesRepository;
 
-    public void updateHomework(HomeworkDTO homeworkDTO) {
+    public HomeworkDTO updateHomework(HomeworkDTO homeworkDTO) {
         HomeworkJPA homework = HomeworkMapper.toJPA(homeworkDTO);
         homework.setTeacherid(userContext.getUserId());
 
         try {
             HomeworkJPA updatedHomework = homeworksRepository.save(homework);
+            return HomeworkMapper.toDTO(updatedHomework);
         } catch (ConstraintViolationException e) {
             throw new IllegalArgumentException("Saving grade: " + homework.getId() + " violated database constraints: " + e.getConstraintName());
         } catch (EntityNotFoundException e) {
@@ -50,12 +51,21 @@ public class HomeworksService {
 
     }
 
-    public void store(MultipartFile file, Integer homework) throws IOException {
+    public ResponseFile store(MultipartFile file, Integer homework) throws IOException {
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
         validateFileName(fileName);
-        FileJPA FileDB = new FileJPA(homework, fileName, (int) file.getSize(), file.getBytes() );
-
-        homeworksFilesRepository.save(FileDB);
+        FileJPA FileDB = new FileJPA(homework, fileName, (int) file.getSize(), file.getBytes());
+        FileJPA fileJPA;
+        try {
+            fileJPA = homeworksFilesRepository.save(FileDB);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+        return new ResponseFile(
+                fileJPA.getFileName(),
+                createDownloadUri(fileJPA),
+                fileJPA.getFile().length,
+                fileJPA.getId());
     }
 
     public FileJPA getFile(Long id) {
@@ -80,10 +90,18 @@ public class HomeworksService {
         }).collect(Collectors.toList());
     }
 
-    private void validateFileName(String filename){
-        if(homeworksFilesRepository.findAll().stream().anyMatch(c -> c.getFileName().equals(filename) ))
+    private void validateFileName(String filename) {
+        if (homeworksFilesRepository.findAll().stream().anyMatch(c -> c.getFileName().equals(filename)))
             throw new IllegalArgumentException("file exists in database: + filename");
     }
 
+    private String createDownloadUri(FileJPA file) {
+        return ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/files/")
+                .path(file.getFileName())
+                .toUriString();
     }
+
+}
 
