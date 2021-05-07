@@ -160,4 +160,21 @@ public class UserUtils {
                 .role(role)
                 .build();
     }
+
+    public static UserDTO getTeacherDTO(String firstName, String lastName, String middleName, String email, List<String> subjects) {
+        return UserDTO.builder()
+                .id("test")
+                .userName(TEST_PREFIX + UUID.randomUUID())
+                .firstName(firstName)
+                .lastName(lastName)
+                .customAttributes(CustomAttributesDTO.builder()
+                        .subjects(subjects)
+                        .middleName(middleName)
+                        .phoneNumber("123")
+                        .build())
+                .email(email)
+                .pesel(firstName + "_123")
+                .role(UserDTO.Role.TEACHER)
+                .build();
+    }
 }
