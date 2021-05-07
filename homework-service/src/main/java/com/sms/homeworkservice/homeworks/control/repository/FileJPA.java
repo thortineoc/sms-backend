@@ -1,7 +1,5 @@
 package com.sms.homeworkservice.homeworks.control.repository;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import javax.persistence.*;
 
 
@@ -12,7 +10,7 @@ public class FileJPA {
     @Id
     @Column(name = "id")
     @GeneratedValue(generator = "homeworksfiles_id_seq")
-    private Integer id;
+    private Long id;
 
     @Column(name = "homework_id")
     private int homeworkid;
@@ -23,35 +21,54 @@ public class FileJPA {
     @Column(name = "size")
     private int size;
 
-    @Column(name= "file")
+    @Column(name = "file")
     private byte[] file;
+
     //setters
 
-    public void setId(Integer id) { this.id = id; }
-    public void setFileName(String fileName){this.fileName=fileName;}
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
     public void setHomeworkid(int homework_id){this.homeworkid=homework_id;};
     public void setFile(byte[] file){this.file=file;}
     public void setSize(int size){this.size=size;}
 
-
     //getters
 
-    public Integer getId() { return id;}
-    public Integer getHomeworkid() {return homeworkid;}
-    public String getFileName() {return fileName;}
-    public byte[] getFile() {return file;}
-    public Integer getSize() {return size;}
-
-    public FileJPA(){
-
-    }
-    public FileJPA(/*Integer homework_id,*/ String filename, Integer size, byte[] data){
-    this.file=data;
-    //this.homework_id=homework_id;
-    this.fileName=filename;
-    this.size=size;
+    public Long getId() {
+        return id;
     }
 
+    public Integer getHomeworkid() {
+        return homeworkid;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public byte[] getFile() {
+        return file;
+    }
+
+    public Integer getSize() {
+        return size;
+    }
+
+    public FileJPA() {
+
+    }
+
+    public FileJPA(Integer homeworkid, String filename, Integer size, byte[] data) {
+        this.file = data;
+        this.homeworkid = homeworkid;
+        this.fileName = filename;
+        this.size = size;
+    }
 
 
 }

@@ -12,9 +12,8 @@ public interface HomeworksFilesRepository extends CrudRepository<FileJPA, Long> 
     @NonNull
     List<FileJPA> findAll();
 
-    List<FileJPA> findAllById(Integer id);
+    List<FileJPA> findAllById(Long id);
 
     List<FileJPA> findAllByHomeworkid(Integer homeworkID);
-
 
 }

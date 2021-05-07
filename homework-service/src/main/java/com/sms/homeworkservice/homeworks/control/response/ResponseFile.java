@@ -4,14 +4,14 @@ public class ResponseFile {
 
     private String name;
     private String url;
-    private String type;
     private long size;
+    private long fileID;
 
-    public ResponseFile(String name, String url, String type, long size) {
+    public ResponseFile(String name, String url, long size, long id) {
         this.name = name;
         this.url = url;
-        this.type = type;
         this.size = size;
+        this.fileID = id;
     }
 
     public String getName() {
@@ -30,20 +30,20 @@ public class ResponseFile {
         this.url = url;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public long getSize() {
         return size;
     }
 
     public void setSize(long size) {
         this.size = size;
+    }
+
+    public void setFileID(long id) {
+        this.fileID = id;
+    }
+
+    public long getFileID() {
+        return fileID;
     }
 }
 

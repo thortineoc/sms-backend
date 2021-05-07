@@ -7,17 +7,19 @@ import com.sms.homeworkservice.homeworks.control.repository.FileJPA;
 import com.sms.homeworkservice.homeworks.control.repository.HomeworkJPA;
 import com.sms.homeworkservice.homeworks.control.repository.HomeworksFilesRepository;
 import com.sms.homeworkservice.homeworks.control.repository.HomeworksRepository;
+import com.sms.homeworkservice.homeworks.control.response.ResponseFile;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 @Component
 @Scope("request")
@@ -36,7 +38,6 @@ public class HomeworksService {
         HomeworkJPA homework = HomeworkMapper.toJPA(homeworkDTO);
         homework.setTeacherid(userContext.getUserId());
 
-        List<HomeworkJPA> homeworkJPAList = homeworksRepository.findAll();
         try {
             HomeworkJPA updatedHomework = homeworksRepository.save(homework);
         } catch (ConstraintViolationException e) {
@@ -49,26 +50,40 @@ public class HomeworksService {
 
     }
 
-    public FileJPA store(MultipartFile file) throws IOException {
+    public void store(MultipartFile file, Integer homework) throws IOException {
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-        FileJPA FileDB = new FileJPA(fileName, (int) file.getSize(), file.getBytes() );
-        FileDB.setHomeworkid(21);
+        validateFileName(fileName);
+        FileJPA FileDB = new FileJPA(homework, fileName, (int) file.getSize(), file.getBytes() );
 
-    return homeworksFilesRepository.save(FileDB);
+        homeworksFilesRepository.save(FileDB);
     }
 
     public FileJPA getFile(Long id) {
+        if(homeworksFilesRepository.findById(id).isPresent())
         return homeworksFilesRepository.findById(id).get();
+        else throw new IllegalStateException("doesnt exist");
     }
 
-    public Stream<FileJPA> getAllFiles() {
-        return homeworksFilesRepository.findAll().stream();
+    public List<ResponseFile> getFilesInfo(Integer id){
+        return homeworksFilesRepository.findAllByHomeworkid(id).stream().map(dbFile -> {
+            String fileDownloadUri = ServletUriComponentsBuilder
+                    .fromCurrentContextPath()
+                    .path("/files/")
+                    .path(dbFile.getFileName())
+                    .toUriString();
+
+            return new ResponseFile(
+                    dbFile.getFileName(),
+                    fileDownloadUri,
+                    dbFile.getFile().length,
+                    dbFile.getId());
+        }).collect(Collectors.toList());
     }
 
-    public Stream<FileJPA> getFileByHomeworkID(Integer id) {
-        return homeworksFilesRepository.findAllByHomeworkid(id).stream();
+    private void validateFileName(String filename){
+        if(homeworksFilesRepository.findAll().stream().anyMatch(c -> c.getFileName().equals(filename) ))
+            throw new IllegalArgumentException("file exists in database: + filename");
     }
-
 
     }
 
