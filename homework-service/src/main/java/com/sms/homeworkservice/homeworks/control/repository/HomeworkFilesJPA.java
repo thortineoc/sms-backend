@@ -5,7 +5,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "homeworksfiles")
-public class FileJPA {
+public class HomeworkFilesJPA {
 
     @Id
     @Column(name = "id")
@@ -30,9 +30,7 @@ public class FileJPA {
         this.id = id;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
+    public void setFileName(String fileName) { this.fileName = fileName; }
     public void setHomeworkid(int homework_id){this.homeworkid=homework_id;};
     public void setFile(byte[] file){this.file=file;}
     public void setSize(int size){this.size=size;}
@@ -59,11 +57,11 @@ public class FileJPA {
         return size;
     }
 
-    public FileJPA() {
+    public HomeworkFilesJPA() {
 
     }
 
-    public FileJPA(Integer homeworkid, String filename, Integer size, byte[] data) {
+    public HomeworkFilesJPA(Integer homeworkid, String filename, Integer size, byte[] data) {
         this.file = data;
         this.homeworkid = homeworkid;
         this.fileName = filename;

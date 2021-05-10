@@ -7,13 +7,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Transactional
-public interface HomeworksFilesRepository extends CrudRepository<FileJPA, Long> {
+public interface HomeworksFilesRepository extends CrudRepository<HomeworkFilesJPA, Long> {
 
     @NonNull
-    List<FileJPA> findAll();
+    List<HomeworkFilesJPA> findAll();
 
-    List<FileJPA> findAllById(Long id);
+    List<HomeworkFilesJPA> findAllById(Long id);
 
-    List<FileJPA> findAllByHomeworkid(Integer homeworkID);
+    List<HomeworkFilesJPA> findAllByHomeworkid(Integer homeworkID);
 
 }

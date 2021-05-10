@@ -3,9 +3,9 @@ package com.sms.homeworkservice.homeworks.boundary;
 
 import com.sms.context.AuthRole;
 import com.sms.homeworks.HomeworkDTO;
+import com.sms.homeworks.HomeworkFileDTO;
 import com.sms.homeworkservice.homeworks.control.HomeworksService;
-import com.sms.homeworkservice.homeworks.control.repository.FileJPA;
-import com.sms.homeworkservice.homeworks.control.response.ResponseFile;
+import com.sms.homeworkservice.homeworks.control.repository.HomeworkFilesJPA;
 import com.sms.usermanagement.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -37,33 +37,21 @@ public class HomeworksResource {
 
     @PostMapping("/upload/{id}")
     @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.TEACHER})
-    public ResponseEntity<ResponseFile> uploadFile(@PathVariable("id") Integer homework, @RequestParam("file") MultipartFile file) throws IOException {
-        ResponseFile fileJPA = homeworksService.store(file, homework);
-        return ResponseEntity.ok(fileJPA);
+    public ResponseEntity<HomeworkFileDTO> uploadFile(@PathVariable("id") Integer homework, @RequestParam("file") MultipartFile file) throws IOException {
+        return ResponseEntity.status(HttpStatus.OK).body(homeworksService.store(file, homework));
     }
 
-
-    //tu wyświetla jsona z np linkami do pobrania typu: http://localhost:24026/homework-service/files/monochord.pdf
-    //do zadania o id {id}
-    //niestety wywala 404 więc nwm czy nie ma prawa to działać, czy my mamy coś zablokowane
-    //czy lokalnie to nie będzie działać
     @GetMapping("/files/{id}")
-    public ResponseEntity<List<ResponseFile>> getListFiles(@PathVariable Integer id) {
-        List<ResponseFile> fileInfos = homeworksService.getFilesInfo(id);
-        return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
+    public ResponseEntity<List<HomeworkFileDTO>> getListFiles(@PathVariable Integer id) {
+        List<HomeworkFileDTO> filesInfo = homeworksService.getFilesInfo(id);
+        return ResponseEntity.status(HttpStatus.OK).body(filesInfo);
     }
 
-    //to do wyświetlaniafil plików
-    //nie wiem czy będziemy tego używać
-    //zamiast file type to MultipartFile file.getContentType() -> to do bazy (nie mamy takiego pola)
-    //na insomii pokazuje hinduskie znaczki, bo binarka ale jak się da Preview/Save Raw Resposne
-    //to normalnie zapisuje docx/pdf/czy co tam chcemy
-    @GetMapping("/file/{id}")
+    @GetMapping(value = "/file/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<ByteArrayResource> getFile(@PathVariable Long id) {
-        String filetype = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-        FileJPA dbFile = homeworksService.getFile(id);
+        HomeworkFilesJPA dbFile = homeworksService.getFile(id);
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(filetype))
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + dbFile.getFileName() + "\"")
                 .body(new ByteArrayResource(dbFile.getFile()));
     }

@@ -1,7 +1,10 @@
 package com.sms.homeworkservice.homeworks.control;
 
 import com.sms.homeworks.HomeworkDTO;
+import com.sms.homeworks.HomeworkFileDTO;
+import com.sms.homeworkservice.homeworks.control.repository.HomeworkFilesJPA;
 import com.sms.homeworkservice.homeworks.control.repository.HomeworkJPA;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.sql.Timestamp;
 import java.util.Optional;
@@ -40,6 +43,15 @@ public class HomeworkMapper {
         return homeworkJPA;
     }
 
+    public static HomeworkFileDTO toFileDTO(HomeworkFilesJPA homeworkDTO){
+        return HomeworkFileDTO.builder()
+                .fileID(homeworkDTO.getId())
+                .name(homeworkDTO.getFileName())
+                .size(homeworkDTO.getSize())
+                .url(createDownloadUri(homeworkDTO))
+                .build();
+    }
+
     private static Timestamp deadlineToTimestamp(String date){
         return Timestamp.valueOf(date);
     }
@@ -47,4 +59,13 @@ public class HomeworkMapper {
     private static String timestampToDeadline(Timestamp date){
         return date.toString();
     }
+
+    private static String createDownloadUri(HomeworkFilesJPA file) {
+        return ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/homeworks/file/")
+                .path(file.getId().toString())
+                .toUriString();
+    }
+
 }
