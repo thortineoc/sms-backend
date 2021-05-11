@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface SubjectsRepository extends CrudRepository<SubjectJPA, String> {
 
-    List<SubjectJPA> findAll();
+    List<SubjectJPA> findAllByOrderByNameAsc();
 }
