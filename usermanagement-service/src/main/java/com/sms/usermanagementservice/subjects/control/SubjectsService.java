@@ -33,7 +33,7 @@ public class SubjectsService {
     GradesClient gradesClient;
 
     public List<String> getAll() {
-        return subjectsRepository.findAll().stream()
+        return subjectsRepository.findAllByOrderByNameAsc().stream()
                 .map(SubjectJPA::getName)
                 .collect(Collectors.toList());
     }

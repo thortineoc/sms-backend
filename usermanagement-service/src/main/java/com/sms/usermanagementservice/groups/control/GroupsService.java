@@ -30,7 +30,7 @@ public class GroupsService {
     private KeycloakClient keycloakClient;
 
     public List<String> getAll() {
-        return groupRepository.findAll()
+        return groupRepository.findAllByOrderByNameAsc()
                 .stream()
                 .map(GroupJPA::getName)
                 .collect(Collectors.toList());

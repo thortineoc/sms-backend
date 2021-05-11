@@ -10,5 +10,5 @@ import java.util.List;
 public interface GroupRepository extends CrudRepository<GroupJPA, String> {
 
     @NonNull
-    List<GroupJPA> findAll();
+    List<GroupJPA> findAllByOrderByNameAsc();
 }
