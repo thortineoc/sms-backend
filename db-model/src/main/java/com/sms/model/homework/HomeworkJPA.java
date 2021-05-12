@@ -30,14 +30,12 @@ public class HomeworkJPA {
     @Column(name = "toevaluate")
     private Boolean toEvaluate;
 
-    @OneToMany(cascade = CascadeType.ALL,
-            orphanRemoval = true,
+    @OneToMany(orphanRemoval = true,
             fetch = FetchType.LAZY)
     @JoinColumn(name = "homework_id")
     private List<AnswerJPA> answers;
 
-    @OneToMany(cascade = CascadeType.ALL,
-            orphanRemoval = true,
+    @OneToMany(orphanRemoval = true,
             fetch = FetchType.LAZY)
     @JoinColumn(name = "homework_id")
     private List<HomeworkFileJPA> files;
