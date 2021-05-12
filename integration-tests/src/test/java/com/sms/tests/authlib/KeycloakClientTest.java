@@ -1,6 +1,6 @@
 package com.sms.tests.authlib;
 
-import com.sms.authlib.TokenDTO;
+import com.sms.api.authlib.TokenDTO;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import org.junit.jupiter.api.AfterAll;

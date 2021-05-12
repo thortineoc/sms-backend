@@ -1,6 +1,6 @@
 package com.sms.clients;
 
-import com.sms.authlib.TokenDTO;
+import com.sms.api.authlib.TokenDTO;
 import com.sms.clients.entity.UserSearchParams;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
@@ -39,8 +39,8 @@ public class KeycloakClient {
     // ################### USER API ###################
 
     public boolean createUser(UserRepresentation user) {
-        user.setEnabled(true);
         checkToken();
+        user.setEnabled(true);
         Response response = client.target(KEYCLOAK_ADMIN_URL + "/users")
                 .request(MediaType.APPLICATION_JSON)
                 .header(AUTHORIZATION, BEARER + adminToken.getAccessToken())

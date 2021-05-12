@@ -2,26 +2,25 @@ package com.sms.usermanagementservice.groups.control;
 
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 import com.sms.usermanagementservice.groups.control.repository.GroupJPA;
 import com.sms.usermanagementservice.groups.control.repository.GroupRepository;
+import com.sms.usermanagementservice.users.control.UserUtils;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 @Scope("request")
 public class GroupsService {
 
-    private static final String ROLE = "role";
     private static final String GROUP = "group";
 
     @Autowired
@@ -31,50 +30,38 @@ public class GroupsService {
     private KeycloakClient keycloakClient;
 
     public List<String> getAll() {
-
-        return groupRepository.findAll()
+        return groupRepository.findAllByOrderByNameAsc()
                 .stream()
                 .map(GroupJPA::getName)
                 .collect(Collectors.toList());
     }
 
     public void create(String group) {
-
-        GroupJPA newGroup = new GroupJPA(group);
-        groupRepository.save(newGroup);
-
+        if (groupRepository.existsById(group)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Group: " + group + " already exists");
+        }
+        groupRepository.save(new GroupJPA(group));
     }
 
-    public void delete(String name) {
-
+    public List<String> delete(String name) {
         groupRepository.deleteById(name);
 
+        Map<Boolean, List<UserRepresentation>> updateResults = getStudentsWithGroups(name).stream()
+                .map(this::removeGroup)
+                .collect(Collectors.groupingBy(student -> keycloakClient.updateUser(student.getId(), student)));
+        return UserUtils.getFailedUserIds(updateResults);
     }
 
+    private UserRepresentation removeGroup(UserRepresentation user) {
+        Map<String, List<String>> attributes = new HashMap<>(user.getAttributes());
+        attributes.remove(GROUP);
+        user.setAttributes(attributes);
+        return user;
+    }
 
-    public List<String> getStudentsWithGroups(String group) {
+    private List<UserRepresentation> getStudentsWithGroups(String group) {
         return keycloakClient.getUsers(new UserSearchParams()).stream()
-                .filter(user -> isStudentAndHasGroup(user, group))
-                .map(UserRepresentation::getId)
+                .filter(user -> UserUtils.isRoleAndHasAttribute(user, UserDTO.Role.STUDENT, GROUP, group))
                 .collect(Collectors.toList());
-    }
-
-    boolean isStudentAndHasGroup(UserRepresentation user, String group) {
-        Map<String, List<String>> attributes = user.getAttributes();
-        UserDTO.Role role = Optional.ofNullable(attributes.get(ROLE)).map(list -> list.stream()
-                .findFirst()
-                .orElseThrow(noRoleException(user)))
-                .map(UserDTO.Role::valueOf)
-                .orElseThrow(noRoleException(user));
-
-        boolean hasGroup = Optional.ofNullable(attributes.get(GROUP))
-                .map(groups -> groups.contains(group))
-                .orElse(false);
-
-        return UserDTO.Role.STUDENT.equals(role) && hasGroup;
-    }
-
-    private Supplier<RuntimeException> noRoleException(UserRepresentation user) {
-        return () -> new IllegalStateException("User: " + user.getId() + " does not have a role");
     }
 }

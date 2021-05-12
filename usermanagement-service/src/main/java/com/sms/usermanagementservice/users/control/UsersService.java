@@ -3,9 +3,9 @@ package com.sms.usermanagementservice.users.control;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.context.UserContext;
-import com.sms.usermanagement.CustomAttributesDTO;
-import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.api.usermanagement.CustomAttributesDTO;
+import com.sms.api.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UsersFiltersDTO;
 import com.sms.usermanagementservice.clients.GradesClient;
 import com.sms.usermanagementservice.users.entity.CustomFilterParams;
 import com.sms.usermanagementservice.users.entity.KeyCloakFilterParams;
@@ -71,7 +71,7 @@ public class UsersService {
         UserRepresentation userRepresentation = keycloakClient.getUser(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        if( gradesClient.deleteGrades(userRepresentation.getId())) {
+        if (gradesClient.deleteGrades(userRepresentation.getId())) {
             Boolean isDeleted = deleteRelatedUser(userRepresentation);
             if (!(keycloakClient.deleteUser(userId) && isDeleted)) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);

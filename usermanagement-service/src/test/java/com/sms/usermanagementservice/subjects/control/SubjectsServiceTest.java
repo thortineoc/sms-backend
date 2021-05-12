@@ -1,8 +1,8 @@
 package com.sms.usermanagementservice.subjects.control;
 
 import com.google.common.collect.ImmutableMap;
-import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagementservice.subjects.control.SubjectsService;
+import com.sms.api.usermanagement.UserDTO;
+import com.sms.usermanagementservice.users.control.UserUtils;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -27,8 +27,8 @@ class SubjectsServiceTest {
         UserRepresentation user = getUser(UserDTO.Role.TEACHER, Lists.newArrayList(subject1, subject2));
 
         // WHEN
-        boolean result1 = service.isTeacherAndHasSubject(user, subject1);
-        boolean result2 = service.isTeacherAndHasSubject(user, subject2);
+        boolean result1 = UserUtils.isRoleAndHasAttribute(user, UserDTO.Role.TEACHER, "subjects", subject1);
+        boolean result2 = UserUtils.isRoleAndHasAttribute(user, UserDTO.Role.TEACHER, "subjects", subject2);
 
         // THEN
         Assertions.assertTrue(result1);
@@ -43,8 +43,8 @@ class SubjectsServiceTest {
         UserRepresentation user = getUser(UserDTO.Role.STUDENT, Lists.newArrayList(subject1, subject2));
 
         // WHEN
-        boolean result1 = service.isTeacherAndHasSubject(user, subject1);
-        boolean result2 = service.isTeacherAndHasSubject(user, subject2);
+        boolean result1 = UserUtils.isRoleAndHasAttribute(user, UserDTO.Role.TEACHER, "subjects", subject1);
+        boolean result2 = UserUtils.isRoleAndHasAttribute(user, UserDTO.Role.TEACHER, "subjects", subject2);
 
         // THEN
         Assertions.assertFalse(result1);
@@ -59,8 +59,8 @@ class SubjectsServiceTest {
         UserRepresentation user = getUser(UserDTO.Role.TEACHER, Lists.newArrayList(subject1));
 
         // WHEN
-        boolean result1 = service.isTeacherAndHasSubject(user, subject1);
-        boolean result2 = service.isTeacherAndHasSubject(user, subject2);
+        boolean result1 = UserUtils.isRoleAndHasAttribute(user, UserDTO.Role.TEACHER, "subjects", subject1);
+        boolean result2 = UserUtils.isRoleAndHasAttribute(user, UserDTO.Role.TEACHER, "subjects", subject2);
 
         // THEN
         Assertions.assertTrue(result1);

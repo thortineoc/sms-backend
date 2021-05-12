@@ -1,10 +1,10 @@
 package com.sms.tests.usermanagement.users;
 
 import com.sms.clients.WebClient;
-import com.sms.usermanagement.CustomAttributesDTO;
+import com.sms.api.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.ImmutableUsersFiltersDTO;
-import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.api.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UsersFiltersDTO;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 
@@ -158,6 +158,23 @@ public class UserUtils {
                 .email(email)
                 .pesel(firstName + "_123")
                 .role(role)
+                .build();
+    }
+
+    public static UserDTO getTeacherDTO(String firstName, String lastName, String middleName, String email, List<String> subjects) {
+        return UserDTO.builder()
+                .id("test")
+                .userName(TEST_PREFIX + UUID.randomUUID())
+                .firstName(firstName)
+                .lastName(lastName)
+                .customAttributes(CustomAttributesDTO.builder()
+                        .subjects(subjects)
+                        .middleName(middleName)
+                        .phoneNumber("123")
+                        .build())
+                .email(email)
+                .pesel(firstName + "_123")
+                .role(UserDTO.Role.TEACHER)
                 .build();
     }
 }

@@ -2,9 +2,11 @@ package com.sms.usermanagementservice.subjects.control;
 
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
+import com.sms.usermanagementservice.clients.GradesClient;
 import com.sms.usermanagementservice.subjects.control.repository.SubjectJPA;
 import com.sms.usermanagementservice.subjects.control.repository.SubjectsRepository;
+import com.sms.usermanagementservice.users.control.UserUtils;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -13,14 +15,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Component
 @Scope("request")
 public class SubjectsService {
 
-    private static final String ROLE = "role";
     private static final String SUBJECTS = "subjects";
 
     @Autowired
@@ -29,8 +29,11 @@ public class SubjectsService {
     @Autowired
     KeycloakClient keycloakClient;
 
+    @Autowired
+    GradesClient gradesClient;
+
     public List<String> getAll() {
-        return subjectsRepository.findAll().stream()
+        return subjectsRepository.findAllByOrderByNameAsc().stream()
                 .map(SubjectJPA::getName)
                 .collect(Collectors.toList());
     }
@@ -42,8 +45,17 @@ public class SubjectsService {
         subjectsRepository.save(new SubjectJPA(subject));
     }
 
-    public void delete(String subject) {
+    public List<String> delete(String subject) {
         subjectsRepository.deleteById(subject);
+
+        Map<Boolean, List<UserRepresentation>> updateResults = getTeachersWithSubject(subject).stream()
+                .map(teacher -> removeSubject(teacher, subject))
+                .collect(Collectors.groupingBy(teacher -> keycloakClient.updateUser(teacher.getId(), teacher)));
+
+        if (!gradesClient.deleteGradesBySubject(subject)) {
+            throw new IllegalStateException("Deleting all grades with subject: " + subject + " failed");
+        }
+        return UserUtils.getFailedUserIds(updateResults);
     }
 
     public void deleteAll() {
@@ -53,29 +65,18 @@ public class SubjectsService {
         }
     }
 
-    public List<String> getTeachersWithSubject(String subject) {
+    private UserRepresentation removeSubject(UserRepresentation user, String subject) {
+        List<String> newSubjects = new ArrayList<>(user.getAttributes().get(SUBJECTS));
+        newSubjects.remove(subject);
+        Map<String, List<String>> attributes = new HashMap<>(user.getAttributes());
+        attributes.put(SUBJECTS, newSubjects);
+        user.setAttributes(attributes);
+        return user;
+    }
+
+    private List<UserRepresentation> getTeachersWithSubject(String subject) {
         return keycloakClient.getUsers(new UserSearchParams()).stream()
-                .filter(user -> isTeacherAndHasSubject(user, subject))
-                .map(UserRepresentation::getId)
+                .filter(user -> UserUtils.isRoleAndHasAttribute(user, UserDTO.Role.TEACHER, SUBJECTS, subject))
                 .collect(Collectors.toList());
-    }
-
-    boolean isTeacherAndHasSubject(UserRepresentation user, String subject) {
-        Map<String, List<String>> attributes = user.getAttributes();
-        UserDTO.Role role = Optional.ofNullable(attributes.get(ROLE)).map(list -> list.stream()
-                    .findFirst()
-                    .orElseThrow(noRoleException(user)))
-                .map(UserDTO.Role::valueOf)
-                .orElseThrow(noRoleException(user));
-
-        boolean hasSubject = Optional.ofNullable(attributes.get(SUBJECTS))
-                .map(subjects -> subjects.contains(subject))
-                .orElse(false);
-
-        return UserDTO.Role.TEACHER.equals(role) && hasSubject;
-    }
-
-    private Supplier<RuntimeException> noRoleException(UserRepresentation user) {
-        return () -> new IllegalStateException("User: " + user.getId() + " does not have a role");
     }
 }

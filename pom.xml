@@ -36,16 +36,18 @@
                 <module>integration-tests</module>
                 <module>api</module>
                 <module>auth-lib</module>
+                <module>db-model</module>
             </modules>
         </profile>
         <profile>
             <id>build</id>
             <modules>
+                <module>db-model</module>
                 <module>homework-service</module>
                 <module>presence-service</module>
                 <module>timetable-service</module>
                 <module>usermanagement-service</module>
-		<module>grades-service</module>
+    		    <module>grades-service</module>
                 <module>api</module>
                 <module>auth-lib</module>
             </modules>

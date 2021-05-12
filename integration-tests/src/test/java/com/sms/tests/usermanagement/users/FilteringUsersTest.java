@@ -2,9 +2,8 @@ package com.sms.tests.usermanagement.users;
 
 import com.google.common.collect.ImmutableMap;
 import com.sms.clients.KeycloakClient;
-import com.sms.clients.WebClient;
 import com.sms.clients.entity.UserSearchParams;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.*;
 import org.keycloak.representations.idm.UserRepresentation;

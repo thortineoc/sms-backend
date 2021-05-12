@@ -2,7 +2,7 @@ package com.sms.usermanagementservice.subjects.boundary;
 
 import com.sms.context.AuthRole;
 import com.sms.context.UserContext;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 import com.sms.usermanagementservice.subjects.control.SubjectsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -42,12 +42,11 @@ public class SubjectsResource {
     @DeleteMapping("/{name}")
     @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<List<String>> deleteSubject(@PathVariable("name") String name) {
-        List<String> teachersWithSubject = subjectsService.getTeachersWithSubject(name);
-        if (teachersWithSubject.isEmpty()) {
-            subjectsService.delete(name);
+        List<String> failedTeacherIds = subjectsService.delete(name);
+        if (failedTeacherIds.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.badRequest().body(teachersWithSubject);
+            return ResponseEntity.status(500).body(failedTeacherIds);
         }
     }
 

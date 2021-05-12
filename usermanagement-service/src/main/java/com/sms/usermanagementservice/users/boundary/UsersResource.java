@@ -1,8 +1,8 @@
 package com.sms.usermanagementservice.users.boundary;
 
 import com.sms.context.AuthRole;
-import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.api.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UsersFiltersDTO;
 import com.sms.usermanagementservice.users.control.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;

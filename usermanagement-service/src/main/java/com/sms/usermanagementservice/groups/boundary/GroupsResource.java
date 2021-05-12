@@ -3,7 +3,7 @@ package com.sms.usermanagementservice.groups.boundary;
 import com.sms.context.AuthRole;
 import com.sms.context.UserContext;
 
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 import com.sms.usermanagementservice.groups.control.GroupsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -46,13 +46,11 @@ public class GroupsResource {
     @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<List<String>> deleteGroup(@PathVariable String name) {
 
-        List<String> studentsWithGroups = groupsService.getStudentsWithGroups(name);
-
-        if (studentsWithGroups.isEmpty()) {
-            groupsService.delete(name);
+        List<String> failedStudents = groupsService.delete(name);
+        if (failedStudents.isEmpty()) {
             return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.badRequest().body(studentsWithGroups);
+            return ResponseEntity.status(500).body(failedStudents);
         }
     }
 }

@@ -4,8 +4,6 @@ import com.sms.clients.WebClient;
 import io.restassured.response.Response;
 
 import javax.ws.rs.core.MediaType;
-import java.util.Arrays;
-import java.util.List;
 
 import static com.sms.tests.usermanagement.TestUtils.USER_MANAGEMENT;
 

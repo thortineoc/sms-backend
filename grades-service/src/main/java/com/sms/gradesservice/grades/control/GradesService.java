@@ -1,15 +1,14 @@
 package com.sms.gradesservice.grades.control;
 
-import com.sms.common.Util;
+import com.sms.api.common.Util;
 import com.sms.context.UserContext;
-import com.sms.grades.GradeDTO;
-import com.sms.grades.GradesDTO;
-import com.sms.grades.StudentGradesDTO;
+import com.sms.api.grades.GradeDTO;
+import com.sms.api.grades.GradesDTO;
+import com.sms.api.grades.StudentGradesDTO;
 import com.sms.gradesservice.clients.UserManagementClient;
-import com.sms.gradesservice.grades.control.repository.GradeJPA;
-import com.sms.gradesservice.grades.control.repository.GradesRepository;
-import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.api.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UsersFiltersDTO;
+import com.sms.model.grades.GradeJPA;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -20,7 +19,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.sms.common.Util.*;
+import static com.sms.api.common.Util.*;
 
 @Component
 @Scope("request")
@@ -35,8 +34,18 @@ public class GradesService {
     @Autowired
     UserManagementClient userManagementClient;
 
+    public Optional<GradeDTO> getGrade(Long id) {
+        try {
+            return gradesRepository.findById(id).map(GradesMapper::toDTO);
+        } catch (EntityNotFoundException e) {
+            return Optional.empty();
+        }
+    }
+
     public Map<String, GradesDTO> getStudentGrades() {
-        String studentId = userContext.getUserId();
+        String studentId = UserDTO.Role.STUDENT.equals(userContext.getSmsRole())
+                ? userContext.getUserId()
+                : (String) userContext.getCustomAttributes().get("relatedUser");
         try {
             return extractFinalGrades(groupGrades(GradeDTO::getSubject, gradesRepository.findAllByStudentId(studentId)));
         } catch (EntityNotFoundException e) {
@@ -80,16 +89,19 @@ public class GradesService {
         }
     }
 
-    public void deleteAllGrades(String id){
-        List<GradeJPA> studentGrades = gradesRepository.findAllByStudentId(id);
-        for( GradeJPA grade : studentGrades ) {
-            try {
-                gradesRepository.deleteById(grade.getId());
-            } catch (ConstraintViolationException e) {
-                throw new IllegalArgumentException("Deleting grade: " + grade.getId() + " violated database constraints: " + e.getConstraintName());
-            } catch (EntityNotFoundException e) {
-                throw new IllegalStateException("Grade with ID: " + grade.getId() + " does not exist, can't delete: ");
-            }
+    public void deleteBySubject(String subject) {
+        try {
+            gradesRepository.deleteAllBySubject(subject);
+        } catch (ConstraintViolationException e) {
+            throw new IllegalArgumentException("Deleting grades by subject: " + subject + " violated database constraints: " + e.getConstraintName());
+        }
+    }
+
+    public void deleteAllGrades(String id) {
+        try {
+            gradesRepository.deleteAllByStudentId(id);
+        } catch (ConstraintViolationException e) {
+            throw new IllegalArgumentException("Deleting grade violated database constraints: " + e.getConstraintName());
         }
     }
 

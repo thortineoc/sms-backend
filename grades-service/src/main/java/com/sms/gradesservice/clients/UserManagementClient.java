@@ -1,8 +1,8 @@
 package com.sms.gradesservice.clients;
 
 import com.sms.clients.ServiceClient;
-import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.api.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UsersFiltersDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
