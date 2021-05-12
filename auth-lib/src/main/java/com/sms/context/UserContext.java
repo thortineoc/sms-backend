@@ -1,7 +1,7 @@
 package com.sms.context;
 
-import com.sms.authlib.UserAuthDTO;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.authlib.UserAuthDTO;
+import com.sms.api.usermanagement.UserDTO;
 import org.keycloak.KeycloakPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;

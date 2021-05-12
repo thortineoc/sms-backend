@@ -1,7 +1,7 @@
 package com.sms.gradesservice.grades.control;
 
-import com.sms.grades.GradeDTO;
-import com.sms.gradesservice.grades.control.repository.GradeJPA;
+import com.sms.api.grades.GradeDTO;
+import com.sms.model.grades.GradeJPA;
 
 import java.sql.Timestamp;
 import java.time.Instant;

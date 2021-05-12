@@ -1,6 +1,6 @@
 package com.sms.context;
 
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 
 import java.lang.annotation.*;
 

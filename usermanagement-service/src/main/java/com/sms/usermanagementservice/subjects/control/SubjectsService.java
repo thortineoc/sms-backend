@@ -2,7 +2,7 @@ package com.sms.usermanagementservice.subjects.control;
 
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 import com.sms.usermanagementservice.clients.GradesClient;
 import com.sms.usermanagementservice.subjects.control.repository.SubjectJPA;
 import com.sms.usermanagementservice.subjects.control.repository.SubjectsRepository;

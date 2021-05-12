@@ -1,4 +1,4 @@
-package com.sms.usermanagement;
+package com.sms.api.usermanagement;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

@@ -1,6 +1,6 @@
 package com.sms.usermanagementservice.users.control;
 
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.Collections;

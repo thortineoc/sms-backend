@@ -1,4 +1,4 @@
-package com.sms.common;
+package com.sms.api.common;
 
 import java.util.Collections;
 import java.util.List;

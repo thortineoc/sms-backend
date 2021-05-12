@@ -2,10 +2,10 @@ package com.sms.tests.grades;
 
 import com.sms.clients.Environment;
 import com.sms.clients.WebClient;
-import com.sms.grades.GradeDTO;
-import com.sms.grades.GradesDTO;
-import com.sms.grades.StudentGradesDTO;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.grades.GradeDTO;
+import com.sms.api.grades.GradesDTO;
+import com.sms.api.grades.StudentGradesDTO;
+import com.sms.api.usermanagement.UserDTO;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
 import org.springframework.http.HttpStatus;

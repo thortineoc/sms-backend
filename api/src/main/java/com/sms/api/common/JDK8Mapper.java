@@ -1,4 +1,4 @@
-package com.sms.common;
+package com.sms.api.common;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;

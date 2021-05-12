@@ -2,11 +2,11 @@ package com.sms.gradesservice.grades.boundary;
 
 
 import com.sms.context.AuthRole;
-import com.sms.grades.GradeDTO;
-import com.sms.grades.GradesDTO;
-import com.sms.grades.StudentGradesDTO;
+import com.sms.api.grades.GradeDTO;
+import com.sms.api.grades.GradesDTO;
+import com.sms.api.grades.StudentGradesDTO;
 import com.sms.gradesservice.grades.control.GradesService;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;

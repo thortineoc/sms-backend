@@ -1,4 +1,4 @@
-package com.sms.gradesservice.grades.control.repository;
+package com.sms.model.grades;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -44,14 +44,6 @@ public class GradeJPA {
         this.id = id;
     }
 
-    public Timestamp getCreatedTime() {
-        return createdTime;
-    }
-
-    public Timestamp getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
     public void setDescription(String description) {
         this.description = description;
     }
@@ -86,6 +78,14 @@ public class GradeJPA {
 
     public void setIsFinal(Boolean isFinal) {
         this.isFinal = isFinal;
+    }
+
+    public Timestamp getCreatedTime() {
+        return createdTime;
+    }
+
+    public Timestamp getLastUpdateTime() {
+        return lastUpdateTime;
     }
 
     public Long getId() {

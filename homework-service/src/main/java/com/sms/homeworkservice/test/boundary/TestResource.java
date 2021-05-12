@@ -1,6 +1,6 @@
 package com.sms.homeworkservice.test.boundary;
 
-import com.sms.authlib.UserAuthDTO;
+import com.sms.api.authlib.UserAuthDTO;
 import com.sms.clients.ServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;

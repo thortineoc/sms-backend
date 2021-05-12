@@ -1,15 +1,14 @@
 package com.sms.gradesservice.grades.control;
 
-import com.sms.common.Util;
+import com.sms.api.common.Util;
 import com.sms.context.UserContext;
-import com.sms.grades.GradeDTO;
-import com.sms.grades.GradesDTO;
-import com.sms.grades.StudentGradesDTO;
+import com.sms.api.grades.GradeDTO;
+import com.sms.api.grades.GradesDTO;
+import com.sms.api.grades.StudentGradesDTO;
 import com.sms.gradesservice.clients.UserManagementClient;
-import com.sms.gradesservice.grades.control.repository.GradeJPA;
-import com.sms.gradesservice.grades.control.repository.GradesRepository;
-import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.api.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UsersFiltersDTO;
+import com.sms.model.grades.GradeJPA;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -20,7 +19,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.sms.common.Util.*;
+import static com.sms.api.common.Util.*;
 
 @Component
 @Scope("request")

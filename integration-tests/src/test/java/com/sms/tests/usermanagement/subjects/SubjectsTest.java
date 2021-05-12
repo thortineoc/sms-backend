@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.sms.clients.WebClient;
 import com.sms.tests.usermanagement.TestUtils;
 import com.sms.tests.usermanagement.users.UserUtils;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 import io.restassured.response.Response;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.*;

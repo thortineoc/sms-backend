@@ -1,4 +1,4 @@
-package com.sms.grades;
+package com.sms.api.grades;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
