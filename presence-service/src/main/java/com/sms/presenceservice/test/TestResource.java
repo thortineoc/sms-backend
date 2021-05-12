@@ -1,6 +1,6 @@
 package com.sms.presenceservice.test;
 
-import com.sms.authlib.UserAuthDTO;
+import com.sms.api.authlib.UserAuthDTO;
 import com.sms.context.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;

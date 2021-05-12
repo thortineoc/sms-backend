@@ -2,9 +2,9 @@ package com.sms.tests.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
-import com.sms.common.JDK8Mapper;
-import com.sms.usermanagement.CustomAttributesDTO;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.common.JDK8Mapper;
+import com.sms.api.usermanagement.CustomAttributesDTO;
+import com.sms.api.usermanagement.UserDTO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

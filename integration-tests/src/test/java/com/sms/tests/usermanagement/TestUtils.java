@@ -1,7 +1,7 @@
 package com.sms.tests.usermanagement;
 
-import com.sms.usermanagement.CustomAttributesDTO;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.CustomAttributesDTO;
+import com.sms.api.usermanagement.UserDTO;
 
 import java.util.Collections;
 import java.util.UUID;

@@ -1,6 +1,6 @@
 package com.sms.tests.authlib;
 
-import com.sms.authlib.UserAuthDTO;
+import com.sms.api.authlib.UserAuthDTO;
 import com.sms.clients.WebClient;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;

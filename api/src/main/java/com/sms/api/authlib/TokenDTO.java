@@ -1,4 +1,4 @@
-package com.sms.authlib;
+package com.sms.api.authlib;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

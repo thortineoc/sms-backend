@@ -1,6 +1,6 @@
 package com.sms.usermanagementservice.users.entity;
 
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 
 import java.util.Map;
 import java.util.Optional;

@@ -3,7 +3,7 @@ package com.sms.usermanagementservice.groups.boundary;
 import com.sms.context.AuthRole;
 import com.sms.context.UserContext;
 
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 import com.sms.usermanagementservice.groups.control.GroupsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;

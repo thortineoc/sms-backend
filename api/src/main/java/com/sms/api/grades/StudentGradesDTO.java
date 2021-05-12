@@ -1,8 +1,8 @@
-package com.sms.grades;
+package com.sms.api.grades;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 import org.immutables.value.Value;
 
 @Value.Immutable

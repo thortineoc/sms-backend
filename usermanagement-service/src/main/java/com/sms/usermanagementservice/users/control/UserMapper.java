@@ -1,10 +1,10 @@
 package com.sms.usermanagementservice.users.control;
 
 
-import com.sms.usermanagement.CustomAttributesDTO;
-import com.sms.usermanagement.ImmutableCustomAttributesDTO;
-import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.api.usermanagement.CustomAttributesDTO;
+import com.sms.api.usermanagement.ImmutableCustomAttributesDTO;
+import com.sms.api.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UsersFiltersDTO;
 import com.sms.usermanagementservice.users.entity.CustomFilterParams;
 import com.sms.usermanagementservice.users.entity.KeyCloakFilterParams;
 import com.sms.usermanagementservice.users.entity.User;

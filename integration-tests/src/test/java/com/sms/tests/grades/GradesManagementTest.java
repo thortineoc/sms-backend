@@ -2,11 +2,11 @@ package com.sms.tests.grades;
 
 import com.google.common.collect.ImmutableMap;
 import com.sms.clients.WebClient;
-import com.sms.grades.GradeDTO;
+import com.sms.api.grades.GradeDTO;
 import com.sms.tests.usermanagement.groups.GroupUtils;
 import com.sms.tests.usermanagement.subjects.SubjectUtils;
 import com.sms.tests.usermanagement.users.UserUtils;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;

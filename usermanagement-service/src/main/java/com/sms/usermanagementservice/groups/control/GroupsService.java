@@ -2,7 +2,7 @@ package com.sms.usermanagementservice.groups.control;
 
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 import com.sms.usermanagementservice.groups.control.repository.GroupJPA;
 import com.sms.usermanagementservice.groups.control.repository.GroupRepository;
 import com.sms.usermanagementservice.users.control.UserUtils;

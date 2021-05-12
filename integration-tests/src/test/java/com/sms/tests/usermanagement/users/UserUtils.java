@@ -1,10 +1,10 @@
 package com.sms.tests.usermanagement.users;
 
 import com.sms.clients.WebClient;
-import com.sms.usermanagement.CustomAttributesDTO;
+import com.sms.api.usermanagement.CustomAttributesDTO;
 import com.sms.usermanagement.ImmutableUsersFiltersDTO;
-import com.sms.usermanagement.UserDTO;
-import com.sms.usermanagement.UsersFiltersDTO;
+import com.sms.api.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UsersFiltersDTO;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 

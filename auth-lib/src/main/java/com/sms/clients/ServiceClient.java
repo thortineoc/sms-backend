@@ -1,6 +1,6 @@
 package com.sms.clients;
 
-import com.sms.common.JDK8Mapper;
+import com.sms.api.common.JDK8Mapper;
 import com.sms.context.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;

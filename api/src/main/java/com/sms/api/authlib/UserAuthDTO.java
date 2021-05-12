@@ -1,8 +1,8 @@
-package com.sms.authlib;
+package com.sms.api.authlib;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UserDTO;
 import org.immutables.value.Value;
 
 import java.util.Set;

@@ -1,6 +1,6 @@
 package com.sms.clients;
 
-import com.sms.authlib.TokenDTO;
+import com.sms.api.authlib.TokenDTO;
 import com.sms.clients.entity.UserSearchParams;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;

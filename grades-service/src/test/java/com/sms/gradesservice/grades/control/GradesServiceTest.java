@@ -2,12 +2,12 @@ package com.sms.gradesservice.grades.control;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.sms.grades.GradeDTO;
-import com.sms.grades.GradesDTO;
-import com.sms.grades.StudentGradesDTO;
-import com.sms.gradesservice.grades.control.repository.GradeJPA;
-import com.sms.usermanagement.CustomAttributesDTO;
-import com.sms.usermanagement.UserDTO;
+import com.sms.api.grades.GradeDTO;
+import com.sms.api.grades.GradesDTO;
+import com.sms.api.grades.StudentGradesDTO;
+import com.sms.api.usermanagement.CustomAttributesDTO;
+import com.sms.api.usermanagement.UserDTO;
+import com.sms.model.grades.GradeJPA;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
