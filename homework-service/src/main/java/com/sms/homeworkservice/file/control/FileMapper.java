@@ -28,7 +28,6 @@ public class FileMapper {
         jpa.setFilename(filename);
         jpa.setSize(file.getSize());
         jpa.setFile(file);
-        jpa.setHomeworkID(id);
         jpa.setId(id*id);
         return jpa;
     }

@@ -6,6 +6,7 @@ import javax.persistence.*;
 public class FileJPA {
 
     @Id
+    @GeneratedValue( strategy = GenerationType.SEQUENCE)
     private Long id;
 
     private String filename;

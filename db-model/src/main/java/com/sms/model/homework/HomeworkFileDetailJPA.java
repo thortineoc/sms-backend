@@ -16,17 +16,15 @@ public class HomeworkFileDetailJPA extends FileJPA implements FileDetailJPA {
     private HomeworkJPA homework;
 
     private byte[] file;
-    private Long homeworkID;
 
     public byte[] getFile() {
         return file;
     }
-    public Long getHomeworkID() {return homeworkID;}
 
     @Override
     public void setFile(MultipartFile file) throws IOException {
     this.file=file.getBytes();
     }
-    public void setHomeworkID(Long id) {this.homeworkID=id;}
+
 
 }
