@@ -53,7 +53,7 @@ public class HomeworkResource {
 
     @PutMapping
     @AuthRole(UserDTO.Role.TEACHER)
-    public ResponseEntity<SimpleHomeworkDTO> updateHomework(@RequestBody HomeworkDTO homeworkDTO) {
+    public ResponseEntity<SimpleHomeworkDTO> updateHomework(@RequestBody SimpleHomeworkDTO homeworkDTO) {
         if (homeworkDTO.getId().isPresent()) {
             homeworkService.updateHomework(homeworkDTO);
             return ResponseEntity.ok(homeworkDTO);

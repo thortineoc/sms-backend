@@ -40,18 +40,6 @@ public class HomeworkService {
         return homeworkRepository.getHomeworkDetails(id).map(HomeworkMapper::toDetailDTO);
     }
 
-    public void updateHomework(HomeworkDTO homeworkDTO ){
-        homeworkRepository.UpdateHomework(
-                Timestamp.valueOf(homeworkDTO.getDeadline()),
-                homeworkDTO.getGroup(),
-                homeworkDTO.getSubject(),
-                homeworkDTO.getId().get(),
-                homeworkDTO.getDescription(),
-                homeworkDTO.getTitle(),
-                homeworkDTO.getToEvaluate());
-    }
-
-
     public Map<String, Map<String, List<SimpleHomeworkDTO>>> getListForTeacher() {
         List<HomeworkJPA> result = homeworkRepository.getAllByTeacherId(userContext.getUserId());
         return HomeworkMapper.toTreeDTO(result);
@@ -76,7 +64,7 @@ public class HomeworkService {
         }
     }
 
-    public SimpleHomeworkDTO createHomework(HomeworkDTO homeworkDTO) {
+    public SimpleHomeworkDTO createHomework(SimpleHomeworkDTO homeworkDTO) {
         HomeworkJPA homework = HomeworkMapper.toJPA(homeworkDTO);
         homework.setTeacherId(userContext.getUserId());
 
@@ -91,6 +79,17 @@ public class HomeworkService {
             throw new IllegalStateException(e);
         }
 
+    }
+
+    public void updateHomework(SimpleHomeworkDTO homeworkDTO) {
+        homeworkRepository.UpdateHomework(
+                Timestamp.valueOf(homeworkDTO.getDeadline()),
+                homeworkDTO.getGroup(),
+                homeworkDTO.getSubject(),
+                homeworkDTO.getId().get(),
+                homeworkDTO.getDescription(),
+                homeworkDTO.getTitle(),
+                homeworkDTO.getToEvaluate());
     }
 
 
