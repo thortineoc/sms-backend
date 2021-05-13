@@ -36,17 +36,19 @@ public class FileMapper {
     private static String getUri(FileJPA jpa) {
         return ServletUriComponentsBuilder
                 .fromCurrentContextPath()
-                .path("/files/")
+                .path("files")
+                .path("id")
                 .path(jpa.getId().toString())
-                .queryParam(TYPE_QP, getType(jpa))
+                .path("type")
+                .path(getType(jpa))
                 .toUriString();
     }
 
-    private static FileLinkDTO.Type getType(FileJPA jpa) {
+    private static String getType(FileJPA jpa) {
         if (jpa instanceof HomeworkFileJPA || jpa instanceof HomeworkFileDetailJPA) {
-            return FileLinkDTO.Type.HOMEWORK;
+            return FileLinkDTO.Type.HOMEWORK.toString();
         } else if (jpa instanceof AnswerFileJPA || jpa instanceof AnswerFileDetailJPA) {
-            return FileLinkDTO.Type.ANSWER;
+            return FileLinkDTO.Type.ANSWER.toString();
         } else {
             throw new IllegalStateException("You shouldn't be here: wrong type of FileJPA object: " + jpa.getClass().toString());
         }

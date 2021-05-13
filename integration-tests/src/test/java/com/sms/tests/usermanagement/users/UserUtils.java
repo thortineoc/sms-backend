@@ -1,8 +1,8 @@
 package com.sms.tests.usermanagement.users;
 
+import com.sms.api.usermanagement.ImmutableUsersFiltersDTO;
 import com.sms.clients.WebClient;
 import com.sms.api.usermanagement.CustomAttributesDTO;
-import com.sms.usermanagement.ImmutableUsersFiltersDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.api.usermanagement.UsersFiltersDTO;
 import io.restassured.response.Response;
