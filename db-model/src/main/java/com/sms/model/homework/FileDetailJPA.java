@@ -1,6 +1,15 @@
 package com.sms.model.homework;
 
-public interface FileDetailJPA {
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
-    byte[] getFile();
+@Entity
+@Table(name = "files")
+public class FileDetailJPA extends FileBaseJPA {
+
+    private byte[] file;
+
+    public byte[] getFile() {
+        return file;
+    }
 }
