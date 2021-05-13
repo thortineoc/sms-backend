@@ -31,7 +31,7 @@ public class AnswerJPA {
     @OneToMany(cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY)
-    @JoinColumn(name = "answer_id")
+    @JoinColumn(name = "answer_id", updatable = false)
     private List<AnswerFileJPA> files;
 
     @OneToOne(fetch = FetchType.LAZY)

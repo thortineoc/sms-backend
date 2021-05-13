@@ -1,10 +1,12 @@
 package com.sms.homeworkservice.homework.control;
 
 import com.sms.model.homework.HomeworkJPA;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,4 +19,11 @@ public interface HomeworkRepository extends CrudRepository<HomeworkJPA, Long> {
     List<HomeworkJPA> getAllByTeacherId(String teacherId);
 
     List<HomeworkJPA> getAllByGroup(String group);
+
+    @Modifying
+    @Query("UPDATE HomeworkJPA u SET u.deadline = :deadline," +
+            " u.group= :group, u.subject=:subject, u.description=:description," +
+            " u.title=:title, u.toEvaluate=:evaluate WHERE u.id=:id")
+    void UpdateHomework(Timestamp deadline, String group, String subject, Long id, Optional<String> description, String title, Boolean evaluate );
+
 }

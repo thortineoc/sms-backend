@@ -2,17 +2,14 @@ package com.sms.homeworkservice.homework.boundary;
 
 import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
+import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.AuthRole;
 import com.sms.context.UserContext;
 import com.sms.homeworkservice.homework.control.HomeworkService;
-import com.sms.api.usermanagement.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -53,4 +50,16 @@ public class HomeworkResource {
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.ok(result);
     }
+
+    @PutMapping
+    @AuthRole(UserDTO.Role.TEACHER)
+    public ResponseEntity<SimpleHomeworkDTO> updateHomework(@RequestBody HomeworkDTO homeworkDTO) {
+        if (homeworkDTO.getId().isPresent()) {
+            homeworkService.updateHomework(homeworkDTO);
+            return ResponseEntity.ok(homeworkDTO);
+        } else return ResponseEntity.ok(homeworkService.createHomework(homeworkDTO));
+
+    }
+
+
 }

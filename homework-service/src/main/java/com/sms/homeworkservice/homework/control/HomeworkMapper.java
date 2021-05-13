@@ -30,6 +30,23 @@ public class HomeworkMapper {
         return jpa;
     }
 
+
+    public static SimpleHomeworkDTO toSimpleDTO(HomeworkJPA jpa){
+        return SimpleHomeworkDTO.builder()
+                .id(Optional.ofNullable(jpa.getId()))
+                .createdTime(Optional.ofNullable(jpa.getCreatedTime()).map(Timestamp::toLocalDateTime))
+                .lastUpdateTime(Optional.ofNullable(jpa.getLastUpdatedTime()).map(Timestamp::toLocalDateTime))
+                .description(Optional.ofNullable(jpa.getDescription()))
+                .title(jpa.getTitle())
+                .deadline(jpa.getDeadline().toLocalDateTime())
+                .group(jpa.getGroup())
+                .subject(jpa.getSubject())
+                .teacherId(Optional.ofNullable(jpa.getTeacherId()))
+                .toEvaluate(jpa.getToEvaluate())
+                .build();
+    }
+
+
     public static HomeworkDTO toDetailDTO(HomeworkJPA jpa) {
         return toDTOBuilder(jpa)
                 .answers(jpa.getAnswers().stream()
@@ -55,7 +72,7 @@ public class HomeworkMapper {
                 .collect(Collectors.groupingBy(SimpleHomeworkDTO::getSubject));
     }
 
-    private static SimpleHomeworkDTO toDTO(HomeworkJPA jpa) {
+    public static SimpleHomeworkDTO toDTO(HomeworkJPA jpa) {
         return toDTOBuilder(jpa).build();
     }
 
@@ -72,4 +89,5 @@ public class HomeworkMapper {
                 .teacherId(Optional.ofNullable(jpa.getTeacherId()))
                 .toEvaluate(jpa.getToEvaluate());
     }
+
 }

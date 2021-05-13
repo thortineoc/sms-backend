@@ -23,4 +23,23 @@ public class FileJPA {
     public String getFilename() {
         return filename;
     }
+
+    public void setId(Long id) {
+         this.id=id;
+    }
+
+    public void setSize(Long size) {
+         this.size=size;
+    }
+
+    public void setFilename(String filename) {
+        this.filename=filename;
+    }
+
+    public FileJPA(Long id, String filename, Long size){
+        this.id=id;
+        this.filename=filename;
+        this.size=size;
+    }
+    FileJPA(){};
 }

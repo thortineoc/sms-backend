@@ -2,7 +2,10 @@ package com.sms.homeworkservice.file.control;
 
 import com.sms.api.homework.FileLinkDTO;
 import com.sms.model.homework.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.io.IOException;
 
 public class FileMapper {
 
@@ -19,6 +22,17 @@ public class FileMapper {
                 .uri(getUri(jpa))
                 .build();
     }
+
+    public static HomeworkFileDetailJPA toJPA(MultipartFile file, String filename, Long id) throws IOException {
+        HomeworkFileDetailJPA jpa= new HomeworkFileDetailJPA();
+        jpa.setFilename(filename);
+        jpa.setSize(file.getSize());
+        jpa.setFile(file);
+        jpa.setHomeworkID(id);
+        jpa.setId(id*id);
+        return jpa;
+    }
+
 
     private static String getUri(FileJPA jpa) {
         return ServletUriComponentsBuilder
@@ -38,4 +52,6 @@ public class FileMapper {
             throw new IllegalStateException("You shouldn't be here: wrong type of FileJPA object: " + jpa.getClass().toString());
         }
     }
+
+
 }

@@ -1,5 +1,7 @@
 package com.sms.model.homework;
 
+import org.hibernate.annotations.SQLUpdate;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
@@ -9,6 +11,8 @@ import java.util.List;
 public class HomeworkJPA {
 
     @Id
+    @Column(name = "id")
+    @GeneratedValue(generator = "homeworks_id_seq")
     private Long id;
     private String title;
     private String description;
@@ -21,7 +25,7 @@ public class HomeworkJPA {
     @Column(name = "createdtime")
     private Timestamp createdTime;
 
-    @Column(name = "lastupdatedtime")
+    @Column(name = "createdtime", updatable = false, insertable = false)
     private Timestamp lastUpdatedTime;
 
     @Column(name = "teacher_id")
@@ -30,17 +34,20 @@ public class HomeworkJPA {
     @Column(name = "toevaluate")
     private Boolean toEvaluate;
 
-    @OneToMany(cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    @JoinColumn(name = "homework_id")
-    private List<AnswerJPA> answers;
 
     @OneToMany(cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY)
-    @JoinColumn(name = "homework_id")
+    @JoinColumn(name = "homework_id", updatable = false)
+    private List<AnswerJPA> answers;
+
+
+    @OneToMany(cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    @JoinColumn(name = "homework_id", updatable = false)
     private List<HomeworkFileJPA> files;
+
 
     public Timestamp getCreatedTime() { return createdTime; }
     public String getTeacherId() { return teacherId; }
@@ -52,8 +59,10 @@ public class HomeworkJPA {
     public String getTitle() { return title; }
     public Timestamp getDeadline() { return deadline; }
     public Timestamp getLastUpdatedTime() { return lastUpdatedTime; }
+
     public List<AnswerJPA> getAnswers() { return answers; }
     public List<HomeworkFileJPA> getFiles() { return files; }
+
 
     public void setCreatedTime(Timestamp createdTime) { this.createdTime = createdTime; }
     public void setTeacherId(String teacherId) { this.teacherId = teacherId; }

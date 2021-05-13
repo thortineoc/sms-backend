@@ -7,10 +7,13 @@ import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.UserContext;
 import com.sms.homeworkservice.clients.UserManagementClient;
 import com.sms.model.homework.HomeworkJPA;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.EntityNotFoundException;
+import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +40,18 @@ public class HomeworkService {
         return homeworkRepository.getHomeworkDetails(id).map(HomeworkMapper::toDetailDTO);
     }
 
+    public void updateHomework(HomeworkDTO homeworkDTO ){
+        homeworkRepository.UpdateHomework(
+                Timestamp.valueOf(homeworkDTO.getDeadline()),
+                homeworkDTO.getGroup(),
+                homeworkDTO.getSubject(),
+                homeworkDTO.getId().get(),
+                homeworkDTO.getDescription(),
+                homeworkDTO.getTitle(),
+                homeworkDTO.getToEvaluate());
+    }
+
+
     public Map<String, Map<String, List<SimpleHomeworkDTO>>> getListForTeacher() {
         List<HomeworkJPA> result = homeworkRepository.getAllByTeacherId(userContext.getUserId());
         return HomeworkMapper.toTreeDTO(result);
@@ -60,4 +75,23 @@ public class HomeworkService {
                     .flatMap(CustomAttributesDTO::getGroup);
         }
     }
+
+    public SimpleHomeworkDTO createHomework(HomeworkDTO homeworkDTO) {
+        HomeworkJPA homework = HomeworkMapper.toJPA(homeworkDTO);
+        homework.setTeacherId(userContext.getUserId());
+
+        try {
+            HomeworkJPA updatedHomework = homeworkRepository.save(homework);
+            return HomeworkMapper.toSimpleDTO(updatedHomework);
+        } catch (ConstraintViolationException e) {
+            throw new IllegalArgumentException("Saving grade: " + homework.getId() + " violated database constraints: " + e.getConstraintName());
+        } catch (EntityNotFoundException e) {
+            throw new IllegalStateException("Grade with ID: " + homework.getId() + " does not exist, can't update: " + e.getMessage());
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+
+    }
+
+
 }
