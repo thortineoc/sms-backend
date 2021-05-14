@@ -1,12 +1,15 @@
 package com.sms.model.homework;
 
-import org.springframework.web.multipart.MultipartFile;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
-import java.io.IOException;
+@Entity
+@Table(name = "files")
+public class FileDetailJPA extends FileBaseJPA {
 
-public interface FileDetailJPA{
+    private byte[] file;
 
-    byte[] getFile();
-    void setFile(MultipartFile file) throws IOException;
-
+    public byte[] getFile() {
+        return file;
+    }
 }

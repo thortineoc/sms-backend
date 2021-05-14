@@ -9,12 +9,10 @@ import java.io.IOException;
 
 public class FileMapper {
 
-    private static final String TYPE_QP = "type";
-
     private FileMapper() {
     }
 
-    public static FileLinkDTO toDTO(FileJPA jpa) {
+    public static FileLinkDTO toDTO(FileInfoJPA jpa) {
         return FileLinkDTO.builder()
                 .id(jpa.getId())
                 .filename(jpa.getFilename())
@@ -23,6 +21,7 @@ public class FileMapper {
                 .build();
     }
 
+    private static String getUri(FileInfoJPA jpa) {
     public static HomeworkFileDetailJPA toJPA(MultipartFile file, String filename, Long id) throws IOException {
         HomeworkFileDetailJPA jpa= new HomeworkFileDetailJPA();
         jpa.setFilename(filename);
@@ -36,23 +35,11 @@ public class FileMapper {
     private static String getUri(FileJPA jpa) {
         return ServletUriComponentsBuilder
                 .fromCurrentContextPath()
-                .path("files")
-                .path("id")
+                .path("/files")
+                .path("/id/")
                 .path(jpa.getId().toString())
-                .path("type")
-                .path(getType(jpa))
+                .path("/type/")
+                .path(jpa.getType())
                 .toUriString();
     }
-
-    private static String getType(FileJPA jpa) {
-        if (jpa instanceof HomeworkFileJPA || jpa instanceof HomeworkFileDetailJPA) {
-            return FileLinkDTO.Type.HOMEWORK.toString();
-        } else if (jpa instanceof AnswerFileJPA || jpa instanceof AnswerFileDetailJPA) {
-            return FileLinkDTO.Type.ANSWER.toString();
-        } else {
-            throw new IllegalStateException("You shouldn't be here: wrong type of FileJPA object: " + jpa.getClass().toString());
-        }
-    }
-
-
 }

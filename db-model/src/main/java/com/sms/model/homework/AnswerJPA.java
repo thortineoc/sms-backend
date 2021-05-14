@@ -1,6 +1,7 @@
 package com.sms.model.homework;
 
 import com.sms.model.grades.GradeJPA;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -28,11 +29,10 @@ public class AnswerJPA {
     @ManyToOne(fetch = FetchType.LAZY)
     private HomeworkJPA homework;
 
-    @OneToMany(cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    @JoinColumn(name = "answer_id", updatable = false)
-    private List<AnswerFileJPA> files;
+    @OneToMany(orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "relation_id")
+    @Where(clause = "type = 'ANSWER'")
+    private List<FileInfoJPA> files;
 
     @OneToOne(fetch = FetchType.LAZY)
     private GradeJPA grade;
@@ -65,7 +65,7 @@ public class AnswerJPA {
         return grade;
     }
 
-    public List<AnswerFileJPA> getFiles() {
+    public List<FileInfoJPA> getFiles() {
         return files;
     }
 

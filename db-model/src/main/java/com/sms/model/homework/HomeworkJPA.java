@@ -1,5 +1,7 @@
 package com.sms.model.homework;
 
+import org.hibernate.annotations.Where;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
@@ -38,8 +40,9 @@ public class HomeworkJPA {
 
     @OneToMany(orphanRemoval = true,
             fetch = FetchType.LAZY)
-    @JoinColumn(name = "homework_id")
-    private List<HomeworkFileJPA> files;
+    @JoinColumn(name = "relation_id")
+    @Where(clause = "type = 'HOMEWORK'")
+    private List<FileInfoJPA> files;
 
     public Timestamp getCreatedTime() { return createdTime; }
     public String getTeacherId() { return teacherId; }
@@ -52,7 +55,7 @@ public class HomeworkJPA {
     public Timestamp getDeadline() { return deadline; }
     public Timestamp getLastUpdatedTime() { return lastUpdatedTime; }
     public List<AnswerJPA> getAnswers() { return answers; }
-    public List<HomeworkFileJPA> getFiles() { return files; }
+    public List<FileInfoJPA> getFiles() { return files; }
 
     public void setCreatedTime(Timestamp createdTime) { this.createdTime = createdTime; }
     public void setTeacherId(String teacherId) { this.teacherId = teacherId; }
