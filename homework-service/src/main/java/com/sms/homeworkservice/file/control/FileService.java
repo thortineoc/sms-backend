@@ -1,6 +1,7 @@
 package com.sms.homeworkservice.file.control;
 
 import com.sms.api.homework.FileLinkDTO;
+import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.UserContext;
 import com.sms.homeworkservice.answer.control.AnswerRepository;
 import com.sms.homeworkservice.homework.control.HomeworkRepository;
@@ -46,9 +47,15 @@ public class FileService {
 
         switch (type){
             case ANSWER:
+                if(userContext.getSmsRole() != UserDTO.Role.STUDENT) throw new IllegalStateException("Only students can add answer file");
                 if(!answerRepository.existsById(id)) throw new IllegalStateException("Answer does not exists");
+                break;
             case HOMEWORK:
+                if(userContext.getSmsRole() != UserDTO.Role.TEACHER) throw new IllegalStateException("Only teacher can add homework file");
                 if(!homeworkRepository.existsById(id)) throw new IllegalStateException("Homework does not exists");
+                break;
+            default:
+                throw new IllegalStateException("incorrect TYPE");
         }
 
         try {
