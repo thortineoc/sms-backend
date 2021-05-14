@@ -68,28 +68,22 @@ public class HomeworkService {
         HomeworkJPA homework = HomeworkMapper.toJPA(homeworkDTO);
         homework.setTeacherId(userContext.getUserId());
 
-        try {
             HomeworkJPA updatedHomework = homeworkRepository.save(homework);
             return HomeworkMapper.toSimpleDTO(updatedHomework);
-        } catch (ConstraintViolationException e) {
-            throw new IllegalArgumentException("Saving grade: " + homework.getId() + " violated database constraints: " + e.getConstraintName());
-        } catch (EntityNotFoundException e) {
-            throw new IllegalStateException("Grade with ID: " + homework.getId() + " does not exist, can't update: " + e.getMessage());
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-
     }
 
-    public void updateHomework(SimpleHomeworkDTO homeworkDTO) {
-        homeworkRepository.UpdateHomework(
+    public SimpleHomeworkDTO updateHomework(SimpleHomeworkDTO homeworkDTO) {
+
+        if(!homeworkDTO.getId().isPresent()) return createHomework(homeworkDTO);
+        if( homeworkRepository.updateTable(
                 Timestamp.valueOf(homeworkDTO.getDeadline()),
                 homeworkDTO.getGroup(),
                 homeworkDTO.getSubject(),
                 homeworkDTO.getId().get(),
                 homeworkDTO.getDescription(),
                 homeworkDTO.getTitle(),
-                homeworkDTO.getToEvaluate());
+                homeworkDTO.getToEvaluate()) != 1) throw new IllegalStateException("id does not exists or update failed");
+        return  homeworkDTO;
     }
 
 
