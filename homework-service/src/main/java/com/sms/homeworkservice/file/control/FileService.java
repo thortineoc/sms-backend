@@ -2,7 +2,7 @@ package com.sms.homeworkservice.file.control;
 
 import com.sms.context.UserContext;
 import com.sms.homeworkservice.homework.control.HomeworkRepository;
-import com.sms.model.homework.HomeworkFileDetailJPA;
+import com.sms.model.homework.FileDetailJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -24,9 +24,9 @@ public class FileService {
     UserContext userContext;
 
 
-    public HomeworkFileDetailJPA getFile(Long id) {
-        Optional<HomeworkFileDetailJPA> result = homeworkFileRespository.findAllById(id);
-        if(result.isPresent()) return result.get();
+    public FileDetailJPA getFile(Long id) {
+        Optional<FileDetailJPA> result = homeworkFileRespository.findAllById(id);
+        if (result.isPresent()) return result.get();
         throw new IllegalStateException("file doesnt exists");
     }
 

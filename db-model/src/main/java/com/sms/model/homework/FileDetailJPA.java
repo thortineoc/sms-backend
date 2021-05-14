@@ -12,4 +12,7 @@ public class FileDetailJPA extends FileBaseJPA {
     public byte[] getFile() {
         return file;
     }
+    public void setFile(byte[] file) {
+        this.file = file;
+    }
 }

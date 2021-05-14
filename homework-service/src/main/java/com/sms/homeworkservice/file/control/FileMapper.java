@@ -22,17 +22,6 @@ public class FileMapper {
     }
 
     private static String getUri(FileInfoJPA jpa) {
-    public static HomeworkFileDetailJPA toJPA(MultipartFile file, String filename, Long id) throws IOException {
-        HomeworkFileDetailJPA jpa= new HomeworkFileDetailJPA();
-        jpa.setFilename(filename);
-        jpa.setSize(file.getSize());
-        jpa.setFile(file);
-        jpa.setId(id*id);
-        return jpa;
-    }
-
-
-    private static String getUri(FileJPA jpa) {
         return ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/files")
@@ -42,4 +31,14 @@ public class FileMapper {
                 .path(jpa.getType())
                 .toUriString();
     }
+
+    public static FileDetailJPA toJPA(MultipartFile file, String filename, Long id) throws IOException {
+        FileDetailJPA jpa= new FileDetailJPA();
+        jpa.setFilename(filename);
+        jpa.setSize(file.getSize());
+        jpa.setFile(file.getBytes());
+        jpa.setRelationId(id);
+        return jpa;
+    }
+
 }
