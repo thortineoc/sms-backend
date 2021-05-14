@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Transactional
-public interface HomeworkFileRespository extends CrudRepository<FileDetailJPA, Long> {
+public interface FileRespository extends CrudRepository<FileDetailJPA, Long> {
 
     @NonNull
     List<FileDetailJPA> findAll();

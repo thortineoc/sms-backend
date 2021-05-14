@@ -1,12 +1,16 @@
 package com.sms.homeworkservice.file.control;
 
+import com.sms.api.homework.FileLinkDTO;
 import com.sms.context.UserContext;
+import com.sms.homeworkservice.answer.control.AnswerRepository;
 import com.sms.homeworkservice.homework.control.HomeworkRepository;
 import com.sms.model.homework.FileDetailJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Component
@@ -14,32 +18,44 @@ import java.util.Optional;
 public class FileService {
 
 
-    @Autowired
-    HomeworkRepository fileRepository;
 
     @Autowired
-    HomeworkFileRespository homeworkFileRespository;
+    FileRespository fileRespository;
 
     @Autowired
     UserContext userContext;
 
+    @Autowired
+    HomeworkRepository homeworkRepository;
 
-    public FileDetailJPA getFile(Long id) {
-        Optional<FileDetailJPA> result = homeworkFileRespository.findAllById(id);
+    @Autowired
+    AnswerRepository answerRepository;
+
+    //"http://localhost:24026/homework-service/files/id/9/type/HOMEWORK"
+    //tutaj w sumie w tym linku nie jest potrzebny type bo wyciągamy po id który jest uniq
+    public FileDetailJPA getFile(Long id, FileLinkDTO.Type type) {
+        Optional<FileDetailJPA> result = fileRespository.findAllById(id);
         if (result.isPresent()) return result.get();
         throw new IllegalStateException("file doesnt exists");
     }
 
 
-/*    public FileLinkDTO store(MultipartFile file, Long homework) throws IOException {
-        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        HomeworkFileDetailJPA FileDB = FileMapper.toJPA(file, fileName, homework);
-        FileDetailJPA homeworkFilesJPA;
+    public FileLinkDTO store(MultipartFile file, Long id, FileLinkDTO.Type type ) throws IOException {
+
+        FileDetailJPA FileDB = FileMapper.toJPA(file, id, type);
+
+        switch (type){
+            case ANSWER:
+                if(!answerRepository.existsById(id)) throw new IllegalStateException("Answer does not exists");
+            case HOMEWORK:
+                if(!homeworkRepository.existsById(id)) throw new IllegalStateException("Homework does not exists");
+        }
+
         try {
-            homeworkFilesJPA = homeworkFileRespository.save(FileDB);
-        } catch (Exception e) {
+            return FileMapper.toDTO(fileRespository.save(FileDB));
+        }catch (Exception e) {
             throw new IllegalStateException(e);
         }
-        return null;
-    }*/
+
+    }
 }
