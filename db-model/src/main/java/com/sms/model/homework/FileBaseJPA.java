@@ -19,6 +19,9 @@ public class FileBaseJPA {
     @Column(name = "relation_id")
     private Long relationId;
 
+    @Column(name = "owner_id")
+    private String ownerId;
+
     public Long getId() {
         return id;
     }
@@ -37,5 +40,9 @@ public class FileBaseJPA {
 
     public String getType() {
         return type;
+    }
+
+    public String getOwnerId() {
+        return ownerId;
     }
 }
