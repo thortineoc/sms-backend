@@ -26,9 +26,6 @@ public class AnswerService {
     @Autowired
     UserContext userContext;
 
-    @Autowired
-    UserManagementClient userManagementClient;
-
     public AnswerDTO updateAnswer(AnswerDTO answer) {
         Long id = answer.getId().orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
@@ -37,9 +34,8 @@ public class AnswerService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
 
-        AnswerJPA answerJPA = AnswerMapper.toJPA(answer);
-        answerToUpdate.setLastUpdatedTime(Timestamp.valueOf(LocalDateTime.now()));
-        answerToUpdate.setReview(answerJPA.getReview());
+        answerToUpdate.setLastUpdatedTime(LocalDateTime.now());
+        answer.getReview().ifPresent(answerToUpdate::setReview);
 
         AnswerJPA ans = answerRepository.save(answerToUpdate);
         return AnswerMapper.toDTOSimple(ans);
@@ -51,8 +47,8 @@ public class AnswerService {
         AnswerJPA answerJPA = new AnswerJPA();
         answerJPA.setHomework(homework);
         answerJPA.setStudentId(userContext.getUserId());
-        answerJPA.setCreatedTime(Timestamp.valueOf(LocalDateTime.now()));
-        answerJPA.setLastUpdatedTime(Timestamp.valueOf(LocalDateTime.now()));
+        answerJPA.setCreatedTime(LocalDateTime.now());
+        answerJPA.setLastUpdatedTime(LocalDateTime.now());
 
         AnswerJPA ans = answerRepository.save(answerJPA);
         return AnswerMapper.toDTOSimple(ans);

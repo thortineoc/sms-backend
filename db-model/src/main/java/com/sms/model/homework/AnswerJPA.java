@@ -24,7 +24,7 @@ public class AnswerJPA {
     @Column(name = "lastupdatedtime")
     private Timestamp lastUpdatedTime;
 
-    @Column(name = "createdtime")
+    @Column(name = "createdtime", updatable = false)
     private Timestamp createdTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -70,17 +70,17 @@ public class AnswerJPA {
         return files;
     }
 
-    public void setLastUpdatedTime(Timestamp lastUpdatedTime) {
-        this.lastUpdatedTime = lastUpdatedTime;
-    }
+//    public void setLastUpdatedTime(Timestamp lastUpdatedTime) {
+//        this.lastUpdatedTime = lastUpdatedTime;
+//    }
 
     public void setId(Long id) {
         this.id = id;
     }
 
-    public void setCreatedTime(Timestamp createdTime) {
-        this.createdTime = createdTime;
-    }
+//    public void setCreatedTime(Timestamp createdTime) {
+//        this.createdTime = createdTime;
+//    }
 
     public void setStudentId(String studentId) {
         this.studentId = studentId;
@@ -99,6 +99,6 @@ public class AnswerJPA {
     }
 
     public void setLastUpdatedTime(LocalDateTime localDateTime) {
-        this.createdTime =  Timestamp.valueOf(localDateTime);
+        this.lastUpdatedTime =  Timestamp.valueOf(localDateTime);
     }
 }
