@@ -1,6 +1,7 @@
 package com.sms.homeworkservice.file.control;
 import com.sms.context.UserContext;
 import com.sms.model.homework.FileBaseJPA;
+import com.sms.model.homework.FileDetailJPA;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -23,9 +24,9 @@ public class FileService {
 
     public void deleteFile(Long id) {
         try {
-            Optional<FileBaseJPA> file = fileRepository.findById(id);
-            if(!userContext.getUserId().equals(file.get().getOwnerId())) {
-                throw new AuthenticationException();
+            Optional<FileDetailJPA> file = fileRepository.findById(id);
+            if (!userContext.getUserId().equals(file.get().getOwnerId())) {
+                throw new AuthenticationException(); //("This user is not the owner of the file  with ID: " + id + " cannot delete");
             }
             fileRepository.deleteById(id);
             /*
@@ -34,12 +35,13 @@ public class FileService {
                 throw new IllegalStateException("File with ID: " + id + " wasn't deleted");
             } else if (amount > 1) {
                 throw new IllegalStateException("While deleting file with ID: " + id + " other files were deleted");
-            }*/
+            }
+            */
         } catch (ConstraintViolationException e) {
             throw new IllegalArgumentException("Deleting file: " + id + " violated database constraints: " + e.getConstraintName());
         } catch (EntityNotFoundException e) {
             throw new IllegalStateException("File with ID: " + id + " does not exist, can't delete");
-        } catch (AuthenticationException e) {
+        } catch (AuthenticationException e) { //??????????
             throw new IllegalStateException("This user is not the owner of the file  with ID: " + id + " cannot delete");
         } catch (NoSuchElementException e) {
             throw new IllegalStateException("Couldn't find file with ID: " + id);
