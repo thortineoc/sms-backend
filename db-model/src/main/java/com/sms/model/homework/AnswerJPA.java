@@ -88,4 +88,8 @@ public class AnswerJPA {
     public void setReview(String review) {
         this.review = review;
     }
+
+    public void setHomework(HomeworkJPA homework) {
+        this.homework = homework;
+    }
 }
