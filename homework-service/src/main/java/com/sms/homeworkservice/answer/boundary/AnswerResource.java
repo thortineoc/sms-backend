@@ -24,15 +24,15 @@ public class AnswerResource {
 
     @AuthRole(UserDTO.Role.STUDENT)
     @PostMapping("/{id}") // homework_id
-    public ResponseEntity<AnswerDTO> createAnswer(@PathVariable("id") Long id /*, AnswerDTO answer */) {
+    public ResponseEntity<AnswerDTO> createAnswer(@PathVariable("id") Long id) {
         AnswerDTO res = answerService.createAnswer(id);
         return ResponseEntity.ok(res);
     }
 
-    @AuthRole(UserDTO.Role.STUDENT)
-    @PutMapping("/{id}") // homework_id
-    public ResponseEntity<Object> updateAnswer(@PathVariable("id") Long id, @RequestBody AnswerDTO answer) {
-        AnswerDTO res = answerService.updateAnswer(answer, id);
+    @AuthRole(UserDTO.Role.TEACHER)
+    @PutMapping()
+    public ResponseEntity<AnswerDTO> updateAnswer(@RequestBody AnswerDTO answer) {
+        AnswerDTO res = answerService.updateAnswer(answer);
         return ResponseEntity.ok(res);
     }
 }

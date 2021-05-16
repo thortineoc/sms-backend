@@ -59,4 +59,14 @@ public class AnswerMapper {
 
         return jpa;
     }
+
+    public static AnswerDTO toDTOSimple(AnswerJPA jpa) {
+        return AnswerDTO.builder()
+                .id(jpa.getId())
+                .createdTime(jpa.getCreatedTime().toLocalDateTime())
+                .lastUpdatedTime(jpa.getLastUpdatedTime().toLocalDateTime())
+                .review(Optional.ofNullable(jpa.getReview()))
+                .studentId(jpa.getStudentId())
+                .build();
+    }
 }

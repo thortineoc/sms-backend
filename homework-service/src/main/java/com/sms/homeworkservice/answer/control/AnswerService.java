@@ -15,6 +15,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,9 +36,7 @@ public class AnswerService {
     @Autowired
     UserManagementClient userManagementClient;
 
-    public AnswerDTO updateAnswer(AnswerDTO answer, Long homeworkId) {
-        HomeworkJPA homework = homeworkRepository.findById(homeworkId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    public AnswerDTO updateAnswer(AnswerDTO answer) {
         Long id = answer.getId().orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
@@ -45,31 +45,23 @@ public class AnswerService {
         );
 
         AnswerJPA answerJPA = AnswerMapper.toJPA(answer);
-        answerToUpdate.setHomework(homework);
-        answerToUpdate.setStudentId(userContext.getUserId());
-        //answerToUpdate.setFiles(answerJPA.getFiles());
-        Date date = new Date();
-        answerToUpdate.setLastUpdatedTime(new Timestamp(date.getTime()));
+        answerToUpdate.setLastUpdatedTime(Timestamp.valueOf(LocalDateTime.now()));
         answerToUpdate.setReview(answerJPA.getReview());
 
         AnswerJPA ans = answerRepository.save(answerToUpdate);
-        return AnswerMapper.toDetailDTO(ans);
+        return AnswerMapper.toDTOSimple(ans);
     }
 
     public AnswerDTO createAnswer(Long homeworkId) {
-        Date date = new Date();
         HomeworkJPA homework = homeworkRepository.findById(homeworkId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         AnswerJPA answerJPA = new AnswerJPA();
         answerJPA.setHomework(homework);
         answerJPA.setStudentId(userContext.getUserId());
-        answerJPA.setCreatedTime(new Timestamp(date.getTime()));
-        answerJPA.setLastUpdatedTime(new Timestamp(date.getTime()));
-        //files
-        List<FileInfoJPA> files = new ArrayList<>();
-        answerJPA.setFiles(files);
+        answerJPA.setCreatedTime(Timestamp.valueOf(LocalDateTime.now()));
+        answerJPA.setLastUpdatedTime(Timestamp.valueOf(LocalDateTime.now()));
 
         AnswerJPA ans = answerRepository.save(answerJPA);
-        return AnswerMapper.toDetailDTO(ans);
+        return AnswerMapper.toDTOSimple(ans);
     }
 }

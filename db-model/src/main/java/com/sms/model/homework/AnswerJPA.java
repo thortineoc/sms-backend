@@ -94,10 +94,6 @@ public class AnswerJPA {
         this.homework = homework;
     }
 
-    public void setFiles(List<FileInfoJPA> files) {
-        this.files = files;
-    }
-
     public void setCreatedTime(LocalDateTime localDateTime) {
         this.createdTime =  Timestamp.valueOf(localDateTime);
     }
