@@ -6,5 +6,4 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 public interface AnswerRepository extends CrudRepository<AnswerJPA, Long> {
-    AnswerJPA findByStudentIdAndHomeworkId(String studentId, Long homeworkId);
 }
