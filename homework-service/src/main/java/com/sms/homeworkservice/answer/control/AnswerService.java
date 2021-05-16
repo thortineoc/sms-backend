@@ -5,21 +5,14 @@ import com.sms.context.UserContext;
 import com.sms.homeworkservice.clients.UserManagementClient;
 import com.sms.homeworkservice.homework.control.HomeworkRepository;
 import com.sms.model.homework.AnswerJPA;
-import com.sms.model.homework.FileInfoJPA;
 import com.sms.model.homework.HomeworkJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDateTime;;
 
 @Component
 @Scope("request")
