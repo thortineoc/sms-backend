@@ -70,17 +70,9 @@ public class AnswerJPA {
         return files;
     }
 
-//    public void setLastUpdatedTime(Timestamp lastUpdatedTime) {
-//        this.lastUpdatedTime = lastUpdatedTime;
-//    }
-
     public void setId(Long id) {
         this.id = id;
     }
-
-//    public void setCreatedTime(Timestamp createdTime) {
-//        this.createdTime = createdTime;
-//    }
 
     public void setStudentId(String studentId) {
         this.studentId = studentId;

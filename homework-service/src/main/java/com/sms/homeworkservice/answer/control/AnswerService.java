@@ -2,7 +2,6 @@ package com.sms.homeworkservice.answer.control;
 
 import com.sms.api.homework.AnswerDTO;
 import com.sms.context.UserContext;
-import com.sms.homeworkservice.clients.UserManagementClient;
 import com.sms.homeworkservice.homework.control.HomeworkRepository;
 import com.sms.model.homework.AnswerJPA;
 import com.sms.model.homework.HomeworkJPA;
@@ -11,7 +10,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;;
 
 @Component
