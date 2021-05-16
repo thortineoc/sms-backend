@@ -26,7 +26,7 @@ public class AnswerService {
 
     public AnswerDTO updateAnswer(AnswerDTO answer) {
         Long id = answer.getId().orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+                () -> new ResponseStatusException(HttpStatus.BAD_REQUEST)
         );
         AnswerJPA answerToUpdate = answerRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
