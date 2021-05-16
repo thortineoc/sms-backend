@@ -51,9 +51,11 @@ public class AnswerMapper {
 
     public static AnswerJPA toJPA(AnswerDTO answer) {
         AnswerJPA jpa = new AnswerJPA();
+        answer.getId().ifPresent(jpa::setId);
         answer.getReview().ifPresent(jpa::setReview);
         answer.getStudentId().ifPresent(jpa::setStudentId);
-
+        answer.getCreatedTime().ifPresent(jpa::setCreatedTime);
+        answer.getLastUpdatedTime().ifPresent(jpa::setLastUpdatedTime);
 
         return jpa;
     }

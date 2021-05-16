@@ -5,6 +5,7 @@ import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -91,5 +92,17 @@ public class AnswerJPA {
 
     public void setHomework(HomeworkJPA homework) {
         this.homework = homework;
+    }
+
+    public void setFiles(List<FileInfoJPA> files) {
+        this.files = files;
+    }
+
+    public void setCreatedTime(LocalDateTime localDateTime) {
+        this.createdTime =  Timestamp.valueOf(localDateTime);
+    }
+
+    public void setLastUpdatedTime(LocalDateTime localDateTime) {
+        this.createdTime =  Timestamp.valueOf(localDateTime);
     }
 }
