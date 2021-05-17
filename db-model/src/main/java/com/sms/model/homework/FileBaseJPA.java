@@ -1,9 +1,9 @@
 package com.sms.model.homework;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
+import com.sms.api.homework.FileLinkDTO;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @MappedSuperclass
 public class FileBaseJPA {
@@ -28,7 +28,7 @@ public class FileBaseJPA {
         this.size = size;
     }
 
-    public void setType(String type) {
+    public void setType(FileLinkDTO.Type type) {
         this.type = type;
     }
 
@@ -36,10 +36,22 @@ public class FileBaseJPA {
         this.relationId = relationId;
     }
 
-    private String type;
+    private FileLinkDTO.Type type;
 
     @Column(name = "relation_id")
     private Long relationId;
+
+    public String getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    @Column(name= "owner_id")
+    private String ownerId;
+
 
     public Long getId() {
         return id;
@@ -57,7 +69,7 @@ public class FileBaseJPA {
         return relationId;
     }
 
-    public String getType() {
+    public FileLinkDTO.Type getType() {
         return type;
     }
 

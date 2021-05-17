@@ -1,5 +1,6 @@
 package com.sms.model.homework;
 
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
@@ -8,7 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "homeworks")
-public class HomeworkJPA {
+public class HomeworkJPA{
 
     @Id
     @GeneratedValue(generator = "homeworks_id_seq")

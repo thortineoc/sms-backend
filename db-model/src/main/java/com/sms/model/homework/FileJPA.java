@@ -5,7 +5,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "files")
-public class FileDetailJPA extends FileBaseJPA {
+public class FileJPA extends FileBaseJPA {
 
     private byte[] file;
 

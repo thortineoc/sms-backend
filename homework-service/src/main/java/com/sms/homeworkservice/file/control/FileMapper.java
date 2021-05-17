@@ -23,7 +23,7 @@ public class FileMapper {
                 .build();
     }
 
-    public static FileLinkDTO toDTO(FileDetailJPA jpa){
+    public static FileLinkDTO toDTO(FileJPA jpa){
         return FileLinkDTO.builder()
                 .id(jpa.getId())
                 .filename(jpa.getFilename())
@@ -32,14 +32,13 @@ public class FileMapper {
                 .build();
     }
 
-    private static String getUri(FileDetailJPA jpa) {
+
+    private static String getUri(FileJPA jpa) {
         return ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/files")
                 .path("/id/")
                 .path(jpa.getId().toString())
-                .path("/type/")
-                .path(jpa.getType())
                 .toUriString();
     }
 
@@ -49,18 +48,17 @@ public class FileMapper {
                 .path("/files")
                 .path("/id/")
                 .path(jpa.getId().toString())
-                .path("/type/")
-                .path(jpa.getType())
                 .toUriString();
     }
 
-    public static FileDetailJPA toJPA(MultipartFile file, Long id, FileLinkDTO.Type type) throws IOException {
-        FileDetailJPA jpa= new FileDetailJPA();
+    public static FileJPA toJPA(MultipartFile file, Long id, FileLinkDTO.Type type, String ownerId) throws IOException {
+        FileJPA jpa= new FileJPA();
         jpa.setFilename(StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename())));
         jpa.setSize(file.getSize());
         jpa.setFile(file.getBytes());
         jpa.setRelationId(id);
-        jpa.setType(type.name());
+        jpa.setType(type);
+        jpa.setOwnerId(ownerId);
         return jpa;
     }
 

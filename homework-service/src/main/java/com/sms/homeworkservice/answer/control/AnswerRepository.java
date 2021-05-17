@@ -7,5 +7,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public interface AnswerRepository extends CrudRepository<AnswerJPA, Long> {
 
-
+    Boolean existsByHomeworkId(Long id);
 }

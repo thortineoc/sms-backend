@@ -5,7 +5,7 @@ import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.UserContext;
 import com.sms.homeworkservice.answer.control.AnswerRepository;
 import com.sms.homeworkservice.homework.control.HomeworkRepository;
-import com.sms.model.homework.FileDetailJPA;
+import com.sms.model.homework.FileJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -32,10 +32,9 @@ public class FileService {
     @Autowired
     AnswerRepository answerRepository;
 
-    //"http://localhost:24026/homework-service/files/id/9/type/HOMEWORK"
-    //tutaj w sumie w tym linku nie jest potrzebny type bo wyciągamy po id który jest uniq
-    public FileDetailJPA getFile(Long id, FileLinkDTO.Type type) {
-        Optional<FileDetailJPA> result = fileRespository.findAllById(id);
+
+    public FileJPA getFile(Long id) {
+        Optional<FileJPA> result = fileRespository.findById(id);
         if (result.isPresent()) return result.get();
         throw new IllegalStateException("file doesnt exists");
     }
@@ -43,26 +42,32 @@ public class FileService {
 
     public FileLinkDTO store(MultipartFile file, Long id, FileLinkDTO.Type type ) throws IOException {
 
-        FileDetailJPA FileDB = FileMapper.toJPA(file, id, type);
+        FileJPA FileDB = FileMapper.toJPA(file, id, type, userContext.getUserId());
 
         switch (type){
             case ANSWER:
-                if(userContext.getSmsRole() != UserDTO.Role.STUDENT) throw new IllegalStateException("Only students can add answer file");
-                if(!answerRepository.existsById(id)) throw new IllegalStateException("Answer does not exists");
+                validateAnswer(id);
                 break;
             case HOMEWORK:
-                if(userContext.getSmsRole() != UserDTO.Role.TEACHER) throw new IllegalStateException("Only teacher can add homework file");
-                if(!homeworkRepository.existsById(id)) throw new IllegalStateException("Homework does not exists");
+                validateHomework(id);
                 break;
             default:
                 throw new IllegalStateException("incorrect TYPE");
         }
-
         try {
             return FileMapper.toDTO(fileRespository.save(FileDB));
         }catch (Exception e) {
             throw new IllegalStateException(e);
         }
+    }
 
+    private void validateAnswer(Long id){
+        if(userContext.getSmsRole() != UserDTO.Role.STUDENT) throw new IllegalStateException("Only students can add answer file");
+        if(!answerRepository.existsById(id)) throw new IllegalStateException("Answer does not exists");
+    }
+
+    private void validateHomework(Long id){
+        if(userContext.getSmsRole() != UserDTO.Role.TEACHER) throw new IllegalStateException("Only teacher can add homework file");
+        if(!homeworkRepository.existsById(id)) throw new IllegalStateException("Homework does not exists");
     }
 }

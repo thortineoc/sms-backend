@@ -34,21 +34,6 @@ public class HomeworkMapper {
     }
 
 
-    public static SimpleHomeworkDTO toSimpleDTO(HomeworkJPA jpa) {
-        return SimpleHomeworkDTO.builder()
-                .id(Optional.ofNullable(jpa.getId()))
-                .createdTime(Optional.ofNullable(jpa.getCreatedTime()).map(Timestamp::toLocalDateTime))
-                .lastUpdateTime(Optional.ofNullable(jpa.getLastUpdatedTime()).map(Timestamp::toLocalDateTime))
-                .description(Optional.ofNullable(jpa.getDescription()))
-                .title(jpa.getTitle())
-                .deadline(jpa.getDeadline().toLocalDateTime())
-                .group(jpa.getGroup())
-                .subject(jpa.getSubject())
-                .teacherId(Optional.ofNullable(jpa.getTeacherId()))
-                .toEvaluate(jpa.getToEvaluate())
-                .build();
-    }
-
 
     public static HomeworkDTO toDetailDTO(HomeworkJPA jpa) {
         return toDTOBuilder(jpa)
@@ -79,7 +64,8 @@ public class HomeworkMapper {
         return toDTOBuilder(jpa).build();
     }
 
-    private static ImmutableHomeworkDTO.Builder toDTOBuilder(HomeworkJPA jpa) {
+
+    public static ImmutableHomeworkDTO.Builder toDTOBuilder(HomeworkJPA jpa) {
         return HomeworkDTO.builder()
                 .id(Optional.ofNullable(jpa.getId()))
                 .createdTime(Optional.ofNullable(jpa.getCreatedTime()).map(Timestamp::toLocalDateTime))
@@ -101,21 +87,5 @@ public class HomeworkMapper {
         return homeworkJPA;
     }
 
-    // w sumie jest to SimpleHomeworkDTO tylko że zwraca w jsonie file [] , anserws []
-    // i nie podoba mi się to
-    /*    public static HomeworkJPA toJPA(HomeworkDTO homework) {
-        HomeworkJPA jpa = new HomeworkJPA();
-        jpa.setDeadline(Timestamp.valueOf(homework.getDeadline()));
-        jpa.setSubject(homework.getSubject());
-        jpa.setGroup(homework.getGroup());
-        jpa.setTitle(homework.getTitle());
-        jpa.setToEvaluate(homework.getToEvaluate());
-        homework.getDescription().ifPresent(jpa::setDescription);
-        homework.getId().ifPresent(jpa::setId);
-        homework.getCreatedTime().map(Timestamp::valueOf).ifPresent(jpa::setCreatedTime);
-        homework.getLastUpdateTime().map(Timestamp::valueOf).ifPresent(jpa::setLastUpdatedTime);
-        homework.getTeacherId().ifPresent(jpa::setTeacherId);
-        return updatedTime(jpa);
-    }*/
 
 }

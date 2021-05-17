@@ -53,10 +53,17 @@ public class HomeworkResource {
 
     @PutMapping
     @AuthRole(UserDTO.Role.TEACHER)
-    public ResponseEntity<SimpleHomeworkDTO> updateHomework(@RequestBody SimpleHomeworkDTO homeworkDTO) {
-        SimpleHomeworkDTO simpleHomeworkDTO= homeworkService.updateHomework(homeworkDTO);
-        return ResponseEntity.ok(simpleHomeworkDTO);
+    public ResponseEntity<HomeworkDTO> updateHomework(@RequestBody HomeworkDTO homeworkDTO) {
+        HomeworkDTO homework = homeworkService.updateHomework(homeworkDTO);
+        return ResponseEntity.ok(homework);
 
+    }
+
+    @DeleteMapping("/{id}")
+    @AuthRole(UserDTO.Role.TEACHER)
+    public ResponseEntity<Object> deleteHomework(@PathVariable("id") Long id) {
+        homeworkService.deleteHomework(id);
+        return ResponseEntity.noContent().build();
     }
 
 

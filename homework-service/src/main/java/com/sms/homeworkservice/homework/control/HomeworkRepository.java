@@ -20,6 +20,8 @@ public interface HomeworkRepository extends CrudRepository<HomeworkJPA, Long> {
 
     List<HomeworkJPA> getAllByGroup(String group);
 
+    Optional<HomeworkJPA> getById(Long id);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE HomeworkJPA u SET u.deadline = :deadline," +
             " u.group= :group, u.subject=:subject, u.description=:description," +
