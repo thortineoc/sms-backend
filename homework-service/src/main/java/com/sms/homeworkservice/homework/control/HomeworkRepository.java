@@ -13,7 +13,7 @@ import java.util.Optional;
 @Transactional
 public interface HomeworkRepository extends CrudRepository<HomeworkJPA, Long> {
 
-    @Query("SELECT h FROM HomeworkJPA h JOIN FETCH h.answers WHERE h.id = (:id)")
+    @Query("SELECT h FROM HomeworkJPA h WHERE h.id = (:id)")
     Optional<HomeworkJPA> getHomeworkDetails(Long id);
 
     List<HomeworkJPA> getAllByTeacherId(String teacherId);
