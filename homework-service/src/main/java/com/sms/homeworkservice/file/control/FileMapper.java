@@ -14,7 +14,7 @@ public class FileMapper {
     private FileMapper() {
     }
 
-    public static FileLinkDTO toDTO(FileInfoJPA jpa) {
+    public static FileLinkDTO toDTO(FileBaseJPA jpa) {
         return FileLinkDTO.builder()
                 .id(jpa.getId())
                 .filename(jpa.getFilename())
@@ -23,26 +23,7 @@ public class FileMapper {
                 .build();
     }
 
-    public static FileLinkDTO toDTO(FileJPA jpa){
-        return FileLinkDTO.builder()
-                .id(jpa.getId())
-                .filename(jpa.getFilename())
-                .size(jpa.getSize())
-                .uri(getUri(jpa))
-                .build();
-    }
-
-
-    private static String getUri(FileJPA jpa) {
-        return ServletUriComponentsBuilder
-                .fromCurrentContextPath()
-                .path("/files")
-                .path("/id/")
-                .path(jpa.getId().toString())
-                .toUriString();
-    }
-
-    private static String getUri(FileInfoJPA jpa) {
+    private static String getUri(FileBaseJPA jpa) {
         return ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/files")

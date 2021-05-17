@@ -31,14 +31,14 @@ public class FileBaseJPA {
     }
 
     public void setType(FileLinkDTO.Type type) {
-        this.type = type;
+        this.type = type.toString();
     }
 
     public void setRelationId(Long relationId) {
         this.relationId = relationId;
     }
 
-    private FileLinkDTO.Type type;
+    private String type;
 
     @Column(name = "relation_id")
     private Long relationId;
@@ -72,7 +72,7 @@ public class FileBaseJPA {
     }
 
     public FileLinkDTO.Type getType() {
-        return type;
+        return FileLinkDTO.Type.valueOf(type);
     }
 
 

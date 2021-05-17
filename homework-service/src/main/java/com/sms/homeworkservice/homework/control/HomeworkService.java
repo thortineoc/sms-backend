@@ -1,7 +1,7 @@
 package com.sms.homeworkservice.homework.control;
 
 import com.sms.api.common.Util;
-import com.sms.api.homework.AnswerDTO;
+import com.sms.api.homework.AnswerWithStudentDTO;
 import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
 import com.sms.api.usermanagement.CustomAttributesDTO;
@@ -15,7 +15,9 @@ import com.sms.model.homework.AnswerJPA;
 import com.sms.model.homework.HomeworkJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.ws.rs.BadRequestException;
 import java.sql.Timestamp;
@@ -46,10 +48,17 @@ public class HomeworkService {
     @Autowired
     UserManagementClient userManagementClient;
 
-    public Optional<HomeworkDTO> getDetails(Long id) {
+    public Optional<SimpleHomeworkDTO> getDetails(Long id) {
         Optional<HomeworkJPA> homework = homeworkRepository.getHomeworkDetails(id);
-        List<AnswerDTO> answers = homework.map(this::addUsersToAnswers).orElse(Collections.emptyList());
-        return homework.map(h -> HomeworkMapper.toDetailDTO(h, answers));
+        switch (userContext.getSmsRole()) {
+            case TEACHER: return homework.map(h -> HomeworkMapper
+                    .toTeacherDetailDTO(h, homework.map(this::getStudentsWithAnswers).orElse(Collections.emptyList())));
+            case STUDENT:
+            case PARENT: return homework.map(h -> HomeworkMapper
+                    .toStudentDetailDTO(h, answerRepository.findByStudentIdAndHomeworkId(userContext.getUserId(), h.getId())));
+            default: throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Incorrect role: " + userContext.getSmsRole() + " (you shouldn't be here)");
+        }
     }
 
     public Map<String, Map<String, List<SimpleHomeworkDTO>>> getListForTeacher() {
@@ -63,19 +72,18 @@ public class HomeworkService {
                 .orElse(Collections.emptyMap());
     }
 
-    private List<AnswerDTO> addUsersToAnswers(HomeworkJPA homework) {
-        Map<String, UserDTO> usersInGroup = userManagementClient.getUsers(UsersFiltersDTO.builder()
+    private List<AnswerWithStudentDTO> getStudentsWithAnswers(HomeworkJPA homework) {
+        Map<String, AnswerJPA> answersByStudentIds = homework.getAnswers().stream()
+                .collect(Collectors.toMap(AnswerJPA::getStudentId, Function.identity()));
+
+        return userManagementClient.getUsers(UsersFiltersDTO.builder()
                 .group(homework.getGroup())
-                .build()).stream().collect(Collectors.toMap(UserDTO::getId, Function.identity()));
-
-        return homework.getAnswers().stream()
-                .map(a -> AnswerMapper.toDetailDTO(a, getMatchingUser(usersInGroup, a)))
+                .build()).stream()
+                .map(s -> AnswerWithStudentDTO.builder()
+                        .student(s)
+                        .answer(Util.getOpt(answersByStudentIds, s.getId()).map(AnswerMapper::toDetailDTO))
+                        .build())
                 .collect(Collectors.toList());
-    }
-
-    private UserDTO getMatchingUser(Map<String, UserDTO> users, AnswerJPA answer) {
-        return Util.getOpt(users, answer.getStudentId())
-                .orElseThrow(() -> new IllegalStateException("Answer " + answer.getId() + " doesn't have a student"));
     }
 
     private Optional<String> getGroup() {
@@ -134,5 +142,4 @@ public class HomeworkService {
         }
         return homeworkDTO.getSubject();
     }
-
 }

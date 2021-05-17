@@ -71,7 +71,6 @@ public class AnswerJPA {
         return grade;
     }
 
-
     public List<FileInfoJPA> getFiles() {
         return files;
     }
