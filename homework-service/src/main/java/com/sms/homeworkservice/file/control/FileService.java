@@ -74,10 +74,14 @@ public class FileService {
     public void deleteFile(Long id) {
         try {
             Optional<FileJPA> file = fileRepository.findById(id);
-            if (!userContext.getUserId().equals(file.get().getOwnerId())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            if (file.isPresent()) {
+                if (!userContext.getUserId().equals(file.get().getOwnerId())) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+                }
+                fileRepository.deleteById(id);
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
             }
-            fileRepository.deleteById(id);
         } catch (ConstraintViolationException e) {
             throw new IllegalArgumentException("Deleting file: " + id + " violated database constraints: " + e.getConstraintName());
         } catch (EntityNotFoundException e) {
