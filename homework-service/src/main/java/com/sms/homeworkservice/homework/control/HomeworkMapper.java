@@ -1,9 +1,9 @@
 package com.sms.homeworkservice.homework.control;
 
+import com.sms.api.homework.AnswerDTO;
 import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.ImmutableHomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
-import com.sms.homeworkservice.answer.control.AnswerMapper;
 import com.sms.homeworkservice.file.control.FileMapper;
 import com.sms.model.homework.HomeworkJPA;
 
@@ -30,11 +30,9 @@ public class HomeworkMapper {
         return jpa;
     }
 
-    public static HomeworkDTO toDetailDTO(HomeworkJPA jpa) {
+    public static HomeworkDTO toDetailDTO(HomeworkJPA jpa, List<AnswerDTO> answers) {
         return toDTOBuilder(jpa)
-                .answers(jpa.getAnswers().stream()
-                        .map(AnswerMapper::toDetailDTO)
-                        .collect(Collectors.toList()))
+                .answers(answers)
                 .files(jpa.getFiles().stream()
                         .map(FileMapper::toDTO)
                         .collect(Collectors.toList()))

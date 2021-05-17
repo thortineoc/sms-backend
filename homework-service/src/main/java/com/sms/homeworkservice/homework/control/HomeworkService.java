@@ -1,11 +1,16 @@
 package com.sms.homeworkservice.homework.control;
 
+import com.sms.api.common.Util;
+import com.sms.api.homework.AnswerDTO;
 import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
 import com.sms.api.usermanagement.CustomAttributesDTO;
 import com.sms.api.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UsersFiltersDTO;
 import com.sms.context.UserContext;
+import com.sms.homeworkservice.answer.control.AnswerMapper;
 import com.sms.homeworkservice.clients.UserManagementClient;
+import com.sms.model.homework.AnswerJPA;
 import com.sms.model.homework.HomeworkJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -15,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -34,7 +41,9 @@ public class HomeworkService {
     UserManagementClient userManagementClient;
 
     public Optional<HomeworkDTO> getDetails(Long id) {
-        return homeworkRepository.getHomeworkDetails(id).map(HomeworkMapper::toDetailDTO);
+        Optional<HomeworkJPA> homework = homeworkRepository.getHomeworkDetails(id);
+        List<AnswerDTO> answers = homework.map(this::addUsersToAnswers).orElse(Collections.emptyList());
+        return homework.map(h -> HomeworkMapper.toDetailDTO(h, answers));
     }
 
     public Map<String, Map<String, List<SimpleHomeworkDTO>>> getListForTeacher() {
@@ -46,6 +55,21 @@ public class HomeworkService {
         return getGroup().map(homeworkRepository::getAllByGroup)
                 .map(HomeworkMapper::toDTOsBySubject)
                 .orElse(Collections.emptyMap());
+    }
+
+    private List<AnswerDTO> addUsersToAnswers(HomeworkJPA homework) {
+        Map<String, UserDTO> usersInGroup = userManagementClient.getUsers(UsersFiltersDTO.builder()
+                .group(homework.getGroup())
+                .build()).stream().collect(Collectors.toMap(UserDTO::getId, Function.identity()));
+
+        return homework.getAnswers().stream()
+                .map(a -> AnswerMapper.toDetailDTO(a, getMatchingUser(usersInGroup, a)))
+                .collect(Collectors.toList());
+    }
+
+    private UserDTO getMatchingUser(Map<String, UserDTO> users, AnswerJPA answer) {
+        return Util.getOpt(users, answer.getStudentId())
+                .orElseThrow(() -> new IllegalStateException("Answer " + answer.getId() + " doesn't have a student"));
     }
 
     private Optional<String> getGroup() {
