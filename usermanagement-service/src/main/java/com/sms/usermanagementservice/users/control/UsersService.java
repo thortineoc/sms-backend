@@ -174,5 +174,8 @@ public class UsersService {
         attributesDTO.getPhoneNumber().ifPresent(value -> userRep.singleAttribute("phoneNumber", value));
         attributesDTO.getMiddleName().ifPresent(value -> userRep.singleAttribute("middleName", value));
         attributesDTO.getGroup().ifPresent(value -> userRep.singleAttribute("group", value));
+        if(userDTO.getRole()== UserDTO.Role.TEACHER){
+            userRep.singleAttribute("subjects", String.join(",", attributesDTO.getSubjects()));
+        }
     }
 }

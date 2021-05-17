@@ -1,13 +1,11 @@
 package com.sms.model.homework;
 
 import com.sms.model.grades.GradeJPA;
-import org.hibernate.annotations.*;
-import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
-import javax.persistence.Entity;
-import javax.persistence.Table;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -26,16 +24,14 @@ public class AnswerJPA {
     @Column(name = "lastupdatedtime")
     private Timestamp lastUpdatedTime;
 
-    @Column(name = "createdtime")
+    @Column(name = "createdtime", updatable = false)
     private Timestamp createdTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private HomeworkJPA homework;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "relation_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
     @Where(clause = "type = 'ANSWER'")
     private List<FileInfoJPA> files;
 
@@ -70,21 +66,12 @@ public class AnswerJPA {
         return grade;
     }
 
-
     public List<FileInfoJPA> getFiles() {
         return files;
     }
 
-    public void setLastUpdatedTime(Timestamp lastUpdatedTime) {
-        this.lastUpdatedTime = lastUpdatedTime;
-    }
-
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public void setCreatedTime(Timestamp createdTime) {
-        this.createdTime = createdTime;
     }
 
     public void setStudentId(String studentId) {
@@ -95,5 +82,15 @@ public class AnswerJPA {
         this.review = review;
     }
 
+    public void setHomework(HomeworkJPA homework) {
+        this.homework = homework;
+    }
 
+    public void setCreatedTime(LocalDateTime localDateTime) {
+        this.createdTime =  Timestamp.valueOf(localDateTime);
+    }
+
+    public void setLastUpdatedTime(LocalDateTime localDateTime) {
+        this.lastUpdatedTime =  Timestamp.valueOf(localDateTime);
+    }
 }
