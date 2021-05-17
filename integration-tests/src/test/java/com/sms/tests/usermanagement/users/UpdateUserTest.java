@@ -126,7 +126,7 @@ class UpdateUserTest {
                 .lastName("lastName")
                 .pesel(generatePesel())
                 .role(role)
-                .email("mail@email.com")
+                .email(randomString()+"@test.test")
                 .customAttributes(CustomAttributesDTO.builder()
                         .phoneNumber("132-234-234")
                         .middleName("middleName")
