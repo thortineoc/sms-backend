@@ -3,6 +3,7 @@ package com.sms.api.homework;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.sms.api.grades.GradeDTO;
+import com.sms.api.usermanagement.UserDTO;
 import org.immutables.value.Value;
 
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ public interface AnswerDTO {
 
     Optional<Long> getId();
 
-    Optional<String> getStudentId();
+    Optional<UserDTO> getStudent();
 
     Optional<String> getReview();
 
