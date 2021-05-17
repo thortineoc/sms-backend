@@ -8,6 +8,7 @@ import javax.persistence.*;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -26,7 +27,7 @@ public class AnswerJPA {
     @Column(name = "lastupdatedtime")
     private Timestamp lastUpdatedTime;
 
-    @Column(name = "createdtime")
+    @Column(name = "createdtime", updatable = false)
     private Timestamp createdTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -75,16 +76,8 @@ public class AnswerJPA {
         return files;
     }
 
-    public void setLastUpdatedTime(Timestamp lastUpdatedTime) {
-        this.lastUpdatedTime = lastUpdatedTime;
-    }
-
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public void setCreatedTime(Timestamp createdTime) {
-        this.createdTime = createdTime;
     }
 
     public void setStudentId(String studentId) {
@@ -95,5 +88,16 @@ public class AnswerJPA {
         this.review = review;
     }
 
+    public void setHomework(HomeworkJPA homework) {
+        this.homework = homework;
+    }
+
+    public void setCreatedTime(LocalDateTime localDateTime) {
+        this.createdTime =  Timestamp.valueOf(localDateTime);
+    }
+
+    public void setLastUpdatedTime(LocalDateTime localDateTime) {
+        this.lastUpdatedTime =  Timestamp.valueOf(localDateTime);
+    }
 
 }

@@ -6,6 +6,8 @@ import com.sms.homeworkservice.file.control.FileMapper;
 import com.sms.model.grades.GradeJPA;
 import com.sms.model.homework.AnswerJPA;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -44,6 +46,27 @@ public class AnswerMapper {
                         : grade.getCreatedTime().toLocalDateTime())
                 .modifyTime(grade.getLastUpdateTime().toLocalDateTime())
                 .isFinal(grade.getFinal())
+                .build();
+    }
+
+    public static AnswerJPA toJPA(AnswerDTO answer) {
+        AnswerJPA jpa = new AnswerJPA();
+        answer.getId().ifPresent(jpa::setId);
+        answer.getReview().ifPresent(jpa::setReview);
+        answer.getStudentId().ifPresent(jpa::setStudentId);
+        answer.getCreatedTime().ifPresent(jpa::setCreatedTime);
+        answer.getLastUpdatedTime().ifPresent(jpa::setLastUpdatedTime);
+
+        return jpa;
+    }
+
+    public static AnswerDTO toDTOSimple(AnswerJPA jpa) {
+        return AnswerDTO.builder()
+                .id(jpa.getId())
+                .createdTime(jpa.getCreatedTime().toLocalDateTime())
+                .lastUpdatedTime(jpa.getLastUpdatedTime().toLocalDateTime())
+                .review(Optional.ofNullable(jpa.getReview()))
+                .studentId(jpa.getStudentId())
                 .build();
     }
 }
