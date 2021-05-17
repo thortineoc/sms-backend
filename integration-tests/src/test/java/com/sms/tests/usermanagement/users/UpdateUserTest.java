@@ -14,20 +14,12 @@ import org.springframework.http.HttpStatus;
 
 import javax.ws.rs.core.MediaType;
 import java.util.Arrays;
+import java.util.UUID;
 
 class UpdateUserTest {
 
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
 
-    private String randomString() {
-        String letters = "abcdefghijklmnopqrstuvwxyz";
-        StringBuilder sb = new StringBuilder(5);
-        for( int i=0; i<5;i++){
-            int index = (int)(letters.length() * Math.random());
-            sb.append(letters.charAt(index));
-        }
-        return sb.toString();
-    }
     private String generatePesel() {
         String numbers = "0123456789";
         StringBuilder sb = new StringBuilder(11);
@@ -126,7 +118,7 @@ class UpdateUserTest {
                 .lastName("lastName")
                 .pesel(generatePesel())
                 .role(role)
-                .email(randomString()+"@test.test")
+                .email( UUID.randomUUID().toString().toLowerCase() + "@test.test")
                 .customAttributes(CustomAttributesDTO.builder()
                         .phoneNumber("132-234-234")
                         .middleName("middleName")
@@ -145,7 +137,7 @@ class UpdateUserTest {
                 .lastName("newLastName")
                 .pesel(generatePesel())
                 .role(role)
-                .email(randomString()+"@test.test")
+                .email(UUID.randomUUID().toString().toLowerCase() + "@test.test")
                 .customAttributes(CustomAttributesDTO.builder()
                         .phoneNumber("789-987-879")
                         .middleName("newMiddleName")
