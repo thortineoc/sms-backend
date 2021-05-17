@@ -8,6 +8,7 @@ import com.sms.homeworkservice.file.control.FileMapper;
 import com.sms.model.homework.HomeworkJPA;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +28,7 @@ public class HomeworkMapper {
         homework.getCreatedTime().map(Timestamp::valueOf).ifPresent(jpa::setCreatedTime);
         homework.getLastUpdateTime().map(Timestamp::valueOf).ifPresent(jpa::setLastUpdatedTime);
         homework.getTeacherId().ifPresent(jpa::setTeacherId);
-        return jpa;
+        return updatedTime(jpa);
     }
 
     public static HomeworkDTO toDetailDTO(HomeworkJPA jpa, List<AnswerDTO> answers) {
@@ -53,11 +54,12 @@ public class HomeworkMapper {
                 .collect(Collectors.groupingBy(SimpleHomeworkDTO::getSubject));
     }
 
-    private static SimpleHomeworkDTO toDTO(HomeworkJPA jpa) {
+    public static SimpleHomeworkDTO toDTO(HomeworkJPA jpa) {
         return toDTOBuilder(jpa).build();
     }
 
-    private static ImmutableHomeworkDTO.Builder toDTOBuilder(HomeworkJPA jpa) {
+
+    public static ImmutableHomeworkDTO.Builder toDTOBuilder(HomeworkJPA jpa) {
         return HomeworkDTO.builder()
                 .id(Optional.ofNullable(jpa.getId()))
                 .createdTime(Optional.ofNullable(jpa.getCreatedTime()).map(Timestamp::toLocalDateTime))
@@ -70,4 +72,14 @@ public class HomeworkMapper {
                 .teacherId(Optional.ofNullable(jpa.getTeacherId()))
                 .toEvaluate(jpa.getToEvaluate());
     }
+
+    private static HomeworkJPA updatedTime(HomeworkJPA homeworkJPA) {
+        if (homeworkJPA.getId() == null) {
+            homeworkJPA.setCreatedTime(Timestamp.valueOf(LocalDateTime.now()));
+        }
+        homeworkJPA.setLastUpdatedTime(Timestamp.valueOf(LocalDateTime.now()));
+        return homeworkJPA;
+    }
+
+
 }
