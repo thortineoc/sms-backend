@@ -1,9 +1,12 @@
 package com.sms.model.homework;
 
 import com.sms.model.grades.GradeJPA;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.CascadeType;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,10 +31,12 @@ public class AnswerJPA {
     private Timestamp createdTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private HomeworkJPA homework;
 
-    @OneToMany(orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "relation_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @Where(clause = "type = 'ANSWER'")
     private List<FileInfoJPA> files;
 
@@ -66,6 +71,7 @@ public class AnswerJPA {
         return grade;
     }
 
+
     public List<FileInfoJPA> getFiles() {
         return files;
     }
@@ -93,4 +99,5 @@ public class AnswerJPA {
     public void setLastUpdatedTime(LocalDateTime localDateTime) {
         this.lastUpdatedTime =  Timestamp.valueOf(localDateTime);
     }
+
 }
