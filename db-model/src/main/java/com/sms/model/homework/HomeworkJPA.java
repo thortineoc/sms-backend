@@ -1,5 +1,6 @@
 package com.sms.model.homework;
 
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
@@ -8,9 +9,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "homeworks")
-public class HomeworkJPA {
+public class HomeworkJPA{
 
     @Id
+    @GeneratedValue(generator = "homeworks_id_seq")
     private Long id;
     private String title;
     private String description;
@@ -20,10 +22,10 @@ public class HomeworkJPA {
     private String subject;
     private Timestamp deadline;
 
-    @Column(name = "createdtime")
+    @Column(name = "createdtime", updatable = false, insertable = true)
     private Timestamp createdTime;
 
-    @Column(name = "lastupdatedtime")
+    @Column(name = "lastupdatedtime", updatable = true, insertable = true)
     private Timestamp lastUpdatedTime;
 
     @Column(name = "teacher_id")
