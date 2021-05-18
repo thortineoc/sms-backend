@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -18,7 +16,7 @@ public interface HomeworkDTO extends SimpleHomeworkDTO {
         return new ImmutableHomeworkDTO.Builder();
     }
 
-    List<AnswerDTO> getAnswers();
+    List<AnswerWithStudentDTO> getAnswers();
 
     List<FileLinkDTO> getFiles();
 

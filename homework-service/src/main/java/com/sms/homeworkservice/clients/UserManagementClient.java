@@ -37,4 +37,17 @@ public class UserManagementClient {
             return Optional.empty();
         }
     }
+
+    public List<UserDTO> getUsers(UsersFiltersDTO filters) {
+        Response response = serviceClient.target(USERMANAGEMENT)
+                .path("users")
+                .path("filter")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity(filters, MediaType.APPLICATION_JSON));
+        if (response.getStatus() == HttpStatus.OK.value()) {
+            return Arrays.asList(response.readEntity(UserDTO[].class));
+        } else {
+            return Collections.emptyList();
+        }
+    }
 }

@@ -28,8 +28,8 @@ public class HomeworkResource {
 
     @GetMapping("/{id}")
     @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.PARENT, UserDTO.Role.TEACHER})
-    public ResponseEntity<HomeworkDTO> getDetailHomework(@PathVariable("id") Long id) {
-        Optional<HomeworkDTO> result = homeworkService.getDetails(id);
+    public ResponseEntity<SimpleHomeworkDTO> getDetailHomework(@PathVariable("id") Long id) {
+        Optional<SimpleHomeworkDTO> result = homeworkService.getDetails(id);
         return result.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.noContent().build());
     }
 

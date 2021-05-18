@@ -1,6 +1,5 @@
 package com.sms.homeworkservice.homework.control;
 
-import com.sms.api.homework.FileLinkDTO;
 import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
 import com.sms.api.usermanagement.CustomAttributesDTO;
@@ -8,9 +7,6 @@ import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.UserContext;
 import com.sms.homeworkservice.answer.control.AnswerRepository;
 import com.sms.homeworkservice.clients.UserManagementClient;
-import com.sms.homeworkservice.file.control.FileRespository;
-import com.sms.model.homework.AnswerJPA;
-import com.sms.model.homework.FileJPA;
 import com.sms.model.homework.HomeworkJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -46,8 +42,17 @@ public class HomeworkService {
     @Autowired
     UserManagementClient userManagementClient;
 
-    public Optional<HomeworkDTO> getDetails(Long id) {
-        return homeworkRepository.getHomeworkDetails(id).map(HomeworkMapper::toDetailDTO);
+    public Optional<SimpleHomeworkDTO> getDetails(Long id) {
+        Optional<HomeworkJPA> homework = homeworkRepository.getHomeworkDetails(id);
+        switch (userContext.getSmsRole()) {
+            case TEACHER: return homework.map(h -> HomeworkMapper
+                    .toTeacherDetailDTO(h, homework.map(this::getStudentsWithAnswers).orElse(Collections.emptyList())));
+            case STUDENT:
+            case PARENT: return homework.map(h -> HomeworkMapper
+                    .toStudentDetailDTO(h, answerRepository.findByStudentIdAndHomeworkId(userContext.getUserId(), h.getId())));
+            default: throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Incorrect role: " + userContext.getSmsRole() + " (you shouldn't be here)");
+        }
     }
 
     public Map<String, Map<String, List<SimpleHomeworkDTO>>> getListForTeacher() {
@@ -59,6 +64,20 @@ public class HomeworkService {
         return getGroup().map(homeworkRepository::getAllByGroup)
                 .map(HomeworkMapper::toDTOsBySubject)
                 .orElse(Collections.emptyMap());
+    }
+
+    private List<AnswerWithStudentDTO> getStudentsWithAnswers(HomeworkJPA homework) {
+        Map<String, AnswerJPA> answersByStudentIds = homework.getAnswers().stream()
+                .collect(Collectors.toMap(AnswerJPA::getStudentId, Function.identity()));
+
+        return userManagementClient.getUsers(UsersFiltersDTO.builder()
+                .group(homework.getGroup())
+                .build()).stream()
+                .map(s -> AnswerWithStudentDTO.builder()
+                        .student(s)
+                        .answer(Util.getOpt(answersByStudentIds, s.getId()).map(AnswerMapper::toDetailDTO))
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private Optional<String> getGroup() {

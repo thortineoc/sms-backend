@@ -25,7 +25,7 @@ public class FileService {
 
 
     @Autowired
-    FileRespository fileRepository;
+    FileRespository fileRespository;
 
     @Autowired
     UserContext userContext;
@@ -36,14 +36,11 @@ public class FileService {
     @Autowired
     AnswerRepository answerRepository;
 
-
     public FileJPA getFile(Long id) {
-        Optional<FileJPA> result = fileRepository.findById(id);
-        if (result.isPresent()) return result.get();
-        throw new IllegalStateException("file doesnt exists");
+        return fileRespository.findById(id).orElseThrow(() -> new IllegalStateException("File " + id + " doesn't exist"));
     }
 
-    public FileLinkDTO store(MultipartFile file, Long id, FileLinkDTO.Type type ) throws IOException {
+    public FileLinkDTO store(MultipartFile file, Long id, FileLinkDTO.Type type) throws IOException {
 
         FileJPA FileDB = FileMapper.toJPA(file, id, type, userContext.getUserId());
 
@@ -57,12 +54,7 @@ public class FileService {
             default:
                 throw new IllegalStateException("incorrect TYPE");
         }
-        try {
-            FileJPA jpa=fileRepository.save(FileDB);
-            return FileMapper.toDTO(jpa);
-        }catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+        return FileMapper.toDTO(fileRespository.save(FileDB));
     }
 
     private void validateAnswer(Long id){
@@ -74,6 +66,4 @@ public class FileService {
         if(userContext.getSmsRole() != UserDTO.Role.TEACHER) throw new IllegalStateException("Only teacher can add homework file");
         if(!homeworkRepository.existsById(id)) throw new IllegalStateException("Homework does not exists");
     }
-
-
 }
