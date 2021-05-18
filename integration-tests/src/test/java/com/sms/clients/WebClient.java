@@ -11,8 +11,6 @@ import java.util.concurrent.TimeUnit;
 
 public class WebClient {
 
-    private static final Environment ENV = Environment.ENV;
-
     private String authToken;
     private String refreshToken;
     private Integer authExpiresIn;
@@ -23,8 +21,8 @@ public class WebClient {
     private final String password;
 
     public WebClient() {
-        this.username = ENV.testUsername;
-        this.password = ENV.testUserPassword;
+        this.username = Environment.testUsername;
+        this.password = Environment.testUserPassword;
     }
 
     public WebClient(String username, String password) {
@@ -46,20 +44,20 @@ public class WebClient {
 
     public RequestSpecification request(String serviceName) {
         return request()
-                .baseUri(ENV.localServices.getOrDefault(serviceName, ENV.haproxyUrl))
+                .baseUri(Environment.LOCAL_SERVICES.getOrDefault(serviceName, Environment.haproxyUrl))
                 .basePath(serviceName);
     }
 
     private void refreshToken() {
         Response response = RestAssured.given()
                 .auth().preemptive()
-                .basic(ENV.authClientId, ENV.authClientSecret)
+                .basic(Environment.realmClient, Environment.authClientSecret)
                 .contentType("application/x-www-form-urlencoded").log().all()
-                .formParam("client_id", ENV.authClientId)
+                .formParam("client_id", Environment.realmClient)
                 .formParam("grant_type", "refresh_token")
                 .formParam("refresh_token", refreshToken)
                 .when()
-                .post(ENV.haproxyUrl + ENV.tokenUrl);
+                .post(Environment.haproxyUrl + Environment.tokenUrl);
         if (response.statusCode() == 400) {
             getAccessToken();
         } else {
@@ -71,13 +69,13 @@ public class WebClient {
     private void getAccessToken() {
         Response response = RestAssured.given()
                 .auth().preemptive()
-                .basic(ENV.authClientId, ENV.authClientSecret)
+                .basic(Environment.realmClient, Environment.authClientSecret)
                 .contentType("application/x-www-form-urlencoded").log().all()
                 .formParam("grant_type", "password")
                 .formParam("username", username)
                 .formParam("password", password)
                 .when()
-                .post(ENV.haproxyUrl + ENV.tokenUrl);
+                .post(Environment.haproxyUrl + Environment.tokenUrl);
 
         parseTokenResponse(response.getBody().jsonPath());
         resetTimer();

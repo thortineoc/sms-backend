@@ -4,6 +4,7 @@ import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.AuthRole;
+import com.sms.context.SmsConfiguration;
 import com.sms.context.UserContext;
 import com.sms.homeworkservice.homework.control.HomeworkService;
 import org.springframework.beans.factory.annotation.Autowired;

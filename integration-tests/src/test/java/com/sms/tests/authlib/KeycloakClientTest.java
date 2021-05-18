@@ -1,26 +1,40 @@
 package com.sms.tests.authlib;
 
 import com.sms.api.authlib.TokenDTO;
+import com.sms.clients.Environment;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
+import com.sms.context.SmsConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
+@ExtendWith(SpringExtension.class)
 class KeycloakClientTest {
 
-    private final static KeycloakClient CLIENT = new KeycloakClient();
     private final static String PREFIX = "INTEGRATION_TESTS_";
     private final static String TEST_USERNAME = (PREFIX + UUID.randomUUID().toString()).toLowerCase();
 
-    @AfterAll
+    private static final KeycloakClient CLIENT = new KeycloakClient(Environment.haproxyUrl, Environment.realmName);
+
     @BeforeAll
+    @AfterAll
     static void cleanup() {
+        CLIENT.configuration = Mockito.mock(SmsConfiguration.class);
+        Mockito.when(CLIENT.configuration.getAdminClient()).thenReturn(Environment.adminClient);
+        Mockito.when(CLIENT.configuration.getAdminPassword()).thenReturn(Environment.adminPassword);
+        Mockito.when(CLIENT.configuration.getAdminUsername()).thenReturn(Environment.adminUsername);
 
         UserSearchParams params = new UserSearchParams().username(TEST_USERNAME);
         Optional<UserRepresentation> testUser = CLIENT.getUsers(params).stream().findFirst();

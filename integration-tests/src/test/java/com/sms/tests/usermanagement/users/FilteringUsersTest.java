@@ -1,6 +1,7 @@
 package com.sms.tests.usermanagement.users;
 
 import com.google.common.collect.ImmutableMap;
+import com.sms.clients.Environment;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.api.usermanagement.UserDTO;
@@ -16,8 +17,6 @@ import static com.sms.tests.usermanagement.users.UserUtils.*;
 
 
 class FilteringUsersTest {
-
-    private final static KeycloakClient KEYCLOAK_CLIENT = new KeycloakClient();
 
     private final static String FIRST_NAME = TEST_PREFIX + UUID.randomUUID();
     private final static String SECOND_NAME = TEST_PREFIX + UUID.randomUUID();
@@ -38,10 +37,10 @@ class FilteringUsersTest {
 
     @AfterAll
     static void cleanup() {
-        UserSearchParams params = new UserSearchParams().search(TEST_PREFIX);
-        List<UserRepresentation> createdUsers = KEYCLOAK_CLIENT.getUsers(params);
-
-        createdUsers.stream().map(UserRepresentation::getId).forEach(KEYCLOAK_CLIENT::deleteUser);
+        Response response = getUsers(ImmutableMap.of("search", TEST_PREFIX));
+        if (response.statusCode() == 200) {
+            Arrays.stream(response.as(UserDTO[].class)).map(UserDTO::getId).forEach(UserUtils::deleteUser);
+        }
     }
 
     @Test
