@@ -41,4 +41,11 @@ public class FileResource {
                 .body(new ByteArrayResource(dbFile.getFile()));
     }
 
+    @DeleteMapping("/{id}")
+    @AuthRole({UserDTO.Role.TEACHER, UserDTO.Role.STUDENT})
+    public ResponseEntity<Object> deleteFile(@PathVariable("id") Long id) {
+        fileService.deleteFile(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }
