@@ -2,7 +2,6 @@ package com.sms.homeworkservice.answer.control;
 
 import com.sms.api.grades.GradeDTO;
 import com.sms.api.homework.AnswerDTO;
-import com.sms.api.usermanagement.UserDTO;
 import com.sms.homeworkservice.file.control.FileMapper;
 import com.sms.model.grades.GradeJPA;
 import com.sms.model.homework.AnswerJPA;
@@ -15,13 +14,13 @@ public class AnswerMapper {
     private AnswerMapper() {
     }
 
-    public static AnswerDTO toDetailDTO(AnswerJPA jpa, UserDTO student) {
+    public static AnswerDTO toDetailDTO(AnswerJPA jpa) {
         return AnswerDTO.builder()
                 .id(jpa.getId())
                 .createdTime(jpa.getCreatedTime().toLocalDateTime())
                 .lastUpdatedTime(jpa.getLastUpdatedTime().toLocalDateTime())
                 .review(Optional.ofNullable(jpa.getReview()))
-                .student(student)
+                .studentId(jpa.getStudentId())
                 .grade(Optional.ofNullable(jpa.getGrade()).map(AnswerMapper::toDTO))
                 .files(jpa.getFiles().stream()
                         .map(FileMapper::toDTO)
@@ -52,10 +51,9 @@ public class AnswerMapper {
         AnswerJPA jpa = new AnswerJPA();
         answer.getId().ifPresent(jpa::setId);
         answer.getReview().ifPresent(jpa::setReview);
-        answer.getStudent().map(UserDTO::getId).ifPresent(jpa::setStudentId);
+        answer.getStudentId().ifPresent(jpa::setStudentId);
         answer.getCreatedTime().ifPresent(jpa::setCreatedTime);
         answer.getLastUpdatedTime().ifPresent(jpa::setLastUpdatedTime);
-
         return jpa;
     }
 

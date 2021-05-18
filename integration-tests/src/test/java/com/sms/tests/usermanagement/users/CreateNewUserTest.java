@@ -21,6 +21,7 @@ class CreateNewUserTest {
     private final static WebClient CLIENT = new WebClient("smsadmin", "smsadmin");
     private static final String FIRST_NAME = UUID.randomUUID().toString();
     private static final String LAST_NAME = UUID.randomUUID().toString();
+    private static final String PESEL = UUID.randomUUID().toString();
 
     @BeforeAll
     @AfterAll
@@ -164,7 +165,7 @@ class CreateNewUserTest {
                 .userName("null")
                 .firstName(FIRST_NAME)
                 .lastName(LAST_NAME)
-                .pesel("pesel")
+                .pesel(PESEL)
                 .role(role)
                 .email(FIRST_NAME + "@" + LAST_NAME)
                 .customAttributes(CustomAttributesDTO.builder()
