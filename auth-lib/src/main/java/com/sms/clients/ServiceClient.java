@@ -1,11 +1,13 @@
 package com.sms.clients;
 
 import com.sms.api.common.JDK8Mapper;
+import com.sms.context.SmsConfiguration;
 import com.sms.context.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
@@ -16,13 +18,20 @@ import javax.ws.rs.core.MediaType;
 @Scope("request")
 public class ServiceClient {
 
-    private static final String DEFAULT_HAPROXY_URL = "http://52.142.201.18:24020";
-    private static String HAPROXY_URL = DEFAULT_HAPROXY_URL;
+    private static String HAPROXY_URL;
 
     private final Client client = ClientBuilder.newClient().register(new JDK8Mapper().getProvider());
 
     @Autowired
     UserContext userContext;
+
+    @Autowired
+    SmsConfiguration config;
+
+    @PostConstruct
+    void init() {
+        HAPROXY_URL = config.getHaproxyUrl();
+    }
 
     public ServiceTarget target(String serviceName) {
         return new ServiceTarget(serviceName);
@@ -56,7 +65,7 @@ public class ServiceClient {
 
         public Invocation.Builder request(MediaType mediaType) {
             // reset haproxy url after a single request
-            HAPROXY_URL = DEFAULT_HAPROXY_URL;
+            HAPROXY_URL = config.getHaproxyUrl();
 
             return this.target.request(mediaType).header("Authorization", "Bearer " + userContext.getToken());
         }
