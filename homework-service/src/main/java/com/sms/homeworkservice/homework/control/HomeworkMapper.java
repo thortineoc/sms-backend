@@ -1,10 +1,9 @@
 package com.sms.homeworkservice.homework.control;
 
-import com.sms.api.homework.AnswerDTO;
-import com.sms.api.homework.HomeworkDTO;
-import com.sms.api.homework.ImmutableHomeworkDTO;
-import com.sms.api.homework.SimpleHomeworkDTO;
+import com.sms.api.homework.*;
+import com.sms.homeworkservice.answer.control.AnswerMapper;
 import com.sms.homeworkservice.file.control.FileMapper;
+import com.sms.model.homework.AnswerJPA;
 import com.sms.model.homework.HomeworkJPA;
 
 import java.sql.Timestamp;
@@ -31,12 +30,21 @@ public class HomeworkMapper {
         return updatedTime(jpa);
     }
 
-    public static HomeworkDTO toDetailDTO(HomeworkJPA jpa, List<AnswerDTO> answers) {
+    public static HomeworkDTO toTeacherDetailDTO(HomeworkJPA jpa, List<AnswerWithStudentDTO> answers) {
         return toDTOBuilder(jpa)
                 .answers(answers)
                 .files(jpa.getFiles().stream()
                         .map(FileMapper::toDTO)
                         .collect(Collectors.toList()))
+                .build();
+    }
+
+    public static StudentHomeworkDTO toStudentDetailDTO(HomeworkJPA jpa, Optional<AnswerJPA> answer) {
+        return StudentHomeworkDTO.builder().from(toDTOBuilder(jpa).build())
+                .answer(answer.map(AnswerMapper::toDetailDTO))
+                    .files(jpa.getFiles().stream()
+                    .map(FileMapper::toDTO)
+                    .collect(Collectors.toList()))
                 .build();
     }
 
@@ -57,7 +65,6 @@ public class HomeworkMapper {
     public static SimpleHomeworkDTO toDTO(HomeworkJPA jpa) {
         return toDTOBuilder(jpa).build();
     }
-
 
     public static ImmutableHomeworkDTO.Builder toDTOBuilder(HomeworkJPA jpa) {
         return HomeworkDTO.builder()
@@ -80,6 +87,4 @@ public class HomeworkMapper {
         homeworkJPA.setLastUpdatedTime(Timestamp.valueOf(LocalDateTime.now()));
         return homeworkJPA;
     }
-
-
 }

@@ -1,7 +1,7 @@
 package com.sms.homeworkservice.homework.control;
 
 import com.sms.api.common.Util;
-import com.sms.api.homework.AnswerDTO;
+import com.sms.api.homework.AnswerWithStudentDTO;
 import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
 import com.sms.api.usermanagement.CustomAttributesDTO;
@@ -46,10 +46,15 @@ public class HomeworkService {
     @Autowired
     UserManagementClient userManagementClient;
 
-    public Optional<HomeworkDTO> getDetails(Long id) {
+    public Optional<SimpleHomeworkDTO> getDetails(Long id) {
         Optional<HomeworkJPA> homework = homeworkRepository.getHomeworkDetails(id);
-        List<AnswerDTO> answers = homework.map(this::addUsersToAnswers).orElse(Collections.emptyList());
-        return homework.map(h -> HomeworkMapper.toDetailDTO(h, answers));
+        if (userContext.getSmsRole() == UserDTO.Role.TEACHER) {
+            return homework.map(h -> HomeworkMapper
+                    .toTeacherDetailDTO(h, homework.map(this::getStudentsWithAnswers).orElse(Collections.emptyList())));
+        } else {
+            return homework.map(h -> HomeworkMapper
+                    .toStudentDetailDTO(h, answerRepository.findByStudentIdAndHomeworkId(getStudentId(), h.getId())));
+        }
     }
 
     public Map<String, Map<String, List<SimpleHomeworkDTO>>> getListForTeacher() {
@@ -63,19 +68,18 @@ public class HomeworkService {
                 .orElse(Collections.emptyMap());
     }
 
-    private List<AnswerDTO> addUsersToAnswers(HomeworkJPA homework) {
-        Map<String, UserDTO> usersInGroup = userManagementClient.getUsers(UsersFiltersDTO.builder()
+    private List<AnswerWithStudentDTO> getStudentsWithAnswers(HomeworkJPA homework) {
+        Map<String, AnswerJPA> answersByStudentIds = homework.getAnswers().stream()
+                .collect(Collectors.toMap(AnswerJPA::getStudentId, Function.identity()));
+
+        return userManagementClient.getUsers(UsersFiltersDTO.builder()
                 .group(homework.getGroup())
-                .build()).stream().collect(Collectors.toMap(UserDTO::getId, Function.identity()));
-
-        return homework.getAnswers().stream()
-                .map(a -> AnswerMapper.toDetailDTO(a, getMatchingUser(usersInGroup, a)))
+                .build()).stream()
+                .map(s -> AnswerWithStudentDTO.builder()
+                        .student(s)
+                        .answer(Util.getOpt(answersByStudentIds, s.getId()).map(AnswerMapper::toDetailDTO))
+                        .build())
                 .collect(Collectors.toList());
-    }
-
-    private UserDTO getMatchingUser(Map<String, UserDTO> users, AnswerJPA answer) {
-        return Util.getOpt(users, answer.getStudentId())
-                .orElseThrow(() -> new IllegalStateException("Answer " + answer.getId() + " doesn't have a student"));
     }
 
     private Optional<String> getGroup() {
@@ -135,4 +139,12 @@ public class HomeworkService {
         return homeworkDTO.getSubject();
     }
 
+    private String getStudentId() {
+        switch(userContext.getSmsRole()) {
+            case STUDENT: return userContext.getUserId();
+            case PARENT: return (String) Util.getOpt(userContext.getCustomAttributes(), "relatedUser")
+                        .orElseThrow(() -> new IllegalStateException("Parent has no related user"));
+            default: throw new IllegalArgumentException("Users with role " + userContext.getSmsRole() + " have no student ID");
+        }
+    }
 }
