@@ -1,5 +1,6 @@
 package com.sms.homeworkservice.homework.control;
 
+import com.sms.api.homework.FileLinkDTO;
 import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
 import com.sms.api.usermanagement.CustomAttributesDTO;
@@ -7,6 +8,9 @@ import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.UserContext;
 import com.sms.homeworkservice.answer.control.AnswerRepository;
 import com.sms.homeworkservice.clients.UserManagementClient;
+import com.sms.homeworkservice.file.control.FileRespository;
+import com.sms.model.homework.AnswerJPA;
+import com.sms.model.homework.FileJPA;
 import com.sms.model.homework.HomeworkJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -35,6 +39,9 @@ public class HomeworkService {
 
     @Autowired
     UserContext userContext;
+
+    @Autowired
+    FileRespository fileRepository;
 
     @Autowired
     UserManagementClient userManagementClient;
@@ -77,10 +84,11 @@ public class HomeworkService {
 
     public HomeworkDTO updateHomework(HomeworkDTO homeworkDTO) {
         if (!homeworkDTO.getId().isPresent()) return createHomework(homeworkDTO);
+        Boolean existence = ifExists(homeworkDTO);
         if (homeworkRepository.updateTable(
                 Timestamp.valueOf(homeworkDTO.getDeadline()),
-                validateGroup(homeworkDTO),
-                validateSubject(homeworkDTO),
+                validateGroup(homeworkDTO, existence),
+                validateSubject(homeworkDTO, existence),
                 homeworkDTO.getId().get(),
                 homeworkDTO.getDescription(),
                 homeworkDTO.getTitle(),
@@ -91,11 +99,22 @@ public class HomeworkService {
 
 
     public void deleteHomework(Long id) {
+        homeworkRepository.findById(id).ifPresent(obj -> {
+            if (!obj.getTeacherId().equals(userContext.getUserId()))
+                throw new IllegalStateException("You are not homework owner");
+        });
+        List<AnswerJPA> answerJPAList = answerRepository.findAllByHomeworkId(id); //wszystkie odpowiedzi
+        for (AnswerJPA jpa : answerJPAList) {
+            List<FileJPA> a = fileRepository.findAllByRelationIdAndType(jpa.getId(), FileLinkDTO.Type.ANSWER);
+        fileRepository.deleteByRelationIdAndType(jpa.getId(), FileLinkDTO.Type.ANSWER);
+        answerRepository.deleteById(jpa.getId());
+        }
+        fileRepository.deleteByRelationIdAndType(id, FileLinkDTO.Type.HOMEWORK); //wszystkie pliki do homeoworkd
         homeworkRepository.deleteById(id);
     }
 
-    private String validateGroup(HomeworkDTO homeworkDTO) {
-        if (answerRepository.existsByHomeworkId(homeworkDTO.getId().get())) {
+    private String validateGroup(HomeworkDTO homeworkDTO, Boolean ifExists) {
+        if (ifExists) {
             HomeworkJPA homeworkJPA = homeworkRepository.getById(homeworkDTO.getId().get()).get();
             if (homeworkJPA.getGroup().equals(homeworkDTO.getGroup())) return homeworkDTO.getGroup();
             else throw new BadRequestException("Cannot update group");
@@ -103,13 +122,17 @@ public class HomeworkService {
         return homeworkDTO.getGroup();
     }
 
-    private String validateSubject(HomeworkDTO homeworkDTO) {
-        if (answerRepository.existsByHomeworkId(homeworkDTO.getId().get())) {
+    private String validateSubject(HomeworkDTO homeworkDTO, Boolean ifExists) {
+        if (ifExists) {
             HomeworkJPA homeworkJPA = homeworkRepository.getById(homeworkDTO.getId().get()).get();
             if (homeworkJPA.getSubject().equals(homeworkDTO.getSubject())) return homeworkDTO.getSubject();
             else throw new BadRequestException("Cannot update subject");
         }
         return homeworkDTO.getSubject();
+    }
+
+    private Boolean ifExists(HomeworkDTO homeworkDTO) {
+        return answerRepository.existsByHomeworkId(homeworkDTO.getId().get());
     }
 
 }

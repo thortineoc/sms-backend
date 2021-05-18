@@ -8,9 +8,13 @@ import com.sms.homeworkservice.homework.control.HomeworkRepository;
 import com.sms.model.homework.FileJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.EntityNotFoundException;
+import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -21,7 +25,7 @@ public class FileService {
 
 
     @Autowired
-    FileRespository fileRespository;
+    FileRespository fileRepository;
 
     @Autowired
     UserContext userContext;
@@ -34,11 +38,10 @@ public class FileService {
 
 
     public FileJPA getFile(Long id) {
-        Optional<FileJPA> result = fileRespository.findById(id);
+        Optional<FileJPA> result = fileRepository.findById(id);
         if (result.isPresent()) return result.get();
         throw new IllegalStateException("file doesnt exists");
     }
-
 
     public FileLinkDTO store(MultipartFile file, Long id, FileLinkDTO.Type type ) throws IOException {
 
@@ -55,7 +58,8 @@ public class FileService {
                 throw new IllegalStateException("incorrect TYPE");
         }
         try {
-            return FileMapper.toDTO(fileRespository.save(FileDB));
+            FileJPA jpa=fileRepository.save(FileDB);
+            return FileMapper.toDTO(jpa);
         }catch (Exception e) {
             throw new IllegalStateException(e);
         }
@@ -70,4 +74,6 @@ public class FileService {
         if(userContext.getSmsRole() != UserDTO.Role.TEACHER) throw new IllegalStateException("Only teacher can add homework file");
         if(!homeworkRepository.existsById(id)) throw new IllegalStateException("Homework does not exists");
     }
+
+
 }
