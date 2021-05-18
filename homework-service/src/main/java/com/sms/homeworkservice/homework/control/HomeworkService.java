@@ -50,14 +50,12 @@ public class HomeworkService {
 
     public Optional<SimpleHomeworkDTO> getDetails(Long id) {
         Optional<HomeworkJPA> homework = homeworkRepository.getHomeworkDetails(id);
-        switch (userContext.getSmsRole()) {
-            case TEACHER: return homework.map(h -> HomeworkMapper
+        if (userContext.getSmsRole() == UserDTO.Role.TEACHER) {
+            return homework.map(h -> HomeworkMapper
                     .toTeacherDetailDTO(h, homework.map(this::getStudentsWithAnswers).orElse(Collections.emptyList())));
-            case STUDENT:
-            case PARENT: return homework.map(h -> HomeworkMapper
-                    .toStudentDetailDTO(h, answerRepository.findByStudentIdAndHomeworkId(userContext.getUserId(), h.getId())));
-            default: throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Incorrect role: " + userContext.getSmsRole() + " (you shouldn't be here)");
+        } else {
+            return homework.map(h -> HomeworkMapper
+                    .toStudentDetailDTO(h, answerRepository.findByStudentIdAndHomeworkId(getStudentId(), h.getId())));
         }
     }
 
@@ -141,5 +139,14 @@ public class HomeworkService {
             else throw new BadRequestException("Cannot update subject");
         }
         return homeworkDTO.getSubject();
+    }
+
+    private String getStudentId() {
+        switch(userContext.getSmsRole()) {
+            case STUDENT: return userContext.getUserId();
+            case PARENT: return (String) Util.getOpt(userContext.getCustomAttributes(), "relatedUser")
+                        .orElseThrow(() -> new IllegalStateException("Parent has no related user"));
+            default: throw new IllegalArgumentException("Users with role " + userContext.getSmsRole() + " have no student ID");
+        }
     }
 }
