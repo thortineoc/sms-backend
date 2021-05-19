@@ -20,5 +20,4 @@ public interface FileRepository extends CrudRepository<FileJPA, Long> {
 
     void deleteAllByOwnerId(String id);
 
-
 }

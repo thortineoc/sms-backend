@@ -109,15 +109,15 @@ public class HomeworkService {
 
     public HomeworkDTO updateHomework(HomeworkDTO homeworkDTO) {
         if (!homeworkDTO.getId().isPresent()) return createHomework(homeworkDTO);
-        HomeworkDTO dto = validateHomework(homeworkDTO);
+        validateHomework(homeworkDTO);
         if (homeworkRepository.updateTable(
-                Timestamp.valueOf(dto.getDeadline()),
-                dto.getGroup(),
-                dto.getSubject(),
-                dto.getId().get(),
-                dto.getDescription(),
-                dto.getTitle(),
-                dto.getToEvaluate()) != 1)
+                Timestamp.valueOf(homeworkDTO.getDeadline()),
+                homeworkDTO.getGroup(),
+                homeworkDTO.getSubject(),
+                homeworkDTO.getId().get(),
+                homeworkDTO.getDescription(),
+                homeworkDTO.getTitle(),
+                homeworkDTO.getToEvaluate()) != 1)
             throw new IllegalStateException("id does not exists or update failed");
         return homeworkDTO;
     }
@@ -138,13 +138,12 @@ public class HomeworkService {
     }
 
 
-    HomeworkDTO validateHomework(HomeworkDTO dto) {
+    void validateHomework(HomeworkDTO dto) {
         if (answerRepository.existsByHomeworkId(dto.getId().get())) {
             HomeworkJPA homeworkJPA = homeworkRepository.getById(dto.getId().get()).get();
-            if (homeworkJPA.getSubject().equals(dto.getSubject()) && homeworkJPA.getGroup().equals(dto.getGroup()))
-                return dto;
+            if (!homeworkJPA.getSubject().equals(dto.getSubject()) || !homeworkJPA.getGroup().equals(dto.getGroup()))
+                throw new IllegalStateException("Answers exist");
         }
-        throw new IllegalStateException("Answers exist");
     }
 
     private String getStudentId() {

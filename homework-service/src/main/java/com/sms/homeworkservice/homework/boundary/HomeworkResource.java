@@ -66,5 +66,4 @@ public class HomeworkResource {
         return ResponseEntity.noContent().build();
     }
 
-
 }
