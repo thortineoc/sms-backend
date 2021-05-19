@@ -31,12 +31,10 @@ public class AnswerJPA {
     private Timestamp createdTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private HomeworkJPA homework;
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "relation_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
     @Where(clause = "type = 'ANSWER'")
     private List<FileInfoJPA> files;
 

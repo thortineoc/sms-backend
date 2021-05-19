@@ -18,4 +18,6 @@ public interface AnswerRepository extends CrudRepository<AnswerJPA, Long> {
 
     void deleteAllByStudentId(String id);
 
+    void deleteAllByIdIn(List<Long> ids);
+
 }

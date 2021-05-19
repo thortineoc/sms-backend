@@ -128,13 +128,14 @@ public class HomeworkService {
             if (!obj.getTeacherId().equals(userContext.getUserId()))
                 throw new IllegalStateException("You are not homework owner");
         });
-        List<AnswerJPA> answerJPAList = answerRepository.findAllByHomeworkId(id);
-        for (AnswerJPA jpa : answerJPAList) {
-            fileRepository.deleteAllByRelationIdAndType(jpa.getId(), FileLinkDTO.Type.ANSWER.toString());
-            answerRepository.deleteById(jpa.getId());
-        }
-        fileRepository.deleteAllByRelationIdAndType(id, FileLinkDTO.Type.HOMEWORK.toString());
+        deleteAssignedFiles(id);
         homeworkRepository.deleteById(id);
+    }
+
+    void deleteAssignedFiles(Long id) {
+        List<Long> answers = answerRepository.findAllByHomeworkId(id).stream().map(AnswerJPA::getId).collect(Collectors.toList());
+        fileRepository.deleteHomeworksAndAnswersFiles(answers, FileLinkDTO.Type.ANSWER.toString(), id, FileLinkDTO.Type.HOMEWORK.toString());
+        answerRepository.deleteAllByIdIn(answers);
     }
 
 
