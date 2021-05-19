@@ -33,4 +33,18 @@ public class AnswerResource {
         AnswerDTO res = answerService.updateAnswer(answer);
         return ResponseEntity.ok(res);
     }
+
+    @AuthRole(UserDTO.Role.ADMIN)
+    @DeleteMapping("/user/{id}")
+    public ResponseEntity<Object> deleteUserAnswers(@PathVariable("id") String id) {
+        answerService.deleteUserAnswers(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @AuthRole(UserDTO.Role.STUDENT)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> deleteAnswer(@PathVariable("id") Long id) {
+        answerService.deleteAnswer(id);
+        return ResponseEntity.noContent().build();
+    }
 }

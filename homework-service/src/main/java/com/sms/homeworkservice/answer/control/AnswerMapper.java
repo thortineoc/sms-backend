@@ -60,6 +60,7 @@ public class AnswerMapper {
     public static AnswerDTO toDTOSimple(AnswerJPA jpa) {
         return AnswerDTO.builder()
                 .id(jpa.getId())
+                .studentId(jpa.getStudentId())
                 .createdTime(jpa.getCreatedTime().toLocalDateTime())
                 .lastUpdatedTime(jpa.getLastUpdatedTime().toLocalDateTime())
                 .review(Optional.ofNullable(jpa.getReview()))

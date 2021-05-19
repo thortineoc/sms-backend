@@ -8,15 +8,10 @@ import com.sms.homeworkservice.homework.control.HomeworkRepository;
 import com.sms.model.homework.FileJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
-import javax.persistence.EntityNotFoundException;
-import javax.validation.ConstraintViolationException;
 import java.io.IOException;
-import java.util.Optional;
 
 @Component
 @Scope("request")
@@ -42,7 +37,7 @@ public class FileService {
 
     public FileLinkDTO store(MultipartFile file, Long id, FileLinkDTO.Type type) throws IOException {
 
-        FileJPA FileDB = FileMapper.toJPA(file, id, type, userContext.getUserId());
+        FileJPA fileDB = FileMapper.toJPA(file, id, type, userContext.getUserId());
 
         switch (type){
             case ANSWER:
@@ -54,7 +49,7 @@ public class FileService {
             default:
                 throw new IllegalStateException("incorrect TYPE");
         }
-        return FileMapper.toDTO(fileRespository.save(FileDB));
+        return FileMapper.toDTO(fileRespository.save(fileDB));
     }
 
     private void validateAnswer(Long id){

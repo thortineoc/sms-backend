@@ -1,23 +1,33 @@
 package com.sms.homeworkservice.homework.control;
 
+import com.sms.api.common.Util;
+import com.sms.api.homework.AnswerWithStudentDTO;
+import com.sms.api.homework.FileLinkDTO;
 import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
 import com.sms.api.usermanagement.CustomAttributesDTO;
 import com.sms.api.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UsersFiltersDTO;
 import com.sms.context.UserContext;
+import com.sms.homeworkservice.answer.control.AnswerMapper;
 import com.sms.homeworkservice.answer.control.AnswerRepository;
 import com.sms.homeworkservice.clients.UserManagementClient;
+import com.sms.homeworkservice.file.control.FileRespository;
+import com.sms.model.homework.AnswerJPA;
 import com.sms.model.homework.HomeworkJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.BadRequestException;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -103,15 +113,15 @@ public class HomeworkService {
 
     public HomeworkDTO updateHomework(HomeworkDTO homeworkDTO) {
         if (!homeworkDTO.getId().isPresent()) return createHomework(homeworkDTO);
-        Boolean existence = ifExists(homeworkDTO);
+        HomeworkDTO dto = validateHomework(homeworkDTO);
         if (homeworkRepository.updateTable(
-                Timestamp.valueOf(homeworkDTO.getDeadline()),
-                validateGroup(homeworkDTO, existence),
-                validateSubject(homeworkDTO, existence),
-                homeworkDTO.getId().get(),
-                homeworkDTO.getDescription(),
-                homeworkDTO.getTitle(),
-                homeworkDTO.getToEvaluate()) != 1)
+                Timestamp.valueOf(dto.getDeadline()),
+                dto.getGroup(),
+                dto.getSubject(),
+                dto.getId().get(),
+                dto.getDescription(),
+                dto.getTitle(),
+                dto.getToEvaluate()) != 1)
             throw new IllegalStateException("id does not exists or update failed");
         return homeworkDTO;
     }
@@ -122,36 +132,23 @@ public class HomeworkService {
             if (!obj.getTeacherId().equals(userContext.getUserId()))
                 throw new IllegalStateException("You are not homework owner");
         });
-        List<AnswerJPA> answerJPAList = answerRepository.findAllByHomeworkId(id); //wszystkie odpowiedzi
+        List<AnswerJPA> answerJPAList = answerRepository.findAllByHomeworkId(id);
         for (AnswerJPA jpa : answerJPAList) {
-            List<FileJPA> a = fileRepository.findAllByRelationIdAndType(jpa.getId(), FileLinkDTO.Type.ANSWER);
-        fileRepository.deleteByRelationIdAndType(jpa.getId(), FileLinkDTO.Type.ANSWER);
-        answerRepository.deleteById(jpa.getId());
+            fileRepository.deleteAllByRelationIdAndType(jpa.getId(), FileLinkDTO.Type.ANSWER.toString());
+            answerRepository.deleteById(jpa.getId());
         }
-        fileRepository.deleteByRelationIdAndType(id, FileLinkDTO.Type.HOMEWORK); //wszystkie pliki do homeoworkd
+        fileRepository.deleteAllByRelationIdAndType(id, FileLinkDTO.Type.HOMEWORK.toString());
         homeworkRepository.deleteById(id);
     }
 
-    private String validateGroup(HomeworkDTO homeworkDTO, Boolean ifExists) {
-        if (ifExists) {
-            HomeworkJPA homeworkJPA = homeworkRepository.getById(homeworkDTO.getId().get()).get();
-            if (homeworkJPA.getGroup().equals(homeworkDTO.getGroup())) return homeworkDTO.getGroup();
-            else throw new BadRequestException("Cannot update group");
-        }
-        return homeworkDTO.getGroup();
-    }
 
-    private String validateSubject(HomeworkDTO homeworkDTO, Boolean ifExists) {
-        if (ifExists) {
-            HomeworkJPA homeworkJPA = homeworkRepository.getById(homeworkDTO.getId().get()).get();
-            if (homeworkJPA.getSubject().equals(homeworkDTO.getSubject())) return homeworkDTO.getSubject();
-            else throw new BadRequestException("Cannot update subject");
+    HomeworkDTO validateHomework(HomeworkDTO dto) {
+        if (answerRepository.existsByHomeworkId(dto.getId().get())) {
+            HomeworkJPA homeworkJPA = homeworkRepository.getById(dto.getId().get()).get();
+            if (homeworkJPA.getSubject().equals(dto.getSubject()) && homeworkJPA.getGroup().equals(dto.getGroup()))
+                return dto;
         }
-        return homeworkDTO.getSubject();
-    }
-
-    private Boolean ifExists(HomeworkDTO homeworkDTO) {
-        return answerRepository.existsByHomeworkId(homeworkDTO.getId().get());
+        throw new IllegalStateException("Answers exist");
     }
 
 }
