@@ -2,24 +2,23 @@ package com.sms.homeworkservice.homework.control;
 
 import com.sms.api.common.Util;
 import com.sms.api.homework.AnswerWithStudentDTO;
+import com.sms.api.homework.FileLinkDTO;
 import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
 import com.sms.api.usermanagement.CustomAttributesDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.api.usermanagement.UsersFiltersDTO;
 import com.sms.context.UserContext;
-import com.sms.homeworkservice.answer.control.AnswerRepository;
 import com.sms.homeworkservice.answer.control.AnswerMapper;
+import com.sms.homeworkservice.answer.control.AnswerRepository;
 import com.sms.homeworkservice.clients.UserManagementClient;
+import com.sms.homeworkservice.file.control.FileRepository;
 import com.sms.model.homework.AnswerJPA;
 import com.sms.model.homework.HomeworkJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.BadRequestException;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +45,7 @@ public class HomeworkService {
     UserContext userContext;
 
     @Autowired
-    FileRespository fileRepository;
+    FileRepository fileRepository;
 
     @Autowired
     UserManagementClient userManagementClient;
@@ -148,4 +147,17 @@ public class HomeworkService {
         throw new IllegalStateException("Answers exist");
     }
 
+    private String getStudentId() {
+        switch (userContext.getSmsRole()) {
+            case STUDENT:
+                return userContext.getUserId();
+            case PARENT:
+                return (String) Util.getOpt(userContext.getCustomAttributes(), RELATED_USER)
+                        .orElseThrow(() -> new IllegalStateException("Parent has no related user"));
+            default:
+                throw new IllegalArgumentException("Users with role " + userContext.getSmsRole() + " have no student ID");
+        }
+    }
+
 }
+

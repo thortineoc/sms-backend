@@ -3,7 +3,7 @@ package com.sms.homeworkservice.answer.control;
 import com.sms.api.homework.AnswerDTO;
 import com.sms.api.homework.FileLinkDTO;
 import com.sms.context.UserContext;
-import com.sms.homeworkservice.file.control.FileRespository;
+import com.sms.homeworkservice.file.control.FileRepository;
 import com.sms.homeworkservice.homework.control.HomeworkRepository;
 import com.sms.model.homework.AnswerJPA;
 import com.sms.model.homework.HomeworkJPA;
@@ -29,7 +29,7 @@ public class AnswerService {
     UserContext userContext;
 
     @Autowired
-    FileRespository fileRespository;
+    FileRepository fileRepository;
 
     public AnswerDTO updateAnswer(AnswerDTO answer) {
         Long id = answer.getId().orElseThrow(
@@ -62,12 +62,12 @@ public class AnswerService {
     }
 
     public void deleteUserAnswers(String id) {
-        fileRespository.deleteAllByOwnerId(id);
+        fileRepository.deleteAllByOwnerId(id);
         answerRepository.deleteAllByStudentId(id);
     }
 
     public void deleteAnswer(Long id) {
-        fileRespository.deleteAllByRelationIdAndType(id, FileLinkDTO.Type.ANSWER.toString());
+        fileRepository.deleteAllByRelationIdAndType(id, FileLinkDTO.Type.ANSWER.toString());
         answerRepository.deleteById(id);
     }
 }

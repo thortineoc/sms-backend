@@ -6,19 +6,24 @@ import com.sms.context.UserContext;
 import com.sms.homeworkservice.answer.control.AnswerRepository;
 import com.sms.homeworkservice.homework.control.HomeworkRepository;
 import com.sms.model.homework.FileJPA;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 @Scope("request")
 public class FileService {
 
     @Autowired
-    FileRespository fileRespository;
+    FileRepository fileRepository;
 
     @Autowired
     UserContext userContext;
@@ -30,7 +35,7 @@ public class FileService {
     AnswerRepository answerRepository;
 
     public FileJPA getFile(Long id) {
-        return fileRespository.findById(id).orElseThrow(() -> new IllegalStateException("File " + id + " doesn't exist"));
+        return fileRepository.findById(id).orElseThrow(() -> new IllegalStateException("File " + id + " doesn't exist"));
     }
 
     public FileLinkDTO store(MultipartFile file, Long id, FileLinkDTO.Type type) throws IOException {
@@ -47,7 +52,7 @@ public class FileService {
             default:
                 throw new IllegalStateException("incorrect TYPE");
         }
-        return FileMapper.toDTO(fileRespository.save(fileDB));
+        return FileMapper.toDTO(fileRepository.save(fileDB));
     }
 
     private void validateAnswer(Long id){
