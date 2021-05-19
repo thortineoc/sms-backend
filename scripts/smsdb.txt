@@ -24,10 +24,9 @@ CREATE TABLE Answers
     homework_id     int         NOT NULL,
     student_id      varchar(63) NOT NULL,
     review          TEXT,
-    file            bytea,
     createdTime     timestamp DEFAULT now(),
     lastUpdatedTime timestamp DEFAULT now(),
-    isRated         boolean   DEFAULT false
+    grade_id        int         NOT NULL
 );
 
 CREATE TABLE Classes
@@ -42,6 +41,16 @@ CREATE TABLE Classes
     endDate    date        NOT NULL,
     lesson     int         NOT NULL
 );
+
+CREATE TABLE Files
+(
+    id          SERIAL PRIMARY KEY,
+    filename    varchar(255) NOT NULL,
+    size        int          NOT NULL,
+    file        bytea        NOT NULL,
+    type        varchar(31)  NOT NULL,
+    relation_id int          NOT NULL,
+    owner_id    varchar(63 NOT NULL);
 
 CREATE TABLE Grades
 (
@@ -67,15 +76,20 @@ CREATE TABLE Homeworks
 (
     id              SERIAL PRIMARY KEY,
     title           varchar(255) NOT NULL,
+    description     TEXT,
     groups          varchar(15)  NOT NULL,
     subject         varchar(63)  NOT NULL,
     deadline        timestamp    NOT NULL,
-    teacher_id      varchar(63)  NOT NULL,
-    description     TEXT,
-    file            bytea,
     createdTime     timestamp DEFAULT now(),
     lastUpdatedTime timestamp DEFAULT now(),
+    teacher_id      varchar(63)  NOT NULL,
     toEvaluate      boolean   DEFAULT false
+);
+
+CREATE TABLE Item
+(
+    key   varchar(255) NOT NULL PRIMARY KEY,
+    value bytea        NOT NULL
 );
 
 CREATE TABLE Presences
@@ -97,6 +111,12 @@ ALTER TABLE Answers
         FOREIGN KEY (homework_id)
             REFERENCES Homeworks (id)
             ON DELETE CASCADE;
+
+ALTER TABLE Answers
+    ADD CONSTRAINT fk_answers_grade
+        FOREIGN KEY (grade_id)
+            REFERENCES Grades (id)
+            ON DELETE SET NULL;
 
 ALTER TABLE Classes
     ADD CONSTRAINT fk_classes_subject

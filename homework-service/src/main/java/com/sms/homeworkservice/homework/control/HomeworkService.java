@@ -2,17 +2,15 @@ package com.sms.homeworkservice.homework.control;
 
 import com.sms.api.common.Util;
 import com.sms.api.homework.AnswerWithStudentDTO;
-import com.sms.api.homework.FileLinkDTO;
 import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
 import com.sms.api.usermanagement.CustomAttributesDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.api.usermanagement.UsersFiltersDTO;
 import com.sms.context.UserContext;
-import com.sms.homeworkservice.answer.control.AnswerMapper;
 import com.sms.homeworkservice.answer.control.AnswerRepository;
+import com.sms.homeworkservice.answer.control.AnswerMapper;
 import com.sms.homeworkservice.clients.UserManagementClient;
-import com.sms.homeworkservice.file.control.FileRespository;
 import com.sms.model.homework.AnswerJPA;
 import com.sms.model.homework.HomeworkJPA;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.ws.rs.BadRequestException;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
@@ -54,14 +53,12 @@ public class HomeworkService {
 
     public Optional<SimpleHomeworkDTO> getDetails(Long id) {
         Optional<HomeworkJPA> homework = homeworkRepository.getHomeworkDetails(id);
-        switch (userContext.getSmsRole()) {
-            case TEACHER: return homework.map(h -> HomeworkMapper
+        if (userContext.getSmsRole() == UserDTO.Role.TEACHER) {
+            return homework.map(h -> HomeworkMapper
                     .toTeacherDetailDTO(h, homework.map(this::getStudentsWithAnswers).orElse(Collections.emptyList())));
-            case STUDENT:
-            case PARENT: return homework.map(h -> HomeworkMapper
-                    .toStudentDetailDTO(h, answerRepository.findByStudentIdAndHomeworkId(userContext.getUserId(), h.getId())));
-            default: throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Incorrect role: " + userContext.getSmsRole() + " (you shouldn't be here)");
+        } else {
+            return homework.map(h -> HomeworkMapper
+                    .toStudentDetailDTO(h, answerRepository.findByStudentIdAndHomeworkId(getStudentId(), h.getId())));
         }
     }
 

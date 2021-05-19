@@ -17,8 +17,6 @@ import java.io.IOException;
 @Scope("request")
 public class FileService {
 
-
-
     @Autowired
     FileRespository fileRespository;
 
@@ -60,5 +58,23 @@ public class FileService {
     private void validateHomework(Long id){
         if(userContext.getSmsRole() != UserDTO.Role.TEACHER) throw new IllegalStateException("Only teacher can add homework file");
         if(!homeworkRepository.existsById(id)) throw new IllegalStateException("Homework does not exists");
+    }
+
+    public void deleteFile(Long id) {
+        try {
+            Optional<FileJPA> file = fileRepository.findById(id);
+            if (file.isPresent()) {
+                if (!userContext.getUserId().equals(file.get().getOwnerId())) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+                }
+                fileRepository.deleteById(id);
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            }
+        } catch (ConstraintViolationException e) {
+            throw new IllegalArgumentException("Deleting file: " + id + " violated database constraints: " + e.getConstraintName());
+        } catch (EntityNotFoundException e) {
+            throw new IllegalStateException("File with ID: " + id + " does not exist, can't delete");
+        }
     }
 }
