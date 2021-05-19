@@ -24,7 +24,7 @@ public interface FileRepository extends CrudRepository<FileJPA, Long> {
 
     @Transactional
     @Modifying
-    @Query("DELETE FROM FileJPA file WHERE file.relationId IN :answerID AND file.type = :answer OR file.relationId IN :homeworkID AND file.type = :homework")
-    void deleteHomeworksAndAnswersFiles(List<Long> answerID, String answer, Long homeworkID, String homework);
+    @Query("DELETE FROM FileJPA file WHERE file.relationId IN :answerID AND file.type = 'ANSWER' OR file.relationId IN :homeworkID AND file.type = 'HOMEWORK'")
+    void deleteHomeworksAndAnswersFiles(List<Long> answerID,  Long homeworkID);
 
 }

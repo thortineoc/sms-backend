@@ -2,7 +2,6 @@ package com.sms.homeworkservice.homework.control;
 
 import com.sms.api.common.Util;
 import com.sms.api.homework.AnswerWithStudentDTO;
-import com.sms.api.homework.FileLinkDTO;
 import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
 import com.sms.api.usermanagement.CustomAttributesDTO;
@@ -134,7 +133,7 @@ public class HomeworkService {
 
     void deleteAssignedFiles(Long id) {
         List<Long> answers = answerRepository.findAllByHomeworkId(id).stream().map(AnswerJPA::getId).collect(Collectors.toList());
-        fileRepository.deleteHomeworksAndAnswersFiles(answers, FileLinkDTO.Type.ANSWER.toString(), id, FileLinkDTO.Type.HOMEWORK.toString());
+        fileRepository.deleteHomeworksAndAnswersFiles(answers, id);
         answerRepository.deleteAllByIdIn(answers);
     }
 
