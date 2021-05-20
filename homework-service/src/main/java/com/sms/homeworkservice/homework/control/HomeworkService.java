@@ -125,17 +125,19 @@ public class HomeworkService {
     public void deleteHomework(Long id) {
         Optional<HomeworkJPA> homework = homeworkRepository.findById(id);
         if(homework.isPresent()){
-            if(!homework.get().getTeacherId().equals(userContext.getUserId()))
-                throw new IllegalStateException("Homework doesnt belong to you");
+            if(homework.get().getTeacherId().equals(userContext.getUserId())){
+                deleteAssignedFiles(id, homework.get());
+                homeworkRepository.deleteById(id);
+            }else throw new IllegalStateException("You are not homework owner");
+
         }else throw new IllegalStateException("Homework doesnt exist");
-        deleteAssignedFiles(id);
-        homeworkRepository.deleteById(id);
     }
 
-    void deleteAssignedFiles(Long id) {
-        List<Long> answers = answerRepository.findAllByHomeworkId(id).stream().map(AnswerJPA::getId).collect(Collectors.toList());
-        fileRepository.deleteHomeworksAndAnswersFiles(answers, id);
-        answerRepository.deleteAllByIdIn(answers);
+    void deleteAssignedFiles(Long id, HomeworkJPA homework) {
+        List<Long> answersIds = homework.getAnswers().stream().map(AnswerJPA::getId).collect(Collectors.toList());
+        fileRepository.deleteHomeworksAndAnswersFiles(answersIds, id);
+        answerRepository.deleteAnswerByHomeworkId(id);
+
     }
 
 
@@ -160,4 +162,19 @@ public class HomeworkService {
     }
 
 }
+/*
+cascade.detach
+1homework 1homeworkfile 2answers 1answerfile
+select homeworkjp0_.id as id1_3_0_, homeworkjp0_.createdtime as createdt2_3_0_, homeworkjp0_.deadline as deadline3_3_0_, homeworkjp0_.description as descript4_3_0_, homeworkjp0_.groups as groups5_3_0_, homeworkjp0_.lastupdatedtime as lastupda6_3_0_, homeworkjp0_.subject as subject7_3_0_, homeworkjp0_.teacher_id as teacher_8_3_0_, homeworkjp0_.title as title9_3_0_, homeworkjp0_.toevaluate as toevalu10_3_0_ from homeworks homeworkjp0_ where homeworkjp0_.id=?
+select answers0_.homework_id as homework7_0_0_, answers0_.id as id1_0_0_, answers0_.id as id1_0_1_, answers0_.createdtime as createdt2_0_1_, answers0_.grade_id as grade_id6_0_1_, answers0_.homework_id as homework7_0_1_, answers0_.lastupdatedtime as lastupda3_0_1_, answers0_.review as review4_0_1_, answers0_.student_id as student_5_0_1_ from answers answers0_ where answers0_.homework_id=?
+delete from answers where homework_id=?
+binding parameter [1] as [BIGINT] - [115]
+delete from files where (relation_id in (? , ?)) and type='ANSWER' or (relation_id in (?)) and type='HOMEWORK'
+update answers set homework_id=null where homework_id=?
+update files set relation_id=null where relation_id=? and ( type = 'HOMEWORK')
+delete from homeworks where id=?
+*/
+
+/*
+"Batch update returned unexpected row count from update [0]; actual row count: 0; expected: 1; statement executed: delete from answers where id=?; nested exception is org.hibernate.StaleStateException: Batch update returned unexpected row count from update [0]; actual row count: 0; expected: 1; statement executed: delete from answers where id=?",*/
 
