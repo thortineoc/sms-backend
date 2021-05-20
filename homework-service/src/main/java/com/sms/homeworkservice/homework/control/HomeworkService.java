@@ -123,10 +123,11 @@ public class HomeworkService {
 
 
     public void deleteHomework(Long id) {
-        homeworkRepository.findById(id).ifPresent(obj -> {
-            if (!obj.getTeacherId().equals(userContext.getUserId()))
-                throw new IllegalStateException("You are not homework owner");
-        });
+        Optional<HomeworkJPA> homework = homeworkRepository.findById(id);
+        if(homework.isPresent()){
+            if(!homework.get().getTeacherId().equals(userContext.getUserId()))
+                throw new IllegalStateException("Homework doesnt belong to you");
+        }else throw new IllegalStateException("Homework doesnt exist");
         deleteAssignedFiles(id);
         homeworkRepository.deleteById(id);
     }

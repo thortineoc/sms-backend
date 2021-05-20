@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Component
 @Scope("request")
@@ -67,7 +68,10 @@ public class AnswerService {
     }
 
     public void deleteAnswer(Long id) {
-        fileRepository.deleteAllByRelationIdAndType(id, FileLinkDTO.Type.ANSWER.toString());
-        answerRepository.deleteById(id);
+        Optional<AnswerJPA> answer= answerRepository.findById(id);
+        if(answer.isPresent() && !answer.get().getReview().isEmpty()){
+            fileRepository.deleteAllByRelationIdAndType(id, FileLinkDTO.Type.ANSWER.toString());
+            answerRepository.deleteById(id);
+        }else throw new IllegalStateException("You could not delete answer");
     }
 }
