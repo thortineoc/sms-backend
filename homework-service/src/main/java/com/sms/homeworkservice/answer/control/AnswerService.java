@@ -13,7 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Component
 @Scope("request")
@@ -67,7 +69,10 @@ public class AnswerService {
     }
 
     public void deleteAnswer(Long id) {
-        fileRepository.deleteAllByRelationIdAndType(id, FileLinkDTO.Type.ANSWER.toString());
-        answerRepository.deleteById(id);
+        Optional<AnswerJPA> answer= answerRepository.findById(id);
+        if(answer.isPresent() && !Optional.ofNullable(answer.get().getReview()).isPresent() && !Optional.ofNullable(answer.get().getGrade()).isPresent()) {
+            fileRepository.deleteAllByRelationIdAndType(id, FileLinkDTO.Type.ANSWER.toString());
+            answerRepository.deleteById(id);
+        }else throw new IllegalStateException("You cannot delete answer: doesnt exist || already reviewed");
     }
 }

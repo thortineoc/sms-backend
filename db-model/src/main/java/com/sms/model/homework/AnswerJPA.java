@@ -2,9 +2,9 @@ package com.sms.model.homework;
 
 import com.sms.model.grades.GradeJPA;
 import org.hibernate.annotations.*;
-import org.hibernate.annotations.CascadeType;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.sql.Timestamp;
