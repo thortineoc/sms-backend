@@ -1,8 +1,10 @@
 package com.sms.homeworkservice.answer.control;
 
+import com.sms.api.grades.GradeDTO;
 import com.sms.api.homework.AnswerDTO;
 import com.sms.context.UserContext;
 import com.sms.homeworkservice.homework.control.HomeworkRepository;
+import com.sms.model.grades.GradeJPA;
 import com.sms.model.homework.AnswerJPA;
 import com.sms.model.homework.HomeworkJPA;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,12 @@ public class AnswerService {
 
         answerToUpdate.setLastUpdatedTime(LocalDateTime.now());
         answer.getReview().ifPresent(answerToUpdate::setReview);
+
+        if(answer.getGrade().isPresent()) {
+            GradeDTO grade = answer.getGrade().orElse(null);
+            GradeJPA gradeJPA = AnswerMapper.toJPA(grade);
+            answerToUpdate.setGrade(gradeJPA);
+        }
 
         AnswerJPA ans = answerRepository.save(answerToUpdate);
         return AnswerMapper.toDTOSimple(ans);

@@ -95,6 +95,8 @@ public class AnswerJPA {
         this.createdTime =  Timestamp.valueOf(localDateTime);
     }
 
+    public void setGrade(GradeJPA grade) {this.grade=grade;}
+
     public void setLastUpdatedTime(LocalDateTime localDateTime) {
         this.lastUpdatedTime =  Timestamp.valueOf(localDateTime);
     }
