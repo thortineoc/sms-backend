@@ -34,13 +34,11 @@ public class HomeworkJPA{
     @Column(name = "toevaluate")
     private Boolean toEvaluate;
 
-    @OneToMany(orphanRemoval = true,
-            fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "homework_id")
     private List<AnswerJPA> answers;
 
-    @OneToMany(orphanRemoval = true,
-            fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "relation_id")
     @Where(clause = "type = 'HOMEWORK'")
     private List<FileInfoJPA> files;
