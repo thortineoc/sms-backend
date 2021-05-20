@@ -39,7 +39,7 @@ public class AnswerService {
         answer.getReview().ifPresent(answerToUpdate::setReview);
 
         if(answer.getGrade().isPresent()) {
-            GradeDTO grade = answer.getGrade().orElse(null);
+            GradeDTO grade = answer.getGrade().get();
             GradeJPA gradeJPA = AnswerMapper.toJPA(grade);
             answerToUpdate.setGrade(gradeJPA);
         }
