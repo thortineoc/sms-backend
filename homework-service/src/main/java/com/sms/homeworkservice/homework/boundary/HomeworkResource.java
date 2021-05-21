@@ -1,10 +1,8 @@
 package com.sms.homeworkservice.homework.boundary;
 
-import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.AuthRole;
-import com.sms.context.SmsConfiguration;
 import com.sms.context.UserContext;
 import com.sms.homeworkservice.homework.control.HomeworkService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,18 +52,15 @@ public class HomeworkResource {
 
     @PutMapping
     @AuthRole(UserDTO.Role.TEACHER)
-    public ResponseEntity<HomeworkDTO> updateHomework(@RequestBody HomeworkDTO homeworkDTO) {
-        HomeworkDTO homework = homeworkService.updateHomework(homeworkDTO);
+    public ResponseEntity<SimpleHomeworkDTO> updateHomework(@RequestBody SimpleHomeworkDTO homeworkDTO) {
+        SimpleHomeworkDTO homework = homeworkService.updateHomework(homeworkDTO);
         return ResponseEntity.ok(homework);
-
     }
 
     @DeleteMapping("/{id}")
-    @AuthRole(UserDTO.Role.TEACHER)
+    @AuthRole({UserDTO.Role.TEACHER, UserDTO.Role.ADMIN})
     public ResponseEntity<Object> deleteHomework(@PathVariable("id") Long id) {
         homeworkService.deleteHomework(id);
         return ResponseEntity.noContent().build();
     }
-
-
 }

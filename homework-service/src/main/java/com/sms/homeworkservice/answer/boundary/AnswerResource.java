@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/answer")
 @Scope("request")
 public class AnswerResource {
+
     @Autowired
     UserContext userContext;
 

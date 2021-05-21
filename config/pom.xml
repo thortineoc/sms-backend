@@ -16,6 +16,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <script.extension>.sh</script.extension>
     </properties>
 
     <build>
@@ -32,7 +33,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>scripts/copy-values.sh</executable>
+                            <executable>scripts/copy-values${script.extension}</executable>
                         </configuration>
                     </execution>
                 </executions>
@@ -40,5 +41,30 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>Windows</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <script.extension>.bat</script.extension>
+            </properties>
+        </profile>
+        <profile>
+            <id>unix</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                </os>
+            </activation>
+            <properties>
+                <script.extension>.sh</script.extension>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

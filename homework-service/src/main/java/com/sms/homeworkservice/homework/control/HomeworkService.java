@@ -95,7 +95,7 @@ public class HomeworkService {
         }
     }
 
-    public HomeworkDTO createHomework(HomeworkDTO homeworkDTO) {
+    public SimpleHomeworkDTO createHomework(SimpleHomeworkDTO homeworkDTO) {
         HomeworkJPA homework = HomeworkMapper.toJPA(homeworkDTO);
         homework.setTeacherId(userContext.getUserId());
 
@@ -103,7 +103,7 @@ public class HomeworkService {
         return HomeworkMapper.toDTOBuilder(updatedHomework).build();
     }
 
-    public HomeworkDTO updateHomework(HomeworkDTO homeworkDTO) {
+    public SimpleHomeworkDTO updateHomework(SimpleHomeworkDTO homeworkDTO) {
         if (!homeworkDTO.getId().isPresent()) return createHomework(homeworkDTO);
         if (homeworkRepository.updateTable(
                 Timestamp.valueOf(homeworkDTO.getDeadline()),
@@ -121,7 +121,7 @@ public class HomeworkService {
         homeworkRepository.deleteById(id);
     }
 
-    private String validateGroup(HomeworkDTO homeworkDTO) {
+    private String validateGroup(SimpleHomeworkDTO homeworkDTO) {
         if (answerRepository.existsByHomeworkId(homeworkDTO.getId().get())) {
             HomeworkJPA homeworkJPA = homeworkRepository.getById(homeworkDTO.getId().get()).get();
             if (homeworkJPA.getGroup().equals(homeworkDTO.getGroup())) return homeworkDTO.getGroup();
@@ -130,7 +130,7 @@ public class HomeworkService {
         return homeworkDTO.getGroup();
     }
 
-    private String validateSubject(HomeworkDTO homeworkDTO) {
+    private String validateSubject(SimpleHomeworkDTO homeworkDTO) {
         if (answerRepository.existsByHomeworkId(homeworkDTO.getId().get())) {
             HomeworkJPA homeworkJPA = homeworkRepository.getById(homeworkDTO.getId().get()).get();
             if (homeworkJPA.getSubject().equals(homeworkDTO.getSubject())) return homeworkDTO.getSubject();

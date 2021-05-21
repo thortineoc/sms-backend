@@ -58,13 +58,13 @@ class GradesManagementTest {
         GroupUtils.createGroup(GROUP_3C).then().statusCode(204);
 
         // SET UP STUDENTS
-        UserUtils.createUser(getStudentDTO("John", "Fortnite", GROUP_1A))
+        UserUtils.createUser(UserUtils.getStudentDTO("John", "Fortnite", GROUP_1A))
                 .then().statusCode(204);
-        UserUtils.createUser(getStudentDTO("Pawel", "Oleksik", GROUP_2B))
+        UserUtils.createUser(UserUtils.getStudentDTO("Pawel", "Oleksik", GROUP_2B))
                 .then().statusCode(204);
-        UserUtils.createUser(getStudentDTO("Zdzislaw", "Onderka", GROUP_1A))
+        UserUtils.createUser(UserUtils.getStudentDTO("Zdzislaw", "Onderka", GROUP_1A))
                 .then().statusCode(204);
-        UserUtils.createUser(getStudentDTO("Tomasz", "Wojna", GROUP_3C))
+        UserUtils.createUser(UserUtils.getStudentDTO("Tomasz", "Wojna", GROUP_3C))
                 .then().statusCode(204);
 
         FIRST_USER = UserUtils.getUsers(ImmutableMap.of("middleName", TEST_PREFIX + "John"))
@@ -87,7 +87,7 @@ class GradesManagementTest {
         FIRST_PARENT_CLIENT = new WebClient(firstParent.getUserName(), "JohnFort");
 
         // SET UP TEACHERS
-        UserUtils.createUser(getTeacherDTO("first-teacher", MATH, PHYSICS, BIOLOGY)).then().statusCode(204);
+        UserUtils.createUser(UserUtils.getTeacherDTO("first-teacher", MATH, PHYSICS, BIOLOGY)).then().statusCode(204);
         UserDTO teacher = UserUtils.getUsers(ImmutableMap.of("middleName", TEST_PREFIX + "first-teacher"))
                 .as(UserDTO[].class)[0];
         WebClient FIRST_TEACHER = new WebClient(teacher.getUserName(), "firsfirs");
@@ -283,16 +283,5 @@ class GradesManagementTest {
 
     private void isNoContent(Response response) {
         response.then().statusCode(HttpStatus.NO_CONTENT.value());
-    }
-
-    private static UserDTO getStudentDTO(String firstName, String lastName, String group) {
-        return UserUtils.getUserDTO(firstName, lastName, TEST_PREFIX + firstName,
-                firstName + "@" + lastName + ".com",
-                group, UserDTO.Role.STUDENT);
-    }
-
-    private static UserDTO getTeacherDTO(String name, String... subjects) {
-        return UserUtils.getTeacherDTO(name, name, TEST_PREFIX + name,
-                UUID.randomUUID().toString() + "@" + UUID.randomUUID().toString() + ".com", Arrays.asList(subjects));
     }
 }

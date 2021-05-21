@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +27,7 @@ public class FileResource {
     @PostMapping("/upload/{id}/{type}")
     @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.TEACHER})
     public ResponseEntity<FileLinkDTO> uploadFile(@PathVariable("id") Long id, @PathVariable("type") FileLinkDTO.Type type, @RequestParam("file") MultipartFile file) throws IOException {
-        return ResponseEntity.status(HttpStatus.OK).body(fileService.store(file, id, type));
+        return ResponseEntity.ok(fileService.store(file, id, type));
     }
 
     @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.TEACHER})
@@ -42,10 +41,9 @@ public class FileResource {
     }
 
     @DeleteMapping("/{id}")
-    @AuthRole({UserDTO.Role.TEACHER, UserDTO.Role.STUDENT})
+    @AuthRole({UserDTO.Role.TEACHER, UserDTO.Role.STUDENT, UserDTO.Role.ADMIN})
     public ResponseEntity<Object> deleteFile(@PathVariable("id") Long id) {
         fileService.deleteFile(id);
         return ResponseEntity.noContent().build();
     }
-
 }

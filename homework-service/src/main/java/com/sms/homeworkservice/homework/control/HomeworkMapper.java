@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class HomeworkMapper {
 
-    public static HomeworkJPA toJPA(HomeworkDTO homework) {
+    public static HomeworkJPA toJPA(SimpleHomeworkDTO homework) {
         HomeworkJPA jpa = new HomeworkJPA();
         jpa.setDeadline(Timestamp.valueOf(homework.getDeadline()));
         jpa.setSubject(homework.getSubject());

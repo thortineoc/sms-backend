@@ -23,7 +23,7 @@ class UpdateUserTest {
     private String generatePesel() {
         String numbers = "0123456789";
         StringBuilder sb = new StringBuilder(11);
-        for(int i=0; i<11; i++) {
+        for(int i = 0; i < 11; i++) {
             int index = (int)(numbers.length() * Math.random());
            sb.append(numbers.charAt(index));
         }

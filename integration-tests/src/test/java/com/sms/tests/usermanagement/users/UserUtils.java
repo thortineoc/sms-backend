@@ -177,4 +177,15 @@ public class UserUtils {
                 .role(UserDTO.Role.TEACHER)
                 .build();
     }
+
+    public static UserDTO getTeacherDTO(String name, String... subjects) {
+        return UserUtils.getTeacherDTO(name, name, TEST_PREFIX + name,
+                UUID.randomUUID().toString() + "@" + UUID.randomUUID().toString() + ".com", Arrays.asList(subjects));
+    }
+
+    public static UserDTO getStudentDTO(String firstName, String lastName, String group) {
+        return UserUtils.getUserDTO(firstName, lastName, TEST_PREFIX + firstName,
+                firstName + "@" + lastName + ".com",
+                group, UserDTO.Role.STUDENT);
+    }
 }
