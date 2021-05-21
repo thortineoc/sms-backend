@@ -28,4 +28,5 @@ public interface HomeworkRepository extends CrudRepository<HomeworkJPA, Long> {
             " u.title=:title, u.toEvaluate=:evaluate WHERE u.id=:id")
     int updateTable(Timestamp deadline, String group, String subject, Long id, Optional<String> description, String title, Boolean evaluate );
 
+
 }

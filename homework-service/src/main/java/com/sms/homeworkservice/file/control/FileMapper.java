@@ -1,7 +1,8 @@
 package com.sms.homeworkservice.file.control;
 
 import com.sms.api.homework.FileLinkDTO;
-import com.sms.model.homework.*;
+import com.sms.model.homework.FileBaseJPA;
+import com.sms.model.homework.FileJPA;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;

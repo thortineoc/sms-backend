@@ -2,22 +2,23 @@ package com.sms.homeworkservice.homework.control;
 
 import com.sms.api.common.Util;
 import com.sms.api.homework.AnswerWithStudentDTO;
-import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
 import com.sms.api.usermanagement.CustomAttributesDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.api.usermanagement.UsersFiltersDTO;
 import com.sms.context.UserContext;
-import com.sms.homeworkservice.answer.control.AnswerRepository;
 import com.sms.homeworkservice.answer.control.AnswerMapper;
+import com.sms.homeworkservice.answer.control.AnswerRepository;
 import com.sms.homeworkservice.clients.UserManagementClient;
+import com.sms.homeworkservice.file.control.FileRepository;
 import com.sms.model.homework.AnswerJPA;
 import com.sms.model.homework.HomeworkJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.BadRequestException;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
@@ -42,6 +43,9 @@ public class HomeworkService {
 
     @Autowired
     UserContext userContext;
+
+    @Autowired
+    FileRepository fileRepository;
 
     @Autowired
     UserManagementClient userManagementClient;
@@ -104,47 +108,70 @@ public class HomeworkService {
     }
 
     public SimpleHomeworkDTO updateHomework(SimpleHomeworkDTO homeworkDTO) {
-        if (!homeworkDTO.getId().isPresent()) return createHomework(homeworkDTO);
-        if (homeworkRepository.updateTable(
+        if (!homeworkDTO.getId().isPresent()) {
+            return createHomework(homeworkDTO);
+        }
+        validateHomework(homeworkDTO);
+        boolean updated = homeworkRepository.updateTable(
                 Timestamp.valueOf(homeworkDTO.getDeadline()),
-                validateGroup(homeworkDTO),
-                validateSubject(homeworkDTO),
+                homeworkDTO.getGroup(),
+                homeworkDTO.getSubject(),
                 homeworkDTO.getId().get(),
                 homeworkDTO.getDescription(),
                 homeworkDTO.getTitle(),
-                homeworkDTO.getToEvaluate()) != 1)
+                homeworkDTO.getToEvaluate()) == 1;
+        if (!updated) {
             throw new IllegalStateException("id does not exists or update failed");
+        }
         return homeworkDTO;
     }
 
     public void deleteHomework(Long id) {
+        Optional<HomeworkJPA> homework = homeworkRepository.findById(id);
+        if (!homework.isPresent()) {
+            throw new IllegalStateException("Homework " + id + "doesn't exist");
+        }
+
+        String teacherId = userContext.getUserId();
+        if (!teacherId.equals(homework.get().getTeacherId())) {
+            throw new IllegalStateException("You are not the owner of homework with ID: " + id);
+        }
+
+        deleteAssignedFiles(id, homework.get());
         homeworkRepository.deleteById(id);
     }
 
-    private String validateGroup(SimpleHomeworkDTO homeworkDTO) {
-        if (answerRepository.existsByHomeworkId(homeworkDTO.getId().get())) {
-            HomeworkJPA homeworkJPA = homeworkRepository.getById(homeworkDTO.getId().get()).get();
-            if (homeworkJPA.getGroup().equals(homeworkDTO.getGroup())) return homeworkDTO.getGroup();
-            else throw new BadRequestException("Cannot update group");
-        }
-        return homeworkDTO.getGroup();
+    private void deleteAssignedFiles(Long id, HomeworkJPA homework) {
+        List<Long> answersIds = homework.getAnswers().stream().map(AnswerJPA::getId).collect(Collectors.toList());
+        fileRepository.deleteHomeworksAndAnswersFiles(answersIds, id);
+        answerRepository.deleteAnswerByHomeworkId(id);
     }
 
-    private String validateSubject(SimpleHomeworkDTO homeworkDTO) {
-        if (answerRepository.existsByHomeworkId(homeworkDTO.getId().get())) {
-            HomeworkJPA homeworkJPA = homeworkRepository.getById(homeworkDTO.getId().get()).get();
-            if (homeworkJPA.getSubject().equals(homeworkDTO.getSubject())) return homeworkDTO.getSubject();
-            else throw new BadRequestException("Cannot update subject");
+    private void validateHomework(SimpleHomeworkDTO dto) {
+        Long homeworkId = dto.getId().get();
+        Optional<HomeworkJPA> homework = homeworkRepository.getById(homeworkId);
+        if (!homework.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Homework with ID: " + homeworkId + " doesn't exist, cannot update.");
         }
-        return homeworkDTO.getSubject();
+        boolean groupOrSubjectChanged = !dto.getSubject().equals(homework.get().getSubject())
+                || !dto.getGroup().equals(homework.get().getGroup());
+
+        if (answerRepository.existsByHomeworkId(homeworkId) && groupOrSubjectChanged) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Answers under homework: " + dto.getId() + " already exist, cannot update group and subject.");
+        }
     }
 
     private String getStudentId() {
-        switch(userContext.getSmsRole()) {
-            case STUDENT: return userContext.getUserId();
-            case PARENT: return (String) Util.getOpt(userContext.getCustomAttributes(), "relatedUser")
+        switch (userContext.getSmsRole()) {
+            case STUDENT:
+                return userContext.getUserId();
+            case PARENT:
+                return (String) Util.getOpt(userContext.getCustomAttributes(), RELATED_USER)
                         .orElseThrow(() -> new IllegalStateException("Parent has no related user"));
-            default: throw new IllegalArgumentException("Users with role " + userContext.getSmsRole() + " have no student ID");
+            default:
+                throw new IllegalArgumentException("Users with role " + userContext.getSmsRole() + " have no student ID");
         }
     }
 }
