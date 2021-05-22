@@ -1,0 +1,31 @@
+version: "3.3"  # optional since v1.27.0
+services:
+    haproxy:
+        image: sms-haproxy
+        ports:
+            - "24020:24020"
+            - "9999:9999"
+    keycloak:
+        image: stadryniak/kc-sms
+        ports:
+            - "24080:8080"
+#    usermanagement-service:
+#        image: stadryniak/usermanagement-service
+#        ports:
+#            - "24034"
+#    grades-service:
+#        image: stadryniak/grades-service
+#        ports:
+#            - "24032"
+#    homework-service:
+#        image: stadryniak/homework-service
+#        ports:
+#            - "24026"
+#    timetable-service:
+#        image: stadryniak/timetable-service
+#        ports:
+#            - "24030"
+#    presence-service:
+#        image: stadryniak/presence-service
+#        ports:
+#            - "24028" 
