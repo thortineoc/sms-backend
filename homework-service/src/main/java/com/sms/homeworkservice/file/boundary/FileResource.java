@@ -30,14 +30,10 @@ public class FileResource {
         return ResponseEntity.ok(fileService.store(file, id, type));
     }
 
-    @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.TEACHER})
+    @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.TEACHER, UserDTO.Role.ADMIN})
     @GetMapping(value = "/id/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<ByteArrayResource> getFile(@PathVariable Long id) {
-        FileJPA dbFile = fileService.getFile(id);
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + dbFile.getFilename() + "\"")
-                .body(new ByteArrayResource(dbFile.getFile()));
+        return fileService.getFile(id).map(this::buildFileResponse).orElse(ResponseEntity.noContent().build());
     }
 
     @DeleteMapping("/{id}")
@@ -45,5 +41,12 @@ public class FileResource {
     public ResponseEntity<Object> deleteFile(@PathVariable("id") Long id) {
         fileService.deleteFile(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private ResponseEntity<ByteArrayResource> buildFileResponse(FileJPA file) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+                .body(new ByteArrayResource(file.getFile()));
     }
 }

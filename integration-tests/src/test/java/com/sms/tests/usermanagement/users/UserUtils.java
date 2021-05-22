@@ -104,6 +104,7 @@ public class UserUtils {
     public static UsersFiltersDTO getFilters(Map<String, String> filters) {
         ImmutableUsersFiltersDTO.Builder builder = UsersFiltersDTO.builder();
         Optional.ofNullable(filters.get("role")).ifPresent(builder::role);
+        Optional.ofNullable(filters.get("userName")).ifPresent(builder::username);
         Optional.ofNullable(filters.get("firstName")).ifPresent(builder::firstName);
         Optional.ofNullable(filters.get("middleName")).ifPresent(builder::middleName);
         Optional.ofNullable(filters.get("lastName")).ifPresent(builder::lastName);

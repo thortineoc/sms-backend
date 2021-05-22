@@ -23,6 +23,16 @@ public class AdminHomeworkClient {
         return getRequest().delete("/files/" + fileId);
     }
 
+    public Response downloadFile(Long fileId) {
+        return getOctetStreamRequest().get("/files/id/" + fileId);
+    }
+
+    public RequestSpecification getOctetStreamRequest() {
+        return client.request(Environment.HOMEWORK)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .log().all();
+    }
+
     private RequestSpecification getRequest() {
         return client.request(Environment.HOMEWORK)
                 .contentType(MediaType.APPLICATION_JSON)

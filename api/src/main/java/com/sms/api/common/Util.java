@@ -36,4 +36,16 @@ public class Util {
                 .sorted(Comparator.comparing(compareBy))
                 .collect(Collectors.toList());
     }
+
+    public static void ignoreException(Runnable r) {
+        try {
+            r.run();
+        } catch (Throwable ignored) {}
+    }
+
+    public static void runAll(Runnable... r) {
+        for (Runnable runnable : r) {
+            ignoreException(runnable);
+        }
+    }
 }

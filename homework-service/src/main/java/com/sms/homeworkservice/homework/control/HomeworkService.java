@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
@@ -107,6 +108,7 @@ public class HomeworkService {
         return HomeworkMapper.toDTOBuilder(updatedHomework).build();
     }
 
+    @Transactional
     public SimpleHomeworkDTO updateHomework(SimpleHomeworkDTO homeworkDTO) {
         if (!homeworkDTO.getId().isPresent()) {
             return createHomework(homeworkDTO);
@@ -126,15 +128,18 @@ public class HomeworkService {
         return homeworkDTO;
     }
 
+    @Transactional
     public void deleteHomework(Long id) {
         Optional<HomeworkJPA> homework = homeworkRepository.findById(id);
         if (!homework.isPresent()) {
             throw new IllegalStateException("Homework " + id + "doesn't exist");
         }
 
-        String teacherId = userContext.getUserId();
-        if (!teacherId.equals(homework.get().getTeacherId())) {
-            throw new IllegalStateException("You are not the owner of homework with ID: " + id);
+        if (UserDTO.Role.TEACHER == userContext.getSmsRole()) {
+            String teacherId = userContext.getUserId();
+            if (!teacherId.equals(homework.get().getTeacherId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of homework with ID: " + id);
+            }
         }
 
         deleteAssignedFiles(id, homework.get());

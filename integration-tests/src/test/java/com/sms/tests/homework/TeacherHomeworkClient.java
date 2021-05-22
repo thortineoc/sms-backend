@@ -15,7 +15,7 @@ public class TeacherHomeworkClient extends HomeworkClient {
     }
 
     public Response updateHomework(SimpleHomeworkDTO homework) {
-        return getRequest().put("/homework", homework);
+        return getRequest().body(homework).put("/homework");
     }
 
     public Response deleteHomework(Long id) {

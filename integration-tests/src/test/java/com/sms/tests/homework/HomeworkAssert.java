@@ -131,9 +131,16 @@ public class HomeworkAssert {
     }
 
     public HomeworkAssert homeworkHasFiles(SimpleHomeworkDTO homework, String... filenames) {
-        HomeworkDTO real = (HomeworkDTO) homeworks.get(homeworkId(homework));
+        SimpleHomeworkDTO realSimple = homeworks.get(homeworkId(homework));
+        Set<String> realFilenames;
+        if (realSimple instanceof StudentHomeworkDTO) {
+            StudentHomeworkDTO real = (StudentHomeworkDTO) realSimple;
+            realFilenames = real.getFiles().stream().map(FileLinkDTO::getFilename).collect(Collectors.toSet());
+        } else {
+            HomeworkDTO real = (HomeworkDTO) realSimple;
+            realFilenames = real.getFiles().stream().map(FileLinkDTO::getFilename).collect(Collectors.toSet());
+        }
 
-        Set<String> realFilenames = real.getFiles().stream().map(FileLinkDTO::getFilename).collect(Collectors.toSet());
         Set<String> expectedFilenames = new HashSet<>(Arrays.asList(filenames));
 
         Assertions.assertThat(realFilenames).isEqualTo(expectedFilenames);
@@ -166,7 +173,7 @@ public class HomeworkAssert {
     public HomeworkAssert answerHasFiles(AnswerDTO answer, String... filenames) {
         AnswerDTO real = answers.get(answerId(answer));
 
-        assertEquals(filenames.length, answer.getFiles().size());
+        assertEquals(filenames.length, real.getFiles().size());
         Set<String> expected = new HashSet<>(Arrays.asList(filenames));
         Set<String> realFiles = real.getFiles().stream().map(FileLinkDTO::getFilename).collect(Collectors.toSet());
         Assertions.assertThat(realFiles).isEqualTo(expected);
@@ -194,14 +201,12 @@ public class HomeworkAssert {
     }
 
     private HomeworkAssert assertHomeworkDetails(SimpleHomeworkDTO expected, SimpleHomeworkDTO real) {
-        assertAll(
-                () -> assertEquals(expected.getDescription(), real.getDescription()),
-                () -> assertEquals(expected.getDeadline(), real.getDeadline()),
-                () -> assertEquals(expected.getGroup(), real.getGroup()),
-                () -> assertEquals(expected.getSubject(), real.getSubject()),
-                () -> assertEquals(expected.getTitle(), real.getTitle()),
-                () -> assertEquals(expected.getTeacherId(), real.getTeacherId()),
-                () -> assertEquals(expected.getToEvaluate(), real.getToEvaluate()));
+        assertEquals(expected.getDescription(), real.getDescription());
+        assertEquals(expected.getDeadline(), real.getDeadline());
+        assertEquals(expected.getGroup(), real.getGroup());
+        assertEquals(expected.getSubject(), real.getSubject());
+        assertEquals(expected.getTitle(), real.getTitle());
+        assertEquals(expected.getToEvaluate(), real.getToEvaluate());
         return this;
     }
 
