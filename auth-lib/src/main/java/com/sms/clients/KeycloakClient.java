@@ -38,6 +38,9 @@ public class KeycloakClient {
     private final Client client = ClientBuilder.newClient(
             new ClientConfig().property(ClientProperties.SUPPRESS_HTTP_COMPLIANCE_VALIDATION, true));
 
+    public KeycloakClient() {
+    }
+
     public KeycloakClient(String haproxyUrl, String realmName) {
         KEYCLOAK_ADMIN_URL = haproxyUrl + "/auth/admin/realms/" + realmName;
         TOKEN_URL = haproxyUrl + "/auth/realms/master/protocol/openid-connect/token";
