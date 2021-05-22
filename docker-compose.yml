@@ -1,14 +1,23 @@
 version: "3.3"  # optional since v1.27.0
 services:
     haproxy:
-        image: sms-haproxy
+        image: stadryniak/sms-haproxy
         ports:
             - "24020:24020"
             - "9999:9999"
+    sms-postgres:
+        image: stadryniak/sms-db
+        ports:
+            - "5432:5432"
+        environment: 
+            - POSTGRES_PASSWORD=sms
+            - POSTGRES_USER=sms
+            - POSTGRES_DB=sms
     keycloak:
         image: stadryniak/kc-sms
         ports:
             - "24080:8080"
+
 #    usermanagement-service:
 #        image: stadryniak/usermanagement-service
 #        ports:
