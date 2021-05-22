@@ -40,23 +40,29 @@ public class FileService {
 
     public FileLinkDTO store(MultipartFile file, Long id, FileLinkDTO.Type type) throws IOException {
 
-        FileJPA FileDB = FileMapper.toJPA(file, id, type, userContext.getUserId());
-        switch (type) {
-            case ANSWER:    validateAnswer(id);     break;
-            case HOMEWORK:  validateHomework(id);   break;
-            default: throw new IllegalStateException("incorrect TYPE");
+        FileJPA fileDB = FileMapper.toJPA(file, id, type, userContext.getUserId());
+
+        switch (type){
+            case ANSWER:
+                validateAnswer(id);
+                break;
+            case HOMEWORK:
+                validateHomework(id);
+                break;
+            default:
+                throw new IllegalStateException("incorrect TYPE");
         }
-        return FileMapper.toDTO(fileRepository.save(FileDB));
+        return FileMapper.toDTO(fileRepository.save(fileDB));
     }
 
-    private void validateAnswer(Long id) {
-        if (userContext.getSmsRole() != UserDTO.Role.STUDENT) throw new IllegalStateException("Only students can add answer file");
-        if (!answerRepository.existsById(id)) throw new IllegalStateException("Answer does not exists");
+    private void validateAnswer(Long id){
+        if(userContext.getSmsRole() != UserDTO.Role.STUDENT) throw new IllegalStateException("Only students can add answer file");
+        if(!answerRepository.existsById(id)) throw new IllegalStateException("Answer does not exists");
     }
 
-    private void validateHomework(Long id) {
-        if (userContext.getSmsRole() != UserDTO.Role.TEACHER) throw new IllegalStateException("Only teacher can add homework file");
-        if (!homeworkRepository.existsById(id)) throw new IllegalStateException("Homework does not exists");
+    private void validateHomework(Long id){
+        if(userContext.getSmsRole() != UserDTO.Role.TEACHER) throw new IllegalStateException("Only teacher can add homework file");
+        if(!homeworkRepository.existsById(id)) throw new IllegalStateException("Homework does not exists");
     }
 
     public void deleteFile(Long id) {
