@@ -17,7 +17,22 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <script.extension>.sh</script.extension>
+        <separator>/</separator>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.sms</groupId>
+            <artifactId>api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sms</groupId>
+            <artifactId>auth-lib</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
@@ -33,11 +48,10 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>scripts/copy-values${script.extension}</executable>
+                            <executable>scripts${separator}copy-values${script.extension}</executable>
                         </configuration>
                     </execution>
                 </executions>
-
             </plugin>
         </plugins>
     </build>
@@ -52,6 +66,7 @@
             </activation>
             <properties>
                 <script.extension>.bat</script.extension>
+                <separator>\</separator>
             </properties>
         </profile>
         <profile>
@@ -63,6 +78,7 @@
             </activation>
             <properties>
                 <script.extension>.sh</script.extension>
+                <separator>/</separator>
             </properties>
         </profile>
     </profiles>

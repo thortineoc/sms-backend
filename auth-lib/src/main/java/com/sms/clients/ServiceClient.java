@@ -25,12 +25,9 @@ public class ServiceClient {
     @Autowired
     UserContext userContext;
 
-    @Autowired
-    SmsConfiguration config;
-
     @PostConstruct
     void init() {
-        HAPROXY_URL = config.getHaproxyUrl();
+        HAPROXY_URL = SmsConfiguration.haproxyUrl;
     }
 
     public ServiceTarget target(String serviceName) {
@@ -65,7 +62,7 @@ public class ServiceClient {
 
         public Invocation.Builder request(MediaType mediaType) {
             // reset haproxy url after a single request
-            HAPROXY_URL = config.getHaproxyUrl();
+            HAPROXY_URL = SmsConfiguration.haproxyUrl;
 
             return this.target.request(mediaType).header("Authorization", "Bearer " + userContext.getToken());
         }

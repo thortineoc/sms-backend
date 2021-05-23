@@ -6,7 +6,6 @@ import com.sms.context.SmsConfiguration;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +21,6 @@ import java.util.*;
 @Component
 @Scope("prototype")
 public class KeycloakClient {
-
-    @Autowired
-    public SmsConfiguration configuration;
 
     private String KEYCLOAK_ADMIN_URL;
     private String TOKEN_URL;
@@ -48,8 +44,8 @@ public class KeycloakClient {
 
     @PostConstruct
     private void init() {
-        KEYCLOAK_ADMIN_URL = configuration.getHaproxyUrl() + "/auth/admin/realms/" + configuration.getRealmName();
-        TOKEN_URL = configuration.getHaproxyUrl() + "/auth/realms/master/protocol/openid-connect/token";
+        KEYCLOAK_ADMIN_URL = SmsConfiguration.haproxyUrl + "/auth/admin/realms/" + SmsConfiguration.realmName;
+        TOKEN_URL = SmsConfiguration.haproxyUrl + "/auth/realms/master/protocol/openid-connect/token";
     }
 
     // ################### USER API ###################
@@ -114,9 +110,9 @@ public class KeycloakClient {
     public TokenDTO obtainToken() {
         try {
             MultivaluedMap<String, String> content = new MultivaluedHashMap<>();
-            content.putSingle("username", configuration.getAdminUsername());
-            content.putSingle("password", configuration.getAdminPassword());
-            content.putSingle("client_id", configuration.getAdminClient());
+            content.putSingle("username", SmsConfiguration.adminUsername);
+            content.putSingle("password", SmsConfiguration.adminPassword);
+            content.putSingle("client_id", SmsConfiguration.adminClient);
             content.putSingle("grant_type", "password");
 
             Response response = client.target(TOKEN_URL)
@@ -136,7 +132,7 @@ public class KeycloakClient {
     public TokenDTO refreshToken(String refreshToken) {
         try {
             MultivaluedMap<String, String> content = new MultivaluedHashMap<>();
-            content.putSingle("client_id", configuration.getAdminClient());
+            content.putSingle("client_id", SmsConfiguration.adminClient);
             content.putSingle("grant_type", "refresh_token");
             content.putSingle("refresh_token", refreshToken);
 

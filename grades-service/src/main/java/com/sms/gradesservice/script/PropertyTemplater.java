@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 import java.util.Properties;
 
 public class PropertyTemplater {
@@ -28,6 +29,9 @@ public class PropertyTemplater {
         }
 
         Path outputPath = Paths.get("/", templatePath.subpath(0, templatePath.getNameCount() - 1).toString(), APP_PROPERTIES);
+        if (System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows")) {
+            outputPath = Paths.get(outputPath.toString().substring(1)).toAbsolutePath();
+        }
 
         if (!Files.exists(outputPath)) {
             Files.createFile(outputPath.toAbsolutePath());
