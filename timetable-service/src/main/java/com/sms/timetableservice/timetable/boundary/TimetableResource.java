@@ -4,11 +4,11 @@ package com.sms.timetableservice.timetable.boundary;
 import com.sms.api.timetable.SimpleTimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.AuthRole;
+import com.sms.context.UserContext;
 import com.sms.timetableservice.timetable.control.TimetableService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +22,11 @@ public class TimetableResource {
     @Autowired
     TimetableService timetableService;
 
-    @AuthRole(UserDTO.Role.ADMIN)
+    @Autowired
+    UserContext userContext;
+
+
+    @AuthRole(UserDTO.Role.ADMIN) //wypierdala się na mordę
     @PutMapping()
     ResponseEntity<SimpleTimetableDTO> createClass(@RequestBody SimpleTimetableDTO dto){
         SimpleTimetableDTO timetableDTO = timetableService.createClass(dto);
