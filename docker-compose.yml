@@ -15,7 +15,6 @@ services:
             - POSTGRES_PASSWORD=sms
             - POSTGRES_USER=sms
             - POSTGRES_DB=sms
-        #entrypoint: ["bash", "-c", "psql -U sms -d sms  < db_dump_text"]
     keycloak:
         image: stadryniak/kc-sms
         container_name: "keycloak"
@@ -24,25 +23,3 @@ services:
         environment: # WARNING: DO NOT CHANGE
             - DB_ADDR=postgres
             - DB_VENDOR=POSTGRES
-            
-
-#    usermanagement-service:
-#        image: stadryniak/usermanagement-service
-#        ports:
-#            - "24034"
-#    grades-service:
-#        image: stadryniak/grades-service
-#        ports:
-#            - "24032"
-#    homework-service:
-#        image: stadryniak/homework-service
-#        ports:
-#            - "24026"
-#    timetable-service:
-#        image: stadryniak/timetable-service
-#        ports:
-#            - "24030"
-#    presence-service:
-#        image: stadryniak/presence-service
-#        ports:
-#            - "24028" 
