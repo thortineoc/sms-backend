@@ -36,10 +36,9 @@ CREATE TABLE Classes
     subject    varchar(63) NOT NULL,
     teacher_id varchar(63) NOT NULL,
     weekday    int         NOT NULL,
-    room       int         NOT NULL,
-    beginDate  date        NOT NULL,
-    endDate    date        NOT NULL,
-    lesson     int         NOT NULL
+    room       int,
+    lesson     int         NOT NULL,
+    conflict   int
 );
 
 CREATE TABLE Files
