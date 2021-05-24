@@ -49,7 +49,8 @@ CREATE TABLE Files
     file        bytea        NOT NULL,
     type        varchar(31)  NOT NULL,
     relation_id int          NOT NULL,
-    owner_id    varchar(63 NOT NULL);
+    owner_id    varchar(63 NOT NULL)
+);
 
 CREATE TABLE Grades
 (
