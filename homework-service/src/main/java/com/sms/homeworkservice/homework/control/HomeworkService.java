@@ -2,7 +2,6 @@ package com.sms.homeworkservice.homework.control;
 
 import com.sms.api.common.Util;
 import com.sms.api.homework.AnswerWithStudentDTO;
-import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.homework.SimpleHomeworkDTO;
 import com.sms.api.usermanagement.CustomAttributesDTO;
 import com.sms.api.usermanagement.UserDTO;
@@ -16,7 +15,10 @@ import com.sms.model.homework.AnswerJPA;
 import com.sms.model.homework.HomeworkJPA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
 import java.util.Collections;
@@ -98,7 +100,7 @@ public class HomeworkService {
         }
     }
 
-    public HomeworkDTO createHomework(HomeworkDTO homeworkDTO) {
+    public SimpleHomeworkDTO createHomework(SimpleHomeworkDTO homeworkDTO) {
         HomeworkJPA homework = HomeworkMapper.toJPA(homeworkDTO);
         homework.setTeacherId(userContext.getUserId());
 
@@ -106,46 +108,63 @@ public class HomeworkService {
         return HomeworkMapper.toDTOBuilder(updatedHomework).build();
     }
 
-    public HomeworkDTO updateHomework(HomeworkDTO homeworkDTO) {
-        if (!homeworkDTO.getId().isPresent()) return createHomework(homeworkDTO);
+    @Transactional
+    public SimpleHomeworkDTO updateHomework(SimpleHomeworkDTO homeworkDTO) {
+        if (!homeworkDTO.getId().isPresent()) {
+            return createHomework(homeworkDTO);
+        }
         validateHomework(homeworkDTO);
-        if (homeworkRepository.updateTable(
+        boolean updated = homeworkRepository.updateTable(
                 Timestamp.valueOf(homeworkDTO.getDeadline()),
                 homeworkDTO.getGroup(),
                 homeworkDTO.getSubject(),
                 homeworkDTO.getId().get(),
                 homeworkDTO.getDescription(),
                 homeworkDTO.getTitle(),
-                homeworkDTO.getToEvaluate()) != 1)
+                homeworkDTO.getToEvaluate()) == 1;
+        if (!updated) {
             throw new IllegalStateException("id does not exists or update failed");
+        }
         return homeworkDTO;
     }
 
-
+    @Transactional
     public void deleteHomework(Long id) {
         Optional<HomeworkJPA> homework = homeworkRepository.findById(id);
-        if(homework.isPresent()){
-            if(homework.get().getTeacherId().equals(userContext.getUserId())){
-                deleteAssignedFiles(id, homework.get());
-                homeworkRepository.deleteById(id);
-            }else throw new IllegalStateException("You are not homework owner");
+        if (!homework.isPresent()) {
+            throw new IllegalStateException("Homework " + id + "doesn't exist");
+        }
 
-        }else throw new IllegalStateException("Homework doesnt exist");
+        if (UserDTO.Role.TEACHER == userContext.getSmsRole()) {
+            String teacherId = userContext.getUserId();
+            if (!teacherId.equals(homework.get().getTeacherId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of homework with ID: " + id);
+            }
+        }
+
+        deleteAssignedFiles(id, homework.get());
+        homeworkRepository.deleteById(id);
     }
 
-    void deleteAssignedFiles(Long id, HomeworkJPA homework) {
+    private void deleteAssignedFiles(Long id, HomeworkJPA homework) {
         List<Long> answersIds = homework.getAnswers().stream().map(AnswerJPA::getId).collect(Collectors.toList());
         fileRepository.deleteHomeworksAndAnswersFiles(answersIds, id);
         answerRepository.deleteAnswerByHomeworkId(id);
-
     }
 
+    private void validateHomework(SimpleHomeworkDTO dto) {
+        Long homeworkId = dto.getId().get();
+        Optional<HomeworkJPA> homework = homeworkRepository.getById(homeworkId);
+        if (!homework.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Homework with ID: " + homeworkId + " doesn't exist, cannot update.");
+        }
+        boolean groupOrSubjectChanged = !dto.getSubject().equals(homework.get().getSubject())
+                || !dto.getGroup().equals(homework.get().getGroup());
 
-    void validateHomework(HomeworkDTO dto) {
-        if (answerRepository.existsByHomeworkId(dto.getId().get())) {
-            HomeworkJPA homeworkJPA = homeworkRepository.getById(dto.getId().get()).get();
-            if (!homeworkJPA.getSubject().equals(dto.getSubject()) || !homeworkJPA.getGroup().equals(dto.getGroup()))
-                throw new IllegalStateException("Answers exist");
+        if (answerRepository.existsByHomeworkId(homeworkId) && groupOrSubjectChanged) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Answers under homework: " + dto.getId() + " already exist, cannot update group and subject.");
         }
     }
 
@@ -160,21 +179,4 @@ public class HomeworkService {
                 throw new IllegalArgumentException("Users with role " + userContext.getSmsRole() + " have no student ID");
         }
     }
-
 }
-/*
-cascade.detach
-1homework 1homeworkfile 2answers 1answerfile
-select homeworkjp0_.id as id1_3_0_, homeworkjp0_.createdtime as createdt2_3_0_, homeworkjp0_.deadline as deadline3_3_0_, homeworkjp0_.description as descript4_3_0_, homeworkjp0_.groups as groups5_3_0_, homeworkjp0_.lastupdatedtime as lastupda6_3_0_, homeworkjp0_.subject as subject7_3_0_, homeworkjp0_.teacher_id as teacher_8_3_0_, homeworkjp0_.title as title9_3_0_, homeworkjp0_.toevaluate as toevalu10_3_0_ from homeworks homeworkjp0_ where homeworkjp0_.id=?
-select answers0_.homework_id as homework7_0_0_, answers0_.id as id1_0_0_, answers0_.id as id1_0_1_, answers0_.createdtime as createdt2_0_1_, answers0_.grade_id as grade_id6_0_1_, answers0_.homework_id as homework7_0_1_, answers0_.lastupdatedtime as lastupda3_0_1_, answers0_.review as review4_0_1_, answers0_.student_id as student_5_0_1_ from answers answers0_ where answers0_.homework_id=?
-delete from answers where homework_id=?
-binding parameter [1] as [BIGINT] - [115]
-delete from files where (relation_id in (? , ?)) and type='ANSWER' or (relation_id in (?)) and type='HOMEWORK'
-update answers set homework_id=null where homework_id=?
-update files set relation_id=null where relation_id=? and ( type = 'HOMEWORK')
-delete from homeworks where id=?
-*/
-
-/*
-"Batch update returned unexpected row count from update [0]; actual row count: 0; expected: 1; statement executed: delete from answers where id=?; nested exception is org.hibernate.StaleStateException: Batch update returned unexpected row count from update [0]; actual row count: 0; expected: 1; statement executed: delete from answers where id=?",*/
-

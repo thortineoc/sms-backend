@@ -1,10 +1,9 @@
 package com.sms.api.common;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class Util {
 
@@ -30,5 +29,23 @@ public class Util {
 
     public static <K, V> V getOrThrow(Map<K, V> map, K key, Supplier<? extends RuntimeException> throwable) {
         return Optional.ofNullable(map.get(key)).orElseThrow(throwable);
+    }
+
+    public static <T, U extends Comparable<? super U>> List<T> sort(List<T> list, Function<T, U> compareBy) {
+        return list.stream()
+                .sorted(Comparator.comparing(compareBy))
+                .collect(Collectors.toList());
+    }
+
+    public static void ignoreException(Runnable r) {
+        try {
+            r.run();
+        } catch (Throwable ignored) {}
+    }
+
+    public static void runAll(Runnable... r) {
+        for (Runnable runnable : r) {
+            ignoreException(runnable);
+        }
     }
 }

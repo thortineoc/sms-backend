@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class HomeworkMapper {
 
-    public static HomeworkJPA toJPA(HomeworkDTO homework) {
+    public static HomeworkJPA toJPA(SimpleHomeworkDTO homework) {
         HomeworkJPA jpa = new HomeworkJPA();
         jpa.setDeadline(Timestamp.valueOf(homework.getDeadline()));
         jpa.setSubject(homework.getSubject());
@@ -31,7 +31,7 @@ public class HomeworkMapper {
     }
 
     public static HomeworkDTO toTeacherDetailDTO(HomeworkJPA jpa, List<AnswerWithStudentDTO> answers) {
-        return toDTOBuilder(jpa)
+        return HomeworkDTO.builder().from(toDTOBuilder(jpa).build())
                 .answers(answers)
                 .files(jpa.getFiles().stream()
                         .map(FileMapper::toDTO)
@@ -66,8 +66,8 @@ public class HomeworkMapper {
         return toDTOBuilder(jpa).build();
     }
 
-    public static ImmutableHomeworkDTO.Builder toDTOBuilder(HomeworkJPA jpa) {
-        return HomeworkDTO.builder()
+    public static ImmutableSimpleHomeworkDTO.Builder toDTOBuilder(HomeworkJPA jpa) {
+        return SimpleHomeworkDTO.builder()
                 .id(Optional.ofNullable(jpa.getId()))
                 .createdTime(Optional.ofNullable(jpa.getCreatedTime()).map(Timestamp::toLocalDateTime))
                 .lastUpdateTime(Optional.ofNullable(jpa.getLastUpdatedTime()).map(Timestamp::toLocalDateTime))

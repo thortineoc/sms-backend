@@ -43,5 +43,4 @@ public class FileMapper {
         jpa.setOwnerId(ownerId);
         return jpa;
     }
-
 }

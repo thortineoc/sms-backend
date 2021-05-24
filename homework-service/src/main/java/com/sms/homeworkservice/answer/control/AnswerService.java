@@ -3,6 +3,7 @@ package com.sms.homeworkservice.answer.control;
 import com.sms.api.grades.GradeDTO;
 import com.sms.api.homework.AnswerDTO;
 import com.sms.api.homework.FileLinkDTO;
+import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.UserContext;
 import com.sms.homeworkservice.file.control.FileRepository;
 import com.sms.homeworkservice.homework.control.HomeworkRepository;
@@ -13,11 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Component
 @Scope("request")
@@ -35,6 +35,7 @@ public class AnswerService {
     @Autowired
     FileRepository fileRepository;
 
+    @Transactional
     public AnswerDTO updateAnswer(AnswerDTO answer) {
         Long id = answer.getId().orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.BAD_REQUEST)
@@ -71,16 +72,30 @@ public class AnswerService {
         return AnswerMapper.toDTOSimple(ans);
     }
 
+    @Transactional
     public void deleteUserAnswers(String id) {
         fileRepository.deleteAllByOwnerId(id);
         answerRepository.deleteAllByStudentId(id);
     }
 
+    @Transactional
     public void deleteAnswer(Long id) {
-        Optional<AnswerJPA> answer= answerRepository.findById(id);
-        if(answer.isPresent() && !Optional.ofNullable(answer.get().getReview()).isPresent() && !Optional.ofNullable(answer.get().getGrade()).isPresent()) {
-            fileRepository.deleteAllByRelationIdAndType(id, FileLinkDTO.Type.ANSWER.toString());
-            answerRepository.deleteById(id);
-        }else throw new IllegalStateException("You cannot delete answer: doesnt exist || already reviewed");
+        AnswerJPA answer = answerRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Answer: " + id + " doesn't exist."));
+        checkIfCanDelete(answer);
+
+        fileRepository.deleteAllByRelationIdAndType(id, FileLinkDTO.Type.ANSWER.toString());
+        answerRepository.deleteById(id);
+    }
+
+    private void checkIfCanDelete(AnswerJPA answer) {
+        if (userContext.getSmsRole() != UserDTO.Role.ADMIN) {
+            if (answer.getReview() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete answer that is already reviewed.");
+            }
+            if (answer.getGrade() != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete answer that is already graded.");
+            }
+        }
     }
 }

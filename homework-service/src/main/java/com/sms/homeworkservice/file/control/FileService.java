@@ -1,16 +1,22 @@
 package com.sms.homeworkservice.file.control;
 
+import com.sms.api.common.BadRequestException;
+import com.sms.api.common.ForbiddenException;
+import com.sms.api.common.NotFoundException;
 import com.sms.api.homework.FileLinkDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.UserContext;
 import com.sms.homeworkservice.answer.control.AnswerRepository;
 import com.sms.homeworkservice.homework.control.HomeworkRepository;
+import com.sms.model.homework.AnswerJPA;
 import com.sms.model.homework.FileJPA;
+import com.sms.model.homework.HomeworkJPA;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -34,52 +40,58 @@ public class FileService {
     @Autowired
     AnswerRepository answerRepository;
 
-    public FileJPA getFile(Long id) {
-        return fileRepository.findById(id).orElseThrow(() -> new IllegalStateException("File " + id + " doesn't exist"));
+    public Optional<FileJPA> getFile(Long id) {
+        return fileRepository.findById(id);
     }
 
+    @Transactional
     public FileLinkDTO store(MultipartFile file, Long id, FileLinkDTO.Type type) throws IOException {
 
         FileJPA fileDB = FileMapper.toJPA(file, id, type, userContext.getUserId());
 
-        switch (type){
-            case ANSWER:
-                validateAnswer(id);
-                break;
-            case HOMEWORK:
-                validateHomework(id);
-                break;
-            default:
-                throw new IllegalStateException("incorrect TYPE");
-        }
+        validateFileUpload(id, type);
         return FileMapper.toDTO(fileRepository.save(fileDB));
     }
 
-    private void validateAnswer(Long id){
-        if(userContext.getSmsRole() != UserDTO.Role.STUDENT) throw new IllegalStateException("Only students can add answer file");
-        if(!answerRepository.existsById(id)) throw new IllegalStateException("Answer does not exists");
+    private void validateFileUpload(Long relationId, FileLinkDTO.Type type) {
+        if (type == FileLinkDTO.Type.ANSWER) {
+            if (userContext.getSmsRole() != UserDTO.Role.STUDENT) {
+                throw new BadRequestException("Files under answers can only be uploaded by students.");
+            }
+            AnswerJPA answer = answerRepository.findById(relationId).orElseThrow(
+                    () -> new NotFoundException("Answer: " + relationId + " not found, cannot upload file."));
+            if (!userContext.getUserId().equals(answer.getStudentId())) {
+                throw new ForbiddenException("User: " + userContext.getUserId() + " does not own answer: " + relationId);
+            }
+        } else if (type == FileLinkDTO.Type.HOMEWORK) {
+            if (userContext.getSmsRole() != UserDTO.Role.TEACHER) {
+                throw new BadRequestException("Files under homework can only be uploaded by teachers.");
+            }
+            HomeworkJPA homework = homeworkRepository.findById(relationId).orElseThrow(
+                    () -> new NotFoundException("Homework: " + relationId + " not found, cannot upload file."));
+            if (!userContext.getUserId().equals(homework.getTeacherId())) {
+                throw new ForbiddenException("Teacher: " + userContext.getUserId() + " does not own homework: " + relationId);
+            }
+        } else {
+            throw new IllegalStateException("Incorrect file type: " + type);
+        }
     }
 
-    private void validateHomework(Long id){
-        if(userContext.getSmsRole() != UserDTO.Role.TEACHER) throw new IllegalStateException("Only teacher can add homework file");
-        if(!homeworkRepository.existsById(id)) throw new IllegalStateException("Homework does not exists");
-    }
-
+    @Transactional
     public void deleteFile(Long id) {
         try {
             Optional<FileJPA> file = fileRepository.findById(id);
-            if (file.isPresent()) {
-                if (!userContext.getUserId().equals(file.get().getOwnerId())) {
-                    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-                }
-                fileRepository.deleteById(id);
-            } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            if (!file.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File: " + id + " does not exist.");
             }
+            if (UserDTO.Role.ADMIN != userContext.getSmsRole() && !userContext.getUserId().equals(file.get().getOwnerId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of file: " + id);
+            }
+            fileRepository.deleteById(id);
         } catch (ConstraintViolationException e) {
             throw new IllegalArgumentException("Deleting file: " + id + " violated database constraints: " + e.getConstraintName());
         } catch (EntityNotFoundException e) {
-            throw new IllegalStateException("File with ID: " + id + " does not exist, can't delete");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File with ID: " + id + " does not exist, can't delete");
         }
     }
 }
