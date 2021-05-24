@@ -38,3 +38,17 @@ how to run the docker image:
 ### 5. Postgres
 
 // TODO
+
+## LOCAL ENV
+### 1. Keycloak, Haproxy and Postgres
+
+- Go to docker directory: 
+`cd docker`
+
+- Run composer:
+`docker compose up`
+  
+- Initialize database (Windows: use WSL)
+`docker exec -i postgres  pg_restore -U sms -v -d sms < db_dump_text`
+
+- Start backend services via IntelliJ
