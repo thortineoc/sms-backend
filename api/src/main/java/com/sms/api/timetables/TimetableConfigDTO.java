@@ -17,4 +17,6 @@ public interface TimetableConfigDTO {
     }
 
     List<List<LessonConfigDTO>> getConfig();
+
+    int getLessonCount();
 }
