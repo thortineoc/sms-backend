@@ -36,7 +36,7 @@ public class ConfigManagementTest {
     @Order(1)
     @Test
     void shouldSaveConfiguration() {
-        createdConfig = getConfig("08:00", "08:45");
+        createdConfig = getConfig(3, "08:00", "08:45");
 
         CLIENT.saveConfig(createdConfig).then().statusCode(204);
     }
@@ -72,13 +72,15 @@ public class ConfigManagementTest {
         CLIENT.getConfig().then().statusCode(204);
     }
 
-    private TimetableConfigDTO getConfig(String startTime, String endTime) {
+    private TimetableConfigDTO getConfig(int lessonCount, String startTime, String endTime) {
         return TimetableConfigDTO.builder()
                 .config(Collections.singletonList(
                         Collections.singletonList(LessonConfigDTO.builder()
                                 .startTime(LocalTime.parse(startTime))
                                 .endTime(LocalTime.parse(endTime))
                         .build())
-                )).build();
+                ))
+                .lessonCount(lessonCount)
+                .build();
     }
 }
