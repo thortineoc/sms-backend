@@ -7,6 +7,8 @@ case $1 in
     docker exec -i postgres pg_restore -U sms -v -d sms < db_dump_text
 		;;
 	stop)
+	  cd docker && \
+	  docker compose down
 		;;
 	status)
 		;;
