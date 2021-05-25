@@ -3,9 +3,6 @@ services:
     haproxy:
         image: stadryniak/sms-haproxy-linux
         container_name: "haproxy"
-        ports:
-            - "24020:24020"
-            - "9999:9999"
         network_mode: host
     sms-postgres:
         image: postgres
