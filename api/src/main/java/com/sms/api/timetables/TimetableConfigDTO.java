@@ -16,7 +16,7 @@ public interface TimetableConfigDTO {
         return new ImmutableTimetableConfigDTO.Builder();
     }
 
-    List<List<LessonConfigDTO>> getConfig();
+    List<LessonConfigDTO> getConfig();
 
     int getLessonCount();
 }

@@ -74,11 +74,10 @@ public class ConfigManagementTest {
 
     private TimetableConfigDTO getConfig(int lessonCount, String startTime, String endTime) {
         return TimetableConfigDTO.builder()
-                .config(Collections.singletonList(
-                        Collections.singletonList(LessonConfigDTO.builder()
+                .config(Collections.singletonList(LessonConfigDTO.builder()
                                 .startTime(LocalTime.parse(startTime))
                                 .endTime(LocalTime.parse(endTime))
-                        .build())
+                        .build()
                 ))
                 .lessonCount(lessonCount)
                 .build();
