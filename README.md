@@ -1,5 +1,13 @@
 # SMS Backend
 
+## Scripts
+
+- `install.sh` - installs JDK 1.8, maven, sets properties to localhost for local deployment
+- `run.sh {start|status|stop}` - for backend apps, keycloak, haproxy and postgres 
+- `test.sh` - runs integrations tests on the locally set up backend
+
+### [Configuration file](config/scripts/values.properties)
+
 ## LOCAL ENV
 ### 1. Keycloak, Haproxy and Postgres
 

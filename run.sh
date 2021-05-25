@@ -2,13 +2,13 @@
 
 case $1 in
 	start)
-	  cd docker && \
-    docker compose up && \
-    docker exec -i postgres pg_restore -U sms -v -d sms < db_dump_text
+	  (cd docker && \
+    docker-compose up && \
+    docker exec -i postgres pg_restore -U sms -v -d sms < db_dump_text) &
 		;;
 	stop)
-	  cd docker && \
-	  docker compose down
+	  (cd docker && \
+	  docker-compose down)
 		;;
 	status)
 		;;
