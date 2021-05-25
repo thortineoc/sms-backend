@@ -1,7 +1,10 @@
 package com.sms.timetableservice.timetable.boundary;
 
 
+import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.timetable.SimpleTimetableDTO;
+import com.sms.api.timetable.TimetableConflictDTO;
+import com.sms.api.timetable.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.AuthRole;
 import com.sms.context.UserContext;
@@ -14,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/timetable")
 @Scope("request")
@@ -25,12 +30,12 @@ public class TimetableResource {
     @Autowired
     UserContext userContext;
 
-
-    @AuthRole(UserDTO.Role.ADMIN) //wypierdala się na mordę
+    @AuthRole(UserDTO.Role.ADMIN)
     @PutMapping()
-    ResponseEntity<SimpleTimetableDTO> createClass(@RequestBody SimpleTimetableDTO dto){
-        SimpleTimetableDTO timetableDTO = timetableService.createClass(dto);
-        return ResponseEntity.ok(timetableDTO);
+    public ResponseEntity<List<TimetableConflictDTO>> createClass(@RequestBody TimetableDTO dto){
+        List<TimetableConflictDTO> timetableDTO = timetableService.createClass(dto);
+        if(timetableDTO.isEmpty()) return ResponseEntity.status(418).body(timetableDTO);
+        else return ResponseEntity.ok(timetableDTO);
     }
 
 }

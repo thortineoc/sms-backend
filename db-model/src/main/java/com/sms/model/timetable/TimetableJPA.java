@@ -15,8 +15,11 @@ public class TimetableJPA {
     @Column(name = "groups")
     String group;
 
+    @Column(name = "subject")
+    String subject;
+
     @Column(name = "teacher_id")
-    Long teacherId;
+    String teacherId;
 
     @Column(name = "weekday")
     Integer weekday;
@@ -41,9 +44,13 @@ public class TimetableJPA {
 
     public void setId(Long id) { this.id = id; }
 
-    public Long getTeacherId() { return teacherId; }
+    public String getTeacherId() {
+        return teacherId;
+    }
 
-    public void setTeacherId(Long teacherId) { this.teacherId = teacherId; }
+    public void setTeacherId(String teacherId) {
+        this.teacherId = teacherId;
+    }
 
     public Integer getWeekday() { return weekday; }
 
@@ -55,13 +62,32 @@ public class TimetableJPA {
 
     public Timestamp getBegindate() { return begindate; }
 
-    public void setBegindate(Timestamp begindate) { this.begindate = begindate; }
+    public void setBegindate(Timestamp begindate) {
+        this.begindate = begindate;
+    }
 
-    public Timestamp getEnddate() { return enddate; }
+    public Timestamp getEnddate() {
+        return enddate;
+    }
 
-    public void setEnddate(Timestamp enddate) { this.enddate = enddate; }
+    public void setEnddate(Timestamp enddate) {
+        this.enddate = enddate;
+    }
 
-    public Integer getLesson() { return lesson; }
+    public Integer getLesson() {
+        return lesson;
+    }
 
-    public void setLesson(Integer lesson) { this.lesson = lesson; }
+    public void setLesson(Integer lesson) {
+        this.lesson = lesson;
+    }
+
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
 }

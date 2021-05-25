@@ -17,6 +17,8 @@ public interface SimpleTimetableDTO {
 
     Optional<Long> getId();
 
+    String getTeacherId();
+
     String getGroup();
 
     String getSubject();

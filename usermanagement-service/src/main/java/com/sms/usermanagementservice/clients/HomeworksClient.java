@@ -20,7 +20,7 @@ public class HomeworksClient {
     private static final String HOMEWORKS = "homework-service";
 
     public boolean deleteAnswers(String id) {
-        Response response = serviceClient.target(HOMEWORKS) // add ` overrideHaproxyUrl("http://localhost:24026") `
+        Response response = serviceClient.overrideHaproxyUrl("http://localhost:24026").target(HOMEWORKS) // add ` overrideHaproxyUrl("http://localhost:24026") `
                 .path("answer")    // to test locally
                 .path("user")
                 .path(id)
