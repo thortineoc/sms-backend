@@ -18,9 +18,8 @@ sed -i "s/^[#]*\s*DATABASE_HOST=.*/DATABASE_HOST=localhost/" config/scripts/valu
 
 #keycloak run
 
-setsid ./keycloak*/bin/standalone.sh \
-                -Djboss.http.port=24080 \
-                -Djboss.management.http.port=24082 \
-                > /dev/null 2>&1 < /dev/null &
+setsid ./keycloak*/bin/standalone.sh -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=docker/keycloak_db.json -Dkeycloak.migration.strategy=OVERWRITE_EXISTING -Djboss.http.port=24080 -Djboss.management.http.port=24082  > /dev/null 2>&1 < /dev/null &
+
+#setsid ./keycloak*/bin/standalone.sh -Djboss.http.port=24080 -Djboss.management.http.port=24082  > /dev/null 2>&1 < /dev/null &
 
 mvn clean install -Pbuild

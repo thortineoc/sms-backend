@@ -12,11 +12,10 @@ services:
             - POSTGRES_PASSWORD=sms
             - POSTGRES_USER=sms
             - POSTGRES_DB=sms
-    keycloak:
-        image: stadryniak/kc-sms
-        container_name: "keycloak"
-        ports:
-            - "24080:8080" 
-        environment: # WARNING: DO NOT CHANGE
-            - DB_ADDR=postgres
-            - DB_VENDOR=POSTGRES
+              #keycloak:
+              #image: stadryniak/kc-sms
+              #container_name: "keycloak"
+              #network_mode: host
+              #environment: # WARNING: DO NOT CHANGE
+              #- DB_ADDR=postgres
+              #- DB_VENDOR=POSTGRES
