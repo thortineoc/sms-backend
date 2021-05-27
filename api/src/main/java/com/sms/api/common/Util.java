@@ -10,6 +10,16 @@ public class Util {
     private Util() {
     }
 
+    public static <T, R> List<R> map(List<T> collection, Function<T, R> mapper) {
+        return collection.stream()
+                .map(mapper)
+                .collect(Collectors.toList());
+    }
+
+    public static <T> T pop(List<T> list) {
+        return list.remove(list.size() - 1);
+    }
+
     public static <K, V> List<V> getOrEmpty(Map<K, ? extends List<V>> map, K key) {
         List<V> value = map.get(key);
         return value == null

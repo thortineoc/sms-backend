@@ -33,21 +33,25 @@ public class ConfigResource {
 
     @GetMapping
     public ResponseEntity<TimetableConfigDTO> getConfig() {
-        Optional<Item> item = itemResource.getById(CONFIG_ID);
-        if (!item.isPresent()) {
-            return ResponseEntity.noContent().build();
-        }
-        try {
-            TimetableConfigDTO config = item.get().get(TimetableConfigDTO.class);
-            return ResponseEntity.ok(config);
-        } catch (IOException e) {
-            throw new IllegalStateException("Could not deserialize timetable configuration.");
-        }
+        return getConfigDTO().map(ResponseEntity::ok).orElse(ResponseEntity.noContent().build());
     }
 
     @DeleteMapping()
     public ResponseEntity<Object> deleteConfig() {
         itemResource.deleteItem(CONFIG_ID);
         return ResponseEntity.noContent().build();
+    }
+
+    public Optional<TimetableConfigDTO> getConfigDTO() {
+        Optional<Item> item = itemResource.getById(CONFIG_ID);
+        if (!item.isPresent()) {
+            return Optional.empty();
+        }
+        try {
+            TimetableConfigDTO config = item.get().get(TimetableConfigDTO.class);
+            return Optional.of(config);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not deserialize timetable configuration.");
+        }
     }
 }
