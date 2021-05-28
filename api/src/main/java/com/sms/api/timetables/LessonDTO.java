@@ -2,7 +2,6 @@ package com.sms.api.timetables;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.sms.api.usermanagement.UserDTO;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -24,7 +23,7 @@ public interface LessonDTO {
 
     String getSubject();
 
-    Optional<UserDTO> getTeacher();
+    Optional<String> getTeacherId();
 
     Integer getWeekDay();
 

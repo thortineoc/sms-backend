@@ -1,10 +1,9 @@
 package com.sms.timetableservice.timetables.control;
 
-import com.google.common.collect.*;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.sms.api.common.BadRequestException;
 import com.sms.api.common.Util;
-import com.sms.api.timetables.LessonDTO;
-import com.sms.api.timetables.SubjectInfoDTO;
 import com.sms.api.timetables.TimetableConfigDTO;
 import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
@@ -29,7 +28,6 @@ import static com.sms.timetableservice.timetables.control.TimetableGenerator.DAY
 @Scope("request")
 public class TimetableService {
 
-
     @Autowired
     ConfigResource configResource;
 
@@ -39,52 +37,79 @@ public class TimetableService {
     @Autowired
     UserManagementClient userManagementClient;
 
-    @Transactional                                      // { "teacherId": { "subject": count } }
+    @Transactional                                 // { "teacherId": { "subject": count } }
     public TimetableDTO generateTimetable(String group, Map<String, Map<String, Integer>> info) {
         TimetableConfigDTO config = getConfig();
-        List<TeacherWithSubject> teachersWithSubjects = convertToFlatList(info);
+        Set<TeacherWithSubject> teachersWithSubjects = convertToFlatList(info);
 
-        if (teachersWithSubjects.size() > config.getLessonCount()) {
+        if (teachersWithSubjects.size() > config.getLessonCount() * DAYS) {
             throw new BadRequestException("Can't add more lessons than the maximum amount of "
-                    + config.getLessonCount() + " per day (that means " + config.getLessonCount() * DAYS + ").");
+                    + config.getLessonCount() + " per day (that means " + config.getLessonCount() * DAYS + " in total).");
         }
 
         Map<String, UserDTO> teachers = getTeachersById(teachersWithSubjects);
-        Set<String> missingTeachers = Sets.difference(teachers.keySet(), info.keySet());
-        if (!missingTeachers.isEmpty()) {
-            throw new IllegalStateException("Couldn't find teachers: " + missingTeachers);
-        }
+        validateRequest(group, teachers, info);
 
         Map<String, Map<LessonKey, ClassJPA>> potentialConflicts = getPotentialConflicts(teachersWithSubjects);
-        TimetableGenerator generator = new TimetableGenerator(group, config, teachersWithSubjects, potentialConflicts);
 
-        List<ClassJPA> generatedTimetable = generator.generate();
+        timetableRepository.deleteAllByGroup(group);
+        List<ClassJPA> generatedTimetable = new TimetableGenerator(group, config, teachersWithSubjects, potentialConflicts)
+                .generate();
+        List<ClassJPA> savedClasses = Lists.newArrayList(timetableRepository.saveAll(generatedTimetable));
 
-//        timetableRepository.deleteAllByGroup(group);
-//        List<ClassJPA> savedClasses = Lists.newArrayList(timetableRepository.saveAll(generatedTimetable.values()));
+        return TimetableMapper.toDTO(savedClasses, teachers);
+    }
 
-        return TimetableMapper.toDTO(generatedTimetable, teachers);
+    private void validateRequest(String group, Map<String, UserDTO> teachers, Map<String, Map<String, Integer>> info) {
+        Set<String> realSubjects = userManagementClient.getSubjects();
+        Set<String> realGroups = userManagementClient.getGroups();
+        validateGroup(realGroups, group);
+        validateSubjects(realSubjects, teachers, info);
+    }
+
+    /*TODO: unit test*/
+    void validateSubjects(Set<String> realSubjects, Map<String, UserDTO> teachers, Map<String, Map<String, Integer>> info) {
+        if (!teachers.keySet().equals(info.keySet())) {
+            throw new IllegalStateException("Some of the teachers don't exist");
+        }
+
+        info.forEach((teacher, subjects) -> {
+            if (!realSubjects.containsAll(subjects.keySet())) {
+                throw new BadRequestException("Subjects: " + Sets.symmetricDifference(subjects.keySet(), realSubjects) + " don't exist");
+            }
+
+            Set<String> teacherSubjects = new HashSet<>(teachers.get(teacher).getCustomAttributes().getSubjects());
+            if (!teacherSubjects.containsAll(subjects.keySet())) {
+                throw new BadRequestException("Teacher: " + teacher + " does not teach subjects: " + Sets.symmetricDifference(subjects.keySet(), teacherSubjects));
+            }
+        });
+    }
+
+    /*TODO: unit test*/
+    void validateGroup(Set<String> realGroups, String group) {
+        if (!realGroups.contains(group)) {
+            throw new BadRequestException("Group " + group + " does not exist");
+        }
     }
 
     /*TODO: unit test */
-    List<TeacherWithSubject> convertToFlatList(Map<String, Map<String, Integer>> info) {
-        List<TeacherWithSubject> list = info.entrySet().stream()
+    Set<TeacherWithSubject> convertToFlatList(Map<String, Map<String, Integer>> info) {
+        return info.entrySet().stream()
                 .flatMap(entry -> entry.getValue().entrySet().stream()
                         .flatMap(subjects -> IntStream.range(0, subjects.getValue())
                                 .mapToObj(i -> subjects.getKey()))
                         .map(subject -> new TeacherWithSubject(entry.getKey(), subject)))
-                .collect(Collectors.toList());
-        Collections.shuffle(list);
-        return list;
+                .collect(Collectors.toSet());
     }
 
-    private Map<String, UserDTO> getTeachersById(List<TeacherWithSubject> subjects) {
-        List<String> ids = Util.map(subjects, TeacherWithSubject::getTeacherId);
+    /*TODO: unit test */
+    Map<String, UserDTO> getTeachersById(Set<TeacherWithSubject> subjects) {
+        Set<String> ids = Util.map(subjects, TeacherWithSubject::getTeacherId);
         return userManagementClient.getUsers(ids).stream()
                 .collect(Collectors.toMap(UserDTO::getId, Function.identity()));
     }
 
-    private Map<String, Map<LessonKey, ClassJPA>> getPotentialConflicts(List<TeacherWithSubject> teachers) {
+    private Map<String, Map<LessonKey, ClassJPA>> getPotentialConflicts(Set<TeacherWithSubject> teachers) {
         List<String> teacherIds = teachers.stream().map(TeacherWithSubject::getTeacherId).collect(Collectors.toList());
         return timetableRepository.findAllByTeacherIdIn(teacherIds).stream()
                 .collect(Collectors.groupingBy(ClassJPA::getTeacherId,

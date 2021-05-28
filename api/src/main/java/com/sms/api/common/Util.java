@@ -16,6 +16,12 @@ public class Util {
                 .collect(Collectors.toList());
     }
 
+    public static <T, R> Set<R> map(Set<T> collection, Function<T, R> mapper) {
+        return collection.stream()
+                .map(mapper)
+                .collect(Collectors.toSet());
+    }
+
     public static <T> T pop(List<T> list) {
         return list.remove(list.size() - 1);
     }

@@ -15,6 +15,10 @@ public class LessonKey {
         this.lesson = c.getLesson();
     }
 
+    public static LessonKey lessonBefore(LessonKey key) {
+        return new LessonKey(key.getWeekday(), Math.max(key.getLesson() - 1, 0));
+    }
+
     public int getLesson() {
         return lesson;
     }

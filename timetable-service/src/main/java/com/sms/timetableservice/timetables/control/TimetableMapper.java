@@ -28,7 +28,7 @@ public class TimetableMapper {
 
     public static TimetableDTO toDTO(List<ClassJPA> classes, Map<String, UserDTO> teachers) {
         Map<Integer, List<LessonDTO>> lessonsByWeekday = classes.stream()
-                .map(c -> toDTO(c, teachers.get(c.getTeacherId())))
+                .map(TimetableMapper::toDTO)
                 .sorted(Comparator.comparing(LessonDTO::getWeekDay))
                 .collect(Collectors.groupingBy(LessonDTO::getWeekDay, LinkedHashMap::new, Collectors.toList()));
 
@@ -36,6 +36,7 @@ public class TimetableMapper {
 
         return TimetableDTO.builder()
                 .lessons(lessons)
+                .teachers(teachers)
                 .build();
     }
 
@@ -50,12 +51,12 @@ public class TimetableMapper {
 //                .build();
 //    }
 
-    public static LessonDTO toDTO(ClassJPA jpa, UserDTO teacher) {
+    public static LessonDTO toDTO(ClassJPA jpa) {
         return LessonDTO.builder()
                 .group(jpa.getGroup())
                 .lesson(jpa.getLesson())
                 .subject(jpa.getSubject())
-                .teacher(teacher)
+                .teacherId(jpa.getTeacherId())
                 .weekDay(jpa.getWeekday())
                 .build();
     }

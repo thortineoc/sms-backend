@@ -1,9 +1,6 @@
 package com.sms.timetableservice.timetables.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "classes")
@@ -14,12 +11,13 @@ public class ClassJPA {
     private String subject;
     private String teacherId;
     private Integer weekday;
-    private String room;
+    private Integer room;
     private Integer lesson;
     private Long conflict;
 
     @Id
     @Column(name = "id")
+    @GeneratedValue(generator = "classes_id_seq")
     public Long getId() {
         return id;
     }
@@ -34,13 +32,13 @@ public class ClassJPA {
         return weekday;
     }
 
-    @Column(name = "group")
+    @Column(name = "groups")
     public String getGroup() {
         return group;
     }
 
     @Column(name = "room")
-    public String getRoom() {
+    public Integer getRoom() {
         return room;
     }
 
@@ -83,7 +81,7 @@ public class ClassJPA {
         this.conflict = conflict;
     }
 
-    public void setRoom(String room) {
+    public void setRoom(Integer room) {
         this.room = room;
     }
 

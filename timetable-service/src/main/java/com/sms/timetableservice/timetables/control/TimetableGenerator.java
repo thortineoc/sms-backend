@@ -7,48 +7,62 @@ import com.sms.timetableservice.timetables.entity.LessonKey;
 import com.sms.timetableservice.timetables.entity.TeacherWithSubject;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class TimetableGenerator {
 
     public static final int DAYS = 5;
 
     private final Map<String, Map<LessonKey, ClassJPA>> potentialConflicts;
-    private final List<TeacherWithSubject> subjects;
+    private final Map<LessonKey, ClassJPA> generatedClasses = new HashMap<>();
+    private final Set<TeacherWithSubject> subjects;
     private final TimetableConfigDTO config;
     private final String group;
 
-    public TimetableGenerator(String group, TimetableConfigDTO config, List<TeacherWithSubject> subjects,
+    public TimetableGenerator(String group, TimetableConfigDTO config, Set<TeacherWithSubject> subjects,
                               Map<String, Map<LessonKey, ClassJPA>> potentialConflicts) {
         this.potentialConflicts = potentialConflicts;
-        this.subjects = subjects;
+        this.subjects = new HashSet<>(subjects);
         this.config = config;
         this.group = group;
     }
 
     public List<ClassJPA> generate() {
-        List<ClassJPA> generatedClasses = new ArrayList<>();
 
-        IntStream.range(0, config.getLessonCount()).forEach(lesson -> {
-            IntStream.range(0, DAYS).forEach(day -> {
+        done: for (int lesson = 0; lesson < config.getLessonCount(); lesson++) {
+            for (int day = 0; day < DAYS; day++) {
+                if (subjects.isEmpty()) break done;
+
                 LessonKey key = new LessonKey(day, lesson);
 
-                Optional<TeacherWithSubject> subject = getFirstSubject(subjects, key);
+                Optional<TeacherWithSubject> subject = getFirstSubject(key);
                 if (!subject.isPresent()) {
-                    throw new BadRequestException("Couldn't generate timetable, no teacher available on: "
-                    + WeekDays.values()[day] + " lesson: " + lesson);
+                    checkForGaps(key);
+                    continue;
                 }
+                subjects.remove(subject.get());
 
                 ClassJPA newClass = buildClass(subject.get(), group, key);
-                generatedClasses.add(newClass);
-            });
-        });
+                generatedClasses.put(key, newClass);
+            }
+        }
 
-        return generatedClasses;
+        if (!subjects.isEmpty()) {
+            throw new BadRequestException("Couldn't generate timetable, subjects: " + subjects + " won't fit");
+        }
+
+        return new ArrayList<>(generatedClasses.values());
     }
 
-    private Optional<TeacherWithSubject> getFirstSubject(List<TeacherWithSubject> subjects, LessonKey key) {
-        return subjects.stream()
+    private void checkForGaps(LessonKey current) {
+        if (generatedClasses.containsKey(LessonKey.lessonBefore(current))) {
+            throw new BadRequestException("Cannot generate timetable, gaps between lessons are not allowed");
+        }
+    }
+
+    private Optional<TeacherWithSubject> getFirstSubject(LessonKey key) {
+        List<TeacherWithSubject> listSubjects = new ArrayList<>(subjects);
+        Collections.shuffle(listSubjects);
+        return listSubjects.stream()
                 .filter(s -> hasNoConflict(s.getTeacherId(), key))
                 .findFirst();
     }
