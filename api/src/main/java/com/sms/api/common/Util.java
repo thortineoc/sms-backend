@@ -3,11 +3,17 @@ package com.sms.api.common;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class Util {
 
     private Util() {
+    }
+
+    public static <T> Collector<T, ?, List<T>> collectSorted(Comparator<? super T> c) {
+        return Collectors.collectingAndThen(
+                Collectors.toCollection(ArrayList::new), l-> { l.sort(c); return l; });
     }
 
     public static <T, R> List<R> map(List<T> collection, Function<T, R> mapper) {

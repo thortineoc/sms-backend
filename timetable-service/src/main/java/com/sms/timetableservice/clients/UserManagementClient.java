@@ -21,6 +21,19 @@ public class UserManagementClient {
     @Autowired
     ServiceClient serviceClient;
 
+    public Optional<UserDTO> getUser(String userId) {
+        Response response = serviceClient.target(USERMANAGEMENT)
+                .path("users")
+                .path(userId)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get();
+        if (response.getStatus() == HttpStatus.OK.value()) {
+            return Optional.of(response.readEntity(UserDTO.class));
+        } else {
+            return Optional.empty();
+        }
+    }
+
     public Set<String> getGroups() {
         Response response = serviceClient.target(USERMANAGEMENT)
                 .path("groups")
@@ -46,8 +59,7 @@ public class UserManagementClient {
     }
 
     public List<UserDTO> getUsers(Set<String> ids) {
-        ServiceClient.ServiceTarget target = serviceClient.overrideHaproxyUrl("http://localhost:24034/")
-                .target(USERMANAGEMENT)
+        ServiceClient.ServiceTarget target = serviceClient.target(USERMANAGEMENT)
                 .path("users")
                 .path("ids");
         ids.forEach(id -> target.queryParam("id", id));

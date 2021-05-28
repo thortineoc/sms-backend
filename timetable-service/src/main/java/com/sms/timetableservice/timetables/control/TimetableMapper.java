@@ -13,24 +13,44 @@ public class TimetableMapper {
 
     private TimetableMapper() {}
 
-//    public static TimetableDTO toDTO(List<ClassJPA> classes, Map<Long, ClassJPA> conflicts, UserDTO teacher) {
-//        Map<Integer, List<LessonDTO>> lessonsByWeekday = classes.stream()
-//                .map(c -> toDTO(c, conflicts, teacher))
-//                .sorted(Comparator.comparing(LessonDTO::getWeekDay))
-//                .collect(Collectors.groupingBy(LessonDTO::getWeekDay, LinkedHashMap::new, Collectors.toList()));
-//
-//        List<List<LessonDTO>> lessons = new ArrayList<>(lessonsByWeekday.values());
-//
-//        return TimetableDTO.builder()
-//                .lessons(lessons)
-//                .build();
-//    }
+    public static TimetableDTO toDTO(List<ClassJPA> classes, Map<String, UserDTO> teachers, Map<Long, ClassJPA> conflicts) {
+        Map<Integer, List<LessonDTO>> lessonsByWeekday = classes.stream()
+                .map(c -> toDTO(c, conflicts))
+                .sorted(Comparator.comparing(LessonDTO::getWeekDay))
+                .collect(Collectors.groupingBy(LessonDTO::getWeekDay, LinkedHashMap::new,
+                        Util.collectSorted(Comparator.comparing(LessonDTO::getLesson))));
+        List<List<LessonDTO>> lessons = new ArrayList<>(lessonsByWeekday.values());
+
+        return TimetableDTO.builder()
+                .lessons(lessons)
+                .teachers(teachers)
+                .build();
+    }
+
+    public static LessonDTO toDTO(ClassJPA jpa, Map<Long, ClassJPA> conflicts) {
+        List<LessonDTO> realConflicts = getConflictIds(jpa).stream()
+                .map(id -> Util.getOrThrow(conflicts, id,
+                        () -> new IllegalStateException("Conflicting class with id: " + id + " doesn't exist")))
+                .map(TimetableMapper::toDTO)
+                .collect(Collectors.toList());
+
+        return LessonDTO.builder()
+                .group(jpa.getGroup())
+                .lesson(jpa.getLesson())
+                .subject(jpa.getSubject())
+                .teacherId(jpa.getTeacherId())
+                .conflicts(realConflicts)
+                .room(Optional.ofNullable(jpa.getRoom()))
+                .weekDay(jpa.getWeekday())
+                .build();
+    }
 
     public static TimetableDTO toDTO(List<ClassJPA> classes, Map<String, UserDTO> teachers) {
         Map<Integer, List<LessonDTO>> lessonsByWeekday = classes.stream()
                 .map(TimetableMapper::toDTO)
                 .sorted(Comparator.comparing(LessonDTO::getWeekDay))
-                .collect(Collectors.groupingBy(LessonDTO::getWeekDay, LinkedHashMap::new, Collectors.toList()));
+                .collect(Collectors.groupingBy(LessonDTO::getWeekDay, LinkedHashMap::new,
+                        Util.collectSorted(Comparator.comparing(LessonDTO::getLesson))));
 
         List<List<LessonDTO>> lessons = new ArrayList<>(lessonsByWeekday.values());
 
@@ -40,16 +60,13 @@ public class TimetableMapper {
                 .build();
     }
 
-//    public static LessonDTO toDTO(ClassJPA jpa, Map<Long, ClassJPA> conflict, UserDTO teacher) {
-//        return LessonDTO.builder()
-//                .conflict(Util.getOpt(conflict, jpa.getId()).map(c -> toDTO(c, teacher)))
-//                .group(jpa.getGroup())
-//                .lesson(jpa.getLesson())
-//                .subject(jpa.getSubject())
-//                .teacher(teacher)
-//                .weekDay(jpa.getWeekday())
-//                .build();
-//    }
+    private static List<Long> getConflictIds(ClassJPA classJPA) {
+        return Optional.ofNullable(classJPA.getConflicts())
+                .map(c -> Arrays.stream(c.split(","))
+                    .map(Long::valueOf)
+                    .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
+    }
 
     public static LessonDTO toDTO(ClassJPA jpa) {
         return LessonDTO.builder()
@@ -57,6 +74,7 @@ public class TimetableMapper {
                 .lesson(jpa.getLesson())
                 .subject(jpa.getSubject())
                 .teacherId(jpa.getTeacherId())
+                .room(Optional.ofNullable(jpa.getRoom()))
                 .weekDay(jpa.getWeekday())
                 .build();
     }

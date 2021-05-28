@@ -26,7 +26,7 @@ import static com.sms.timetableservice.timetables.control.TimetableGenerator.DAY
 
 @Component
 @Scope("request")
-public class TimetableService {
+public class TimetableGenerationService {
 
     @Autowired
     ConfigResource configResource;

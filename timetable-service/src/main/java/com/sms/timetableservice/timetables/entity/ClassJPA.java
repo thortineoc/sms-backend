@@ -11,9 +11,9 @@ public class ClassJPA {
     private String subject;
     private String teacherId;
     private Integer weekday;
-    private Integer room;
+    private String room;
     private Integer lesson;
-    private Long conflict;
+    private String conflicts;
 
     @Id
     @Column(name = "id")
@@ -23,8 +23,8 @@ public class ClassJPA {
     }
 
     @Column(name = "conflict")
-    public Long getConflict() {
-        return conflict;
+    public String getConflicts() {
+        return conflicts;
     }
 
     @Column(name = "weekday")
@@ -38,7 +38,7 @@ public class ClassJPA {
     }
 
     @Column(name = "room")
-    public Integer getRoom() {
+    public String getRoom() {
         return room;
     }
 
@@ -77,11 +77,11 @@ public class ClassJPA {
         this.lesson = lesson;
     }
 
-    public void setConflict(Long conflict) {
-        this.conflict = conflict;
+    public void setConflicts(String conflicts) {
+        this.conflicts = conflicts;
     }
 
-    public void setRoom(Integer room) {
+    public void setRoom(String room) {
         this.room = room;
     }
 
