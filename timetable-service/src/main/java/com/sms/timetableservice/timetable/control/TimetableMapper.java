@@ -6,6 +6,7 @@ import com.sms.api.timetable.TimetableDTO;
 import com.sms.model.timetable.TimetableJPA;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class TimetableMapper {
@@ -69,8 +70,16 @@ public class TimetableMapper {
         List<List<SimpleTimetableDTO>> simpleList = new ArrayList<>(lessons.values());
 
         return TimetableDTO.builder()
-                .timetable(simpleList)
+                .timetable(TimetableMapper.sortList(simpleList))
                 .build();
+    }
+
+    private static List<List<SimpleTimetableDTO>> sortList(List<List<SimpleTimetableDTO>> list){
+        List<List<SimpleTimetableDTO>> timetable= new ArrayList<>();
+        for(int i=0; i<list.size(); i++){
+            timetable.add(i,list.get(i).stream().sorted(Comparator.comparing(SimpleTimetableDTO::getLesson)).collect(Collectors.toList()));
+        }
+        return timetable;
     }
 
 }
