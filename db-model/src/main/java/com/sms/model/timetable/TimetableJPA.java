@@ -1,93 +1,93 @@
 package com.sms.model.timetable;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
+
 
 @Entity
 @Table(name = "classes")
 public class TimetableJPA {
 
+    private Long id;
+    private String groups;
+    private String subject;
+    private String teacherId;
+    private Integer weekday;
+    private Integer room;
+    private Integer lesson;
+    private Long conflict;
+
     @Id
-    @GeneratedValue(generator = "timetables_id_seq")
     @Column(name = "id")
-    Long id;
+    @GeneratedValue(generator = "classes_id_seq")
+    public Long getId() {
+        return id;
+    }
 
-    @Column(name = "groups")
-    String group;
-
-    @Column(name = "subject")
-    String subject;
-
-    @Column(name = "teacher_id")
-    String teacherId;
+    @Column(name = "conflict")
+    public Long getConflict() {
+        return conflict;
+    }
 
     @Column(name = "weekday")
-    Integer weekday;
+    public Integer getWeekday() {
+        return weekday;
+    }
+
+    @Column(name = "groups")
+    public String getGroups() {
+        return groups;
+    }
 
     @Column(name = "room")
-    Integer room;
+    public Integer getRoom() {
+        return room;
+    }
 
-    @Column(name = "begindate")
-    Timestamp begindate;
+    @Column(name = "subject")
+    public String getSubject() {
+        return subject;
+    }
 
-    @Column(name = "enddate")
-    Timestamp enddate;
-
-    @Column(name = "lesson")
-    Integer lesson;
-
-    public String getGroup() { return group; }
-
-    public void setGroup(String group) { this.group = group; }
-
-    public Long getId() { return id; }
-
-    public void setId(Long id) { this.id = id; }
-
+    @Column(name = "teacher_id")
     public String getTeacherId() {
         return teacherId;
+    }
+
+    @Column(name = "lesson")
+    public Integer getLesson() {
+        return lesson;
+    }
+
+    public void setGroups(String groups) {
+        this.groups = groups;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 
     public void setTeacherId(String teacherId) {
         this.teacherId = teacherId;
     }
 
-    public Integer getWeekday() { return weekday; }
-
-    public void setWeekday(Integer weekday) { this.weekday = weekday; }
-
-    public Integer getRoom() { return room; }
-
-    public void setRoom(Integer room) { this.room = room; }
-
-    public Timestamp getBegindate() { return begindate; }
-
-    public void setBegindate(Timestamp begindate) {
-        this.begindate = begindate;
-    }
-
-    public Timestamp getEnddate() {
-        return enddate;
-    }
-
-    public void setEnddate(Timestamp enddate) {
-        this.enddate = enddate;
-    }
-
-    public Integer getLesson() {
-        return lesson;
-    }
-
     public void setLesson(Integer lesson) {
         this.lesson = lesson;
     }
 
-
-    public String getSubject() {
-        return subject;
+    public void setConflict(Long conflict) {
+        this.conflict = conflict;
     }
 
-    public void setSubject(String subject) {
-        this.subject = subject;
+    public void setRoom(Integer room) {
+        this.room = room;
     }
+
+    public void setWeekday(Integer weekday) {
+        this.weekday = weekday;
+    }
+
 }

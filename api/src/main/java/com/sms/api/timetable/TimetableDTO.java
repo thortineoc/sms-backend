@@ -11,9 +11,11 @@ import java.util.List;
 @Value.Style(builder = "new")
 @JsonSerialize(as = ImmutableTimetableDTO.class)
 @JsonDeserialize(as = ImmutableTimetableDTO.class, builder = ImmutableTimetableDTO.Builder.class)
-public interface TimetableDTO extends SimpleTimetableDTO{
+public interface TimetableDTO {
 
-    static ImmutableTimetableDTO.Builder builder(){ return  new ImmutableTimetableDTO.Builder(); }
-    List<List<SimpleTimetableDTO>> getUserTimetable();
+    static ImmutableTimetableDTO.Builder builder() {
+        return new ImmutableTimetableDTO.Builder();
+    }
 
+    List<List<SimpleTimetableDTO>> getTimetable();
 }

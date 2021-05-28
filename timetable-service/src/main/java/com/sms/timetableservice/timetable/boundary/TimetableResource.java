@@ -1,9 +1,7 @@
 package com.sms.timetableservice.timetable.boundary;
 
 
-import com.sms.api.homework.HomeworkDTO;
 import com.sms.api.timetable.SimpleTimetableDTO;
-import com.sms.api.timetable.TimetableConflictDTO;
 import com.sms.api.timetable.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.AuthRole;
@@ -32,10 +30,9 @@ public class TimetableResource {
 
     @AuthRole(UserDTO.Role.ADMIN)
     @PutMapping()
-    public ResponseEntity<List<TimetableConflictDTO>> createClass(@RequestBody TimetableDTO dto){
-        List<TimetableConflictDTO> timetableDTO = timetableService.createClass(dto);
-        if(timetableDTO.isEmpty()) return ResponseEntity.status(418).body(timetableDTO);
-        else return ResponseEntity.ok(timetableDTO);
+    public ResponseEntity<TimetableDTO> createClass(@RequestBody TimetableDTO dto){
+        TimetableDTO timetableDTO = timetableService.createClass(dto);
+        return ResponseEntity.ok(timetableDTO);
     }
 
 }
