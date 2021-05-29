@@ -6,6 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Set;
 
 @Transactional
 public interface TimetableRepository extends CrudRepository<ClassJPA, Long> {
@@ -16,7 +17,7 @@ public interface TimetableRepository extends CrudRepository<ClassJPA, Long> {
 
     List<ClassJPA> findAllByGroup(String group);
 
-    List<ClassJPA> findAllByIdIn(List<Long> ids);
+    List<ClassJPA> findAllByIdIn(Set<Long> ids);
 
     @Modifying
     int deleteAllByGroup(String group);

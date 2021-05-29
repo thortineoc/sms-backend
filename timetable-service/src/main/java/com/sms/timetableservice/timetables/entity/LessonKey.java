@@ -1,5 +1,7 @@
 package com.sms.timetableservice.timetables.entity;
 
+import java.util.Objects;
+
 public class LessonKey {
 
     private final int weekday;
@@ -25,5 +27,18 @@ public class LessonKey {
 
     public int getWeekday() {
         return weekday;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LessonKey lessonKey = (LessonKey) o;
+        return weekday == lessonKey.weekday && lesson == lessonKey.lesson;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(weekday, lesson);
     }
 }

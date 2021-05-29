@@ -31,9 +31,10 @@ public class TimetableReadService {
     public TimetableDTO getTimetableForGroup(String group) {
         List<ClassJPA> classes = timetableRepository.findAllByGroup(group);
         Map<Long, ClassJPA> conflicts = getConflictsByClassId(classes);
-        Map<String, UserDTO> teachers = getTeachersByIds(classes);
+        Set<String> teacherIds = classes.stream().map(ClassJPA::getTeacherId).collect(Collectors.toSet());
+        Map<String, UserDTO> teachers = getTeachersByIds(teacherIds);
 
-        validateAllTeachersExist(classes, teachers.keySet());
+        validateAllTeachersExist(teacherIds, teachers.keySet());
 
         return TimetableMapper.toDTO(classes, teachers, conflicts);
     }
@@ -49,28 +50,28 @@ public class TimetableReadService {
         return TimetableMapper.toDTO(classes, Collections.singletonMap(teacherId, currentUser), conflicts);
     }
 
-    private Map<Long, ClassJPA> getConflictsByClassId(List<ClassJPA> classes) {
-        List<Long> conflictIds = classes.stream()
+    Set<Long> getConflictIds(List<ClassJPA> classes) {
+        return classes.stream()
                 .map(ClassJPA::getConflicts)
                 .filter(Objects::nonNull)
                 .flatMap(c -> Arrays.stream(c.split(",")))
                 .map(Long::valueOf)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
+    }
 
+    private Map<Long, ClassJPA> getConflictsByClassId(List<ClassJPA> classes) {
+        Set<Long> conflictIds = getConflictIds(classes);
         return timetableRepository.findAllByIdIn(conflictIds).stream()
                 .collect(Collectors.toMap(ClassJPA::getId, Function.identity()));
     }
 
-    private void validateAllTeachersExist(List<ClassJPA> classes, Set<String> teacherIds) {
-        Set<String> expectedTeacherIds = classes.stream().map(ClassJPA::getTeacherId).collect(Collectors.toSet());
-
+    private void validateAllTeachersExist(Set<String> expectedTeacherIds, Set<String> teacherIds) {
         if (!expectedTeacherIds.equals(teacherIds)) {
             throw new IllegalStateException("Teachers: " + Sets.difference(expectedTeacherIds, teacherIds) + " don't exist");
         }
     }
 
-    private Map<String, UserDTO> getTeachersByIds(List<ClassJPA> classes) {
-        Set<String> teacherIds = classes.stream().map(ClassJPA::getTeacherId).collect(Collectors.toSet());
+    private Map<String, UserDTO> getTeachersByIds(Set<String> teacherIds) {
         return userManagementClient.getUsers(teacherIds).stream()
                 .collect(Collectors.toMap(UserDTO::getId, Function.identity()));
     }

@@ -1,5 +1,7 @@
 package com.sms.timetableservice.timetables.control;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import com.sms.api.common.BadRequestException;
 import com.sms.api.timetables.TimetableConfigDTO;
 import com.sms.timetableservice.timetables.entity.ClassJPA;
@@ -14,20 +16,19 @@ public class TimetableGenerator {
 
     private final Map<String, Map<LessonKey, ClassJPA>> potentialConflicts;
     private final Map<LessonKey, ClassJPA> generatedClasses = new HashMap<>();
-    private final Set<TeacherWithSubject> subjects;
+    private final Multiset<TeacherWithSubject> subjects;
     private final TimetableConfigDTO config;
     private final String group;
 
-    public TimetableGenerator(String group, TimetableConfigDTO config, Set<TeacherWithSubject> subjects,
+    public TimetableGenerator(String group, TimetableConfigDTO config, Multiset<TeacherWithSubject> subjects,
                               Map<String, Map<LessonKey, ClassJPA>> potentialConflicts) {
         this.potentialConflicts = potentialConflicts;
-        this.subjects = new HashSet<>(subjects);
+        this.subjects = HashMultiset.create(subjects);
         this.config = config;
         this.group = group;
     }
 
-    public List<ClassJPA> generate() {
-
+    public Map<LessonKey, ClassJPA> generate() {
         done: for (int lesson = 0; lesson < config.getLessonCount(); lesson++) {
             for (int day = 0; day < DAYS; day++) {
                 if (subjects.isEmpty()) break done;
@@ -36,7 +37,7 @@ public class TimetableGenerator {
 
                 Optional<TeacherWithSubject> subject = getFirstSubject(key);
                 if (!subject.isPresent()) {
-                    checkForGaps(key);
+                    removeAllBefore(key);
                     continue;
                 }
                 subjects.remove(subject.get());
@@ -50,13 +51,18 @@ public class TimetableGenerator {
             throw new BadRequestException("Couldn't generate timetable, subjects: " + subjects + " won't fit");
         }
 
-        return new ArrayList<>(generatedClasses.values());
+        return generatedClasses;
     }
 
-    private void checkForGaps(LessonKey current) {
-        if (generatedClasses.containsKey(LessonKey.lessonBefore(current))) {
-            throw new BadRequestException("Cannot generate timetable, gaps between lessons are not allowed");
-        }
+    private void removeAllBefore(LessonKey lesson) {
+        LessonKey previous = LessonKey.lessonBefore(lesson);
+        do {
+            ClassJPA jpa = generatedClasses.remove(previous);
+            if (jpa != null) {
+                subjects.add(new TeacherWithSubject(jpa.getTeacherId(), jpa.getSubject()));
+            }
+            previous = LessonKey.lessonBefore(previous);
+        } while (previous.getLesson() != 0);
     }
 
     private Optional<TeacherWithSubject> getFirstSubject(LessonKey key) {
@@ -88,9 +94,5 @@ public class TimetableGenerator {
         c.setSubject(subject.getSubject());
         c.setTeacherId(subject.getTeacherId());
         return c;
-    }
-
-    private enum WeekDays {
-        MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY
     }
 }

@@ -1,5 +1,7 @@
 package com.sms.timetableservice.timetables.entity;
 
+import java.util.Objects;
+
 public class TeacherWithSubject {
 
     private final String teacherId;
@@ -16,5 +18,18 @@ public class TeacherWithSubject {
 
     public String getSubject() {
         return subject;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TeacherWithSubject that = (TeacherWithSubject) o;
+        return Objects.equals(teacherId, that.teacherId) && Objects.equals(subject, that.subject);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(teacherId, subject);
     }
 }
