@@ -22,7 +22,8 @@ public class UserManagementClient {
     ServiceClient serviceClient;
 
     public Optional<UserDTO> getUser(String userId) {
-        Response response = serviceClient.target(USERMANAGEMENT)
+        Response response = serviceClient.overrideHaproxyUrl("http://localhost:24034")
+                .target(USERMANAGEMENT)
                 .path("users")
                 .path(userId)
                 .request(MediaType.APPLICATION_JSON_TYPE)
@@ -35,7 +36,8 @@ public class UserManagementClient {
     }
 
     public Set<String> getGroups() {
-        Response response = serviceClient.target(USERMANAGEMENT)
+        Response response = serviceClient.overrideHaproxyUrl("http://localhost:24034")
+                .target(USERMANAGEMENT)
                 .path("groups")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get();
@@ -47,7 +49,8 @@ public class UserManagementClient {
     }
 
     public Set<String> getSubjects() {
-        Response response = serviceClient.target(USERMANAGEMENT)
+        Response response = serviceClient.overrideHaproxyUrl("http://localhost:24034")
+                .target(USERMANAGEMENT)
                 .path("subjects")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get();
@@ -59,7 +62,8 @@ public class UserManagementClient {
     }
 
     public List<UserDTO> getUsers(Set<String> ids) {
-        ServiceClient.ServiceTarget target = serviceClient.target(USERMANAGEMENT)
+        ServiceClient.ServiceTarget target = serviceClient.overrideHaproxyUrl("http://localhost:24034")
+                .target(USERMANAGEMENT)
                 .path("users")
                 .path("ids");
         ids.forEach(id -> target.queryParam("id", id));

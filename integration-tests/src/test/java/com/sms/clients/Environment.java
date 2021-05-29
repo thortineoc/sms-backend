@@ -28,15 +28,14 @@ public class Environment {
     public static final String TIMETABLE = "timetable-service";
     public static final String GRADES = "grades-service";
 
-    private static final String CONFIG_FILE = "application.properties";
+    private static final String CONFIG_FILE = "tests.properties";
 
     static {
         Properties props = new Properties();
         try {
             props.load(Environment.class.getClassLoader().getResourceAsStream(CONFIG_FILE));
         } catch (IOException e) {
-            // not sure what would happen if I threw an exception here
-            e.printStackTrace();
+            throw new IllegalStateException("Failed loading config file: " + CONFIG_FILE + ", reason: " + e);
         }
         Environment.haproxyUrl = props.getProperty("haproxyUrl", "http://52.142.201.18:24020");
         Environment.tokenUrl = props.getProperty("tokenUrl", "/auth/realms/sms/protocol/openid-connect/token");
@@ -52,8 +51,8 @@ public class Environment {
     public static final Map<String, String> LOCAL_SERVICES = new HashMap<String, String>() {{
 //       put(HOMEWORK, "http://localhost:24026");
 //       put(PRESENCE, "http://localhost:24028");
-//       put(TIMETABLE, "http://localhost:24030");
-//       put(USERMANAGEMENT, "http://localhost:24034");
+       put(TIMETABLE, "http://localhost:24030");
+       put(USERMANAGEMENT, "http://localhost:24034");
 //       put(GRADES, "http://localhost:24032");
     }};
 }

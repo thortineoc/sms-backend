@@ -1,6 +1,5 @@
 package com.sms.tests.timetables;
 
-import com.sms.clients.WebClient;
 import io.restassured.response.Response;
 
 import java.util.Map;
@@ -8,7 +7,7 @@ import java.util.Map;
 public class TimetablesAdminClient extends TimetablesClient {
 
     protected TimetablesAdminClient() {
-        super(new WebClient("smsadmin", "smsadmin"));
+        super();
     }
 
     public Response getTimetableForGroup(String group) {
@@ -21,6 +20,10 @@ public class TimetablesAdminClient extends TimetablesClient {
 
     public Response deleteClassesWithSubject(String subject) {
         return getRequest().delete("/timetables/subject/" + subject);
+    }
+
+    public Response deleteLesson(Long id) {
+        return getRequest().delete("/timetables/id/" + id);
     }
 
     public Response generateTimetable(String group, Map<String, Map<String, Integer>> requestInfo) {

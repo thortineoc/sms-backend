@@ -17,6 +17,8 @@ public interface LessonDTO {
         return new ImmutableLessonDTO.Builder();
     }
 
+    Optional<Long> getId();
+
     Integer getLesson();
 
     String getGroup();

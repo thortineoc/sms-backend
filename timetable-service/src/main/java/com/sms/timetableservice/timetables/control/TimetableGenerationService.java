@@ -38,6 +38,9 @@ public class TimetableGenerationService {
     @Autowired
     UserManagementClient userManagementClient;
 
+    @Autowired
+    TimetableDeleteService deleteService;
+
     @Transactional
     public TimetableDTO generateTimetable(String group, Map<String, Map<String, Integer>> info) {
         TimetableConfigDTO config = getConfig();
@@ -53,8 +56,7 @@ public class TimetableGenerationService {
 
         Map<String, Map<LessonKey, ClassJPA>> potentialConflicts = getPotentialConflicts(teachersWithSubjects);
 
-        // TODO: use safe delete from TimetableDeleteService
-        timetableRepository.deleteAllByGroup(group);
+        deleteService.deleteTimetable(group);
         Map<LessonKey, ClassJPA> generatedTimetable = new TimetableGenerator(group, config, teachersWithSubjects, potentialConflicts)
                 .generate();
         List<ClassJPA> savedClasses = Lists.newArrayList(timetableRepository.saveAll(generatedTimetable.values()));
@@ -71,7 +73,7 @@ public class TimetableGenerationService {
 
     void validateSubjects(Set<String> realSubjects, Map<String, UserDTO> teachers, Map<String, Map<String, Integer>> info) {
         if (!teachers.keySet().equals(info.keySet())) {
-            throw new IllegalStateException("Some of the teachers don't exist");
+            throw new IllegalStateException("Some of the teachers don't exist");    // TODO: why is this 500 and not 400?
         }
 
         info.forEach((teacher, subjects) -> {

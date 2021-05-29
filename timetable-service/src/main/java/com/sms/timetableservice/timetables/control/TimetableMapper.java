@@ -37,6 +37,7 @@ public class TimetableMapper {
                 .collect(Collectors.toList());
 
         return LessonDTO.builder()
+                .id(jpa.getId())
                 .group(jpa.getGroup())
                 .lesson(jpa.getLesson())
                 .subject(jpa.getSubject())
@@ -93,6 +94,7 @@ public class TimetableMapper {
 
     public static LessonDTO toDTO(ClassJPA jpa) {
         return LessonDTO.builder()
+                .id(jpa.getId())
                 .group(jpa.getGroup())
                 .lesson(jpa.getLesson())
                 .subject(jpa.getSubject())
