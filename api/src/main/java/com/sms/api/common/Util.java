@@ -11,6 +11,10 @@ public class Util {
     private Util() {
     }
 
+    public static <K, V> Map<K, V> index(Collection<V> collection, Function<V, K> keyFunction) {
+        return collection.stream().collect(Collectors.toMap(keyFunction, Function.identity()));
+    }
+
     public static <T> Collector<T, ?, List<T>> collectSorted(Comparator<? super T> c) {
         return Collectors.collectingAndThen(
                 Collectors.toCollection(ArrayList::new), l-> { l.sort(c); return l; });

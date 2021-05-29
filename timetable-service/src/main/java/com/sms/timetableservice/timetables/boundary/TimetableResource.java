@@ -4,6 +4,7 @@ import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.AuthRole;
 import com.sms.context.UserContext;
+import com.sms.timetableservice.timetables.control.TimetableDeleteService;
 import com.sms.timetableservice.timetables.control.TimetableReadService;
 import com.sms.timetableservice.timetables.control.TimetableGenerationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import java.util.Map;
 @Scope("request")
 public class TimetableResource {
 
+    private static final String GROUP = "group";
+
     @Autowired
     UserContext userContext;
 
@@ -28,14 +31,28 @@ public class TimetableResource {
     @Autowired
     TimetableReadService timetableReadService;
 
+    @Autowired
+    TimetableDeleteService timetableDeleteService;
+
     @GetMapping("/{group}")
-    @AuthRole({UserDTO.Role.ADMIN, UserDTO.Role.STUDENT, UserDTO.Role.PARENT})
+    @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<TimetableDTO> getTimetableForGroup(@PathVariable("group") String group) {
         TimetableDTO timetable = timetableReadService.getTimetableForGroup(group);
         return ResponseEntity.ok(timetable);
     }
 
-    @GetMapping
+    @GetMapping("/student")
+    @AuthRole({UserDTO.Role.PARENT, UserDTO.Role.STUDENT})
+    public ResponseEntity<TimetableDTO> getTimetableForStudent() {
+        String group = (String) userContext.getCustomAttributes().get(GROUP);
+        if (group == null) {
+            throw new IllegalStateException("User: " + userContext.getUserName() + " doesn't have a group assigned.");
+        }
+        TimetableDTO timetable = timetableReadService.getTimetableForGroup(group);
+        return ResponseEntity.ok(timetable);
+    }
+
+    @GetMapping("/teacher")
     @AuthRole(UserDTO.Role.TEACHER)
     public ResponseEntity<TimetableDTO> getTimetableForTeacher() {
         TimetableDTO timetable = timetableReadService.getTimetableForTeacher();
@@ -48,5 +65,26 @@ public class TimetableResource {
                                                           @RequestBody Map<String, Map<String, Integer>> info) {
         TimetableDTO timetable = timetableGenerationService.generateTimetable(group, info);
         return ResponseEntity.ok(timetable);
+    }
+
+    @DeleteMapping("/group/{group}")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<Object> deleteTimetable(@PathVariable("group") String group) {
+        timetableDeleteService.deleteTimetable(group);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/id/{id}")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<Object> deleteLesson(@PathVariable("id") Long id) {
+        timetableDeleteService.deleteLesson(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/subject/{subject}")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<Object> deleteClassesBySubject(@PathVariable("subject") String subject) {
+        timetableDeleteService.deleteClassesBySubject(subject);
+        return ResponseEntity.noContent().build();
     }
 }

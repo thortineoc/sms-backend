@@ -53,6 +53,7 @@ public class TimetableGenerationService {
 
         Map<String, Map<LessonKey, ClassJPA>> potentialConflicts = getPotentialConflicts(teachersWithSubjects);
 
+        // TODO: use safe delete from TimetableDeleteService
         timetableRepository.deleteAllByGroup(group);
         Map<LessonKey, ClassJPA> generatedTimetable = new TimetableGenerator(group, config, teachersWithSubjects, potentialConflicts)
                 .generate();

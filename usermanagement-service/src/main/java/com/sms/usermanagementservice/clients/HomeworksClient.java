@@ -29,6 +29,4 @@ public class HomeworksClient {
 
         return response.getStatus() == HttpStatus.NO_CONTENT.value();
     }
-
-
 }

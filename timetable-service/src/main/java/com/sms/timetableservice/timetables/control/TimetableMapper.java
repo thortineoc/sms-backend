@@ -8,6 +8,8 @@ import com.sms.timetableservice.timetables.entity.ClassJPA;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class TimetableMapper {
 
@@ -19,7 +21,7 @@ public class TimetableMapper {
                 .sorted(Comparator.comparing(LessonDTO::getWeekDay))
                 .collect(Collectors.groupingBy(LessonDTO::getWeekDay, LinkedHashMap::new,
                         Util.collectSorted(Comparator.comparing(LessonDTO::getLesson))));
-        List<List<LessonDTO>> lessons = new ArrayList<>(lessonsByWeekday.values());
+        List<List<LessonDTO>> lessons = fillInEmptyLessons(lessonsByWeekday);
 
         return TimetableDTO.builder()
                 .lessons(lessons)
@@ -51,8 +53,7 @@ public class TimetableMapper {
                 .sorted(Comparator.comparing(LessonDTO::getWeekDay))
                 .collect(Collectors.groupingBy(LessonDTO::getWeekDay, LinkedHashMap::new,
                         Util.collectSorted(Comparator.comparing(LessonDTO::getLesson))));
-
-        List<List<LessonDTO>> lessons = new ArrayList<>(lessonsByWeekday.values());
+        List<List<LessonDTO>> lessons = fillInEmptyLessons(lessonsByWeekday);
 
         return TimetableDTO.builder()
                 .lessons(lessons)
@@ -66,6 +67,28 @@ public class TimetableMapper {
                     .map(Long::valueOf)
                     .collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
+    }
+
+    private static List<List<LessonDTO>> fillInEmptyLessons(Map<Integer, List<LessonDTO>> lessons) {
+        for (int day = 0; day < 5; day++) {
+            if (!lessons.containsKey(day)) {
+                lessons.put(day, Collections.emptyList());
+            }
+        }
+        return lessons.values().stream()
+                .filter(e -> !e.isEmpty())
+                .map(dailyLessons -> Stream.concat(
+                        IntStream.range(0, findMinLesson(dailyLessons)).mapToObj(i -> null),
+                        dailyLessons.stream()
+                ).collect(Collectors.toList()))
+                .collect(Collectors.toList());
+    }
+
+    private static int findMinLesson(List<LessonDTO> lessons) {
+        return lessons.stream()
+                .min(Comparator.comparing(LessonDTO::getLesson))
+                .map(LessonDTO::getLesson)
+                .orElseThrow(() -> new IllegalStateException("None of the lessons: " + lessons + " had a lesson number."));
     }
 
     public static LessonDTO toDTO(ClassJPA jpa) {

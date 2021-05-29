@@ -17,8 +17,13 @@ public interface TimetableRepository extends CrudRepository<ClassJPA, Long> {
 
     List<ClassJPA> findAllByGroup(String group);
 
+    List<ClassJPA> findAllBySubject(String subject);
+
     List<ClassJPA> findAllByIdIn(Set<Long> ids);
 
     @Modifying
     int deleteAllByGroup(String group);
+
+    @Modifying
+    int deleteAllBySubject(String subject);
 }
