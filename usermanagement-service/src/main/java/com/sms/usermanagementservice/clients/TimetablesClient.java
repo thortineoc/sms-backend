@@ -18,8 +18,7 @@ public class TimetablesClient {
     ServiceClient serviceClient;
 
     public boolean deleteTimetable(String group) {
-        Response response = serviceClient.overrideHaproxyUrl("http://localhost:24030")
-                .target(TIMETABLES)
+        Response response = serviceClient.target(TIMETABLES)
                 .path("timetables")
                 .path("group")
                 .path(group)
@@ -30,8 +29,7 @@ public class TimetablesClient {
     }
 
     public boolean deleteClassesBySubject(String subject) {
-        Response response = serviceClient.overrideHaproxyUrl("http://localhost:24030")
-                .target(TIMETABLES)
+        Response response = serviceClient.target(TIMETABLES)
                 .path("timetables")
                 .path("subject")
                 .path(subject)
