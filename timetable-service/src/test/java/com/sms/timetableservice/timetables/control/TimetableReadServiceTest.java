@@ -11,7 +11,7 @@ import java.util.Set;
 
 class TimetableReadServiceTest {
 
-    private final TimetableReadService service = new TimetableReadService();
+    private final TimetableCommonService service = new TimetableCommonService();
 
     @Test
     void shouldReturnConflictsByIds() {

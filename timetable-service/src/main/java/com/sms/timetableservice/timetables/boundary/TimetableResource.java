@@ -4,6 +4,7 @@ import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.AuthRole;
 import com.sms.context.UserContext;
+import com.sms.timetableservice.timetables.control.TimetableCreateService;
 import com.sms.timetableservice.timetables.control.TimetableDeleteService;
 import com.sms.timetableservice.timetables.control.TimetableReadService;
 import com.sms.timetableservice.timetables.control.TimetableGenerationService;
@@ -33,6 +34,9 @@ public class TimetableResource {
 
     @Autowired
     TimetableDeleteService timetableDeleteService;
+
+    @Autowired
+    TimetableCreateService timetableCreateService;
 
     @GetMapping("/{group}")
     @AuthRole(UserDTO.Role.ADMIN)
@@ -65,6 +69,14 @@ public class TimetableResource {
                                                           @RequestBody Map<String, Map<String, Integer>> info) {
         TimetableDTO timetable = timetableGenerationService.generateTimetable(group, info);
         return ResponseEntity.ok(timetable);
+    }
+
+    @PutMapping("/move/{id}/to/{day}/{lesson}")
+    public ResponseEntity<Object> moveLesson(@PathVariable("id") Long id,
+                                             @PathVariable("day") Integer day,
+                                             @PathVariable("lesson") Integer lesson) {
+        timetableCreateService.moveLesson(id, day, lesson);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/group/{group}")

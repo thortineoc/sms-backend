@@ -28,6 +28,9 @@ public class TimetableReadService {
     @Autowired
     UserContext userContext;
 
+    @Autowired
+    TimetableCommonService commonService;
+
     public TimetableDTO getTimetableForGroup(String group) {
         List<ClassJPA> classes = timetableRepository.findAllByGroup(group);
         Map<Long, ClassJPA> conflicts = getConflictsByClassId(classes);
@@ -35,8 +38,8 @@ public class TimetableReadService {
         Map<String, UserDTO> teachers = getTeachersByIds(teacherIds);
 
         validateAllTeachersExist(teacherIds, teachers.keySet());
-
-        return TimetableMapper.toDTO(classes, teachers, conflicts);
+        Set<Long> conflictIds = commonService.getConflictIds(classes);
+        return TimetableMapper.toDTO(classes, conflictIds, teachers, conflicts);
     }
 
     public TimetableDTO getTimetableForTeacher() {
@@ -46,21 +49,12 @@ public class TimetableReadService {
 
         List<ClassJPA> classes = timetableRepository.findAllByTeacherId(teacherId);
         Map<Long, ClassJPA> conflicts = getConflictsByClassId(classes);
-
-        return TimetableMapper.toDTO(classes, Collections.singletonMap(teacherId, currentUser), conflicts);
-    }
-
-    Set<Long> getConflictIds(List<ClassJPA> classes) {
-        return classes.stream()
-                .map(ClassJPA::getConflicts)
-                .filter(Objects::nonNull)
-                .flatMap(c -> Arrays.stream(c.split(",")))
-                .map(Long::valueOf)
-                .collect(Collectors.toSet());
+        Set<Long> conflictIds = commonService.getConflictIds(classes);
+        return TimetableMapper.toDTO(classes, conflictIds, Collections.singletonMap(teacherId, currentUser), conflicts);
     }
 
     private Map<Long, ClassJPA> getConflictsByClassId(List<ClassJPA> classes) {
-        Set<Long> conflictIds = getConflictIds(classes);
+        Set<Long> conflictIds = commonService.getConflictIds(classes);
         return timetableRepository.findAllByIdIn(conflictIds).stream()
                 .collect(Collectors.toMap(ClassJPA::getId, Function.identity()));
     }

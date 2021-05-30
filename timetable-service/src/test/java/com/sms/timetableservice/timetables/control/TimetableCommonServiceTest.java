@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
-class TimetableDeleteServiceTest {
+public class TimetableCommonServiceTest {
 
-    private final TimetableDeleteService service = new TimetableDeleteService();
+    private final TimetableCommonService service = new TimetableCommonService();
 
     @Test
     void shouldRemoveIdsFromConflictingClasses() {

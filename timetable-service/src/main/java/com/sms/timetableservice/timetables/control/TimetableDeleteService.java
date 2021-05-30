@@ -18,6 +18,9 @@ public class TimetableDeleteService {
     @Autowired
     TimetableRepository timetableRepository;
 
+    @Autowired
+    TimetableCommonService commonService;
+
     @Transactional
     public void deleteTimetable(String group) {
         List<ClassJPA> classes = timetableRepository.findAllByGroup(group);
@@ -59,15 +62,12 @@ public class TimetableDeleteService {
 
     private List<ClassJPA> getAllUpdatedConflicts(List<ClassJPA> jpa) {
         Set<Long> idsToRemove = jpa.stream().map(ClassJPA::getId).collect(Collectors.toSet());
-        Set<Long> conflictIds = jpa.stream()
-                .map(this::getConflictIds)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet());
+        Set<Long> conflictIds = commonService.getConflictIds(jpa);
         if (conflictIds.isEmpty()) {
             return Collections.emptyList();
         }
         List<ClassJPA> conflicts = timetableRepository.findAllByIdIn(conflictIds);
-        conflicts.forEach(c -> removeConflictIds(c, idsToRemove));
+        conflicts.forEach(c -> commonService.removeConflictIds(c, idsToRemove));
         return conflicts;
     }
 
@@ -75,28 +75,9 @@ public class TimetableDeleteService {
         if (Strings.isNullOrEmpty(jpa.getConflicts())) {
             return Collections.emptyList();
         }
-        Set<Long> conflictIds = getConflictIds(jpa);
+        Set<Long> conflictIds = commonService.getConflictIds(jpa);
         List<ClassJPA> conflicts = timetableRepository.findAllByIdIn(conflictIds);
-        conflicts.forEach(c -> removeConflictIds(c, Collections.singleton(jpa.getId())));
+        conflicts.forEach(c -> commonService.removeConflictIds(c, Collections.singleton(jpa.getId())));
         return conflicts;
-    }
-
-    void removeConflictIds(ClassJPA jpa, Set<Long> ids) {
-        Set<Long> conflicts = getConflictIds(jpa);
-        conflicts.removeAll(ids);
-        String joinedConflicts = conflicts.stream().map(String::valueOf).collect(Collectors.joining(","));
-        if (!Strings.isNullOrEmpty(joinedConflicts)) {
-            jpa.setConflicts(joinedConflicts);
-        } else {
-            jpa.setConflicts(null);
-        }
-    }
-
-    private Set<Long> getConflictIds(ClassJPA jpa) {
-        return Optional.ofNullable(jpa.getConflicts())
-                .map(c -> Arrays.stream(c.split(","))
-                        .map(Long::valueOf)
-                        .collect(Collectors.toSet()))
-                .orElse(Collections.emptySet());
     }
 }

@@ -15,9 +15,10 @@ public class TimetableMapper {
 
     private TimetableMapper() {}
 
-    public static TimetableDTO toDTO(List<ClassJPA> classes, Map<String, UserDTO> teachers, Map<Long, ClassJPA> conflicts) {
+    public static TimetableDTO toDTO(List<ClassJPA> classes, Set<Long> conflictIds,
+                                     Map<String, UserDTO> teachers, Map<Long, ClassJPA> conflicts) {
         Map<Integer, List<LessonDTO>> lessonsByWeekday = classes.stream()
-                .map(c -> toDTO(c, conflicts))
+                .map(c -> toDTO(c, conflictIds, conflicts))
                 .sorted(Comparator.comparing(LessonDTO::getWeekDay))
                 .collect(Collectors.groupingBy(LessonDTO::getWeekDay, LinkedHashMap::new,
                         Util.collectSorted(Comparator.comparing(LessonDTO::getLesson))));
@@ -29,8 +30,8 @@ public class TimetableMapper {
                 .build();
     }
 
-    public static LessonDTO toDTO(ClassJPA jpa, Map<Long, ClassJPA> conflicts) {
-        List<LessonDTO> realConflicts = getConflictIds(jpa).stream()
+    public static LessonDTO toDTO(ClassJPA jpa, Set<Long> conflictIds, Map<Long, ClassJPA> conflicts) {
+        List<LessonDTO> realConflicts = conflictIds.stream()
                 .map(id -> Util.getOrThrow(conflicts, id,
                         () -> new IllegalStateException("Conflicting class with id: " + id + " doesn't exist")))
                 .map(TimetableMapper::toDTO)
@@ -60,14 +61,6 @@ public class TimetableMapper {
                 .lessons(lessons)
                 .teachers(teachers)
                 .build();
-    }
-
-    private static List<Long> getConflictIds(ClassJPA classJPA) {
-        return Optional.ofNullable(classJPA.getConflicts())
-                .map(c -> Arrays.stream(c.split(","))
-                    .map(Long::valueOf)
-                    .collect(Collectors.toList()))
-                .orElse(Collections.emptyList());
     }
 
     private static List<List<LessonDTO>> fillInEmptyLessons(Map<Integer, List<LessonDTO>> lessons) {
