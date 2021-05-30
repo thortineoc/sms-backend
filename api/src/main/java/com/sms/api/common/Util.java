@@ -3,11 +3,37 @@ package com.sms.api.common;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class Util {
 
     private Util() {
+    }
+
+    public static <K, V> Map<K, V> index(Collection<V> collection, Function<V, K> keyFunction) {
+        return collection.stream().collect(Collectors.toMap(keyFunction, Function.identity()));
+    }
+
+    public static <T> Collector<T, ?, List<T>> collectSorted(Comparator<? super T> c) {
+        return Collectors.collectingAndThen(
+                Collectors.toCollection(ArrayList::new), l-> { l.sort(c); return l; });
+    }
+
+    public static <T, R> List<R> map(List<T> collection, Function<T, R> mapper) {
+        return collection.stream()
+                .map(mapper)
+                .collect(Collectors.toList());
+    }
+
+    public static <T, R> Set<R> map(Set<T> collection, Function<T, R> mapper) {
+        return collection.stream()
+                .map(mapper)
+                .collect(Collectors.toSet());
+    }
+
+    public static <T> T pop(List<T> list) {
+        return list.remove(list.size() - 1);
     }
 
     public static <K, V> List<V> getOrEmpty(Map<K, ? extends List<V>> map, K key) {
