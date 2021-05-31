@@ -1,5 +1,6 @@
 package com.sms.timetableservice.timetables.boundary;
 
+import com.sms.api.timetables.LessonsDTO;
 import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.AuthRole;
@@ -98,5 +99,12 @@ public class TimetableResource {
     public ResponseEntity<Object> deleteClassesBySubject(@PathVariable("subject") String subject) {
         timetableDeleteService.deleteClassesBySubject(subject);
         return ResponseEntity.noContent().build();
+    }
+
+    @AuthRole(UserDTO.Role.ADMIN)
+    @PutMapping()
+    public ResponseEntity<TimetableDTO> createClass(@RequestBody LessonsDTO dto){
+        TimetableDTO timetableDTO = timetableCreateService.createClass(dto);
+        return ResponseEntity.ok(timetableDTO);
     }
 }

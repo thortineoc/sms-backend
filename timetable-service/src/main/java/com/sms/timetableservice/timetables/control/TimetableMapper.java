@@ -2,9 +2,12 @@ package com.sms.timetableservice.timetables.control;
 
 import com.sms.api.common.Util;
 import com.sms.api.timetables.LessonDTO;
+import com.sms.api.timetables.LessonsDTO;
 import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.timetableservice.timetables.entity.ClassJPA;
+import com.sms.timetableservice.timetables.entity.LessonKey;
+import org.aopalliance.reflect.Class;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -94,6 +97,43 @@ public class TimetableMapper {
                 .teacherId(jpa.getTeacherId())
                 .room(Optional.ofNullable(jpa.getRoom()))
                 .weekDay(jpa.getWeekday())
+                .build();
+    }
+
+    public static List<LessonDTO> toDTO(LessonsDTO dto) {
+        return dto.getLessons().stream()
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+    }
+
+    public static List<ClassJPA> toJPA(List<LessonDTO> list) {
+        return list.stream()
+                .map(TimetableMapper::toJPA)
+                .collect(Collectors.toList());
+    }
+
+    public static ClassJPA toJPA(LessonDTO dto) {
+        dto.getRoom();
+        ClassJPA jpa = new ClassJPA();
+        dto.getId().ifPresent(jpa::setId);
+        jpa.setGroup(dto.getGroup());
+        jpa.setTeacherId(dto.getTeacherId().get());
+        jpa.setLesson(dto.getLesson());
+        jpa.setRoom(dto.getRoom().get());
+        jpa.setWeekday(dto.getWeekDay());
+        jpa.setSubject(dto.getSubject());
+        return jpa;
+    }
+
+    public static LessonDTO toDto(ClassJPA jpa) {
+        return LessonDTO.builder()
+                .id(jpa.getId())
+                .group(jpa.getGroup())
+                .subject(jpa.getSubject())
+                .lesson(jpa.getLesson())
+                .room(jpa.getRoom())
+                .weekDay(jpa.getWeekday())
+                .teacherId(jpa.getTeacherId())
                 .build();
     }
 }
