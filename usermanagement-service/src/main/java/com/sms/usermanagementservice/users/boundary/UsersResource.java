@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.Set;
 
 
 @RestController
@@ -58,13 +59,23 @@ public class UsersResource {
         }
     }
 
+    // TODO: test this endpoint
+    @GetMapping("/ids")
+    public ResponseEntity<List<UserDTO>> getUsers(@RequestParam("id") Set<String> ids) {
+        List<UserDTO> users = usersService.getUsers(ids);
+        if (users.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(users);
+        }
+    }
+
     @PutMapping("/update")
     @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<String> updateUser(@RequestBody UserDTO data) {
         usersService.updateUser(data);
         return ResponseEntity.noContent().build();
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUser(@PathVariable("id") String id) {

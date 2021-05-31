@@ -104,6 +104,7 @@ public class UserUtils {
     public static UsersFiltersDTO getFilters(Map<String, String> filters) {
         ImmutableUsersFiltersDTO.Builder builder = UsersFiltersDTO.builder();
         Optional.ofNullable(filters.get("role")).ifPresent(builder::role);
+        Optional.ofNullable(filters.get("username")).ifPresent(builder::username);
         Optional.ofNullable(filters.get("firstName")).ifPresent(builder::firstName);
         Optional.ofNullable(filters.get("middleName")).ifPresent(builder::middleName);
         Optional.ofNullable(filters.get("lastName")).ifPresent(builder::lastName);
@@ -156,7 +157,7 @@ public class UserUtils {
                         .phoneNumber("123")
                         .build())
                 .email(email)
-                .pesel(firstName + "_123")
+                .pesel(UUID.randomUUID().toString())
                 .role(role)
                 .build();
     }
@@ -173,8 +174,19 @@ public class UserUtils {
                         .phoneNumber("123")
                         .build())
                 .email(email)
-                .pesel(firstName + "_123")
+                .pesel(UUID.randomUUID().toString())
                 .role(UserDTO.Role.TEACHER)
                 .build();
+    }
+
+    public static UserDTO getTeacherDTO(String name, String... subjects) {
+        return UserUtils.getTeacherDTO(name, name, TEST_PREFIX + name,
+                UUID.randomUUID().toString() + "@" + UUID.randomUUID().toString() + ".com", Arrays.asList(subjects));
+    }
+
+    public static UserDTO getStudentDTO(String firstName, String lastName, String group) {
+        return UserUtils.getUserDTO(firstName, lastName, TEST_PREFIX + firstName,
+                UUID.randomUUID().toString() + "@" + UUID.randomUUID().toString() + ".com",
+                group, UserDTO.Role.STUDENT);
     }
 }

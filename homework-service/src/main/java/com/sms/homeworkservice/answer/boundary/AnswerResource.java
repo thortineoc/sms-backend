@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/answer")
 @Scope("request")
 public class AnswerResource {
+
     @Autowired
     UserContext userContext;
 
@@ -41,7 +42,7 @@ public class AnswerResource {
         return ResponseEntity.noContent().build();
     }
 
-    @AuthRole(UserDTO.Role.STUDENT)
+    @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.ADMIN})
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteAnswer(@PathVariable("id") Long id) {
         answerService.deleteAnswer(id);

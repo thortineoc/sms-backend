@@ -4,7 +4,6 @@ import com.sms.model.grades.GradeJPA;
 import org.hibernate.annotations.*;
 
 import javax.persistence.*;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.sql.Timestamp;
@@ -15,66 +14,72 @@ import java.util.List;
 @Table(name = "answers")
 public class AnswerJPA {
 
-    @Id
-    @GeneratedValue(generator = "answers_id_seq")
     private Long id;
-
-    @Column(name = "student_id")
     private String studentId;
-
     private String review;
-
-    @Column(name = "lastupdatedtime")
     private Timestamp lastUpdatedTime;
-
-    @Column(name = "createdtime", updatable = false)
     private Timestamp createdTime;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     private HomeworkJPA homework;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "relation_id")
-    @Where(clause = "type = 'ANSWER'")
     private List<FileInfoJPA> files;
-
-    @OneToOne(fetch = FetchType.LAZY)
     private GradeJPA grade;
 
-    public Timestamp getLastUpdatedTime() {
-        return lastUpdatedTime;
-    }
-
+    @Id
+    @GeneratedValue(generator = "answers_id_seq")
     public Long getId() {
         return id;
     }
 
+    @Column(name = "student_id")
     public String getStudentId() {
         return studentId;
     }
 
+    @Column(name = "review")
     public String getReview() {
         return review;
     }
 
+    @Column(name = "lastupdatedtime")
+    public Timestamp getLastUpdatedTime() {
+        return lastUpdatedTime;
+    }
+
+    @Column(name = "createdtime", updatable = false)
     public Timestamp getCreatedTime() {
         return createdTime;
     }
 
+    @ManyToOne(fetch = FetchType.LAZY)
     public HomeworkJPA getHomework() {
         return homework;
     }
 
+    @OneToOne(fetch = FetchType.LAZY)
     public GradeJPA getGrade() {
         return grade;
     }
 
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "relation_id")
+    @Where(clause = "type = 'ANSWER'")
     public List<FileInfoJPA> getFiles() {
         return files;
     }
 
+    public void setFiles(List<FileInfoJPA> files) {
+        this.files = files;
+    }
+
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setCreatedTime(Timestamp createdTime) {
+        this.createdTime = createdTime;
+    }
+
+    public void setLastUpdatedTime(Timestamp lastUpdatedTime) {
+        this.lastUpdatedTime = lastUpdatedTime;
     }
 
     public void setStudentId(String studentId) {
@@ -93,8 +98,9 @@ public class AnswerJPA {
         this.createdTime =  Timestamp.valueOf(localDateTime);
     }
 
+    public void setGrade(GradeJPA grade) {this.grade=grade;}
+
     public void setLastUpdatedTime(LocalDateTime localDateTime) {
         this.lastUpdatedTime =  Timestamp.valueOf(localDateTime);
     }
-
 }

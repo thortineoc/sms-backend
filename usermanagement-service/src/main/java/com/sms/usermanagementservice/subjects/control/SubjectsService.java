@@ -4,6 +4,7 @@ import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.usermanagementservice.clients.GradesClient;
+import com.sms.usermanagementservice.clients.TimetablesClient;
 import com.sms.usermanagementservice.subjects.control.repository.SubjectJPA;
 import com.sms.usermanagementservice.subjects.control.repository.SubjectsRepository;
 import com.sms.usermanagementservice.users.control.UserUtils;
@@ -32,6 +33,9 @@ public class SubjectsService {
     @Autowired
     GradesClient gradesClient;
 
+    @Autowired
+    TimetablesClient timetablesClient;
+
     public List<String> getAll() {
         return subjectsRepository.findAllByOrderByNameAsc().stream()
                 .map(SubjectJPA::getName)
@@ -54,6 +58,11 @@ public class SubjectsService {
 
         if (!gradesClient.deleteGradesBySubject(subject)) {
             throw new IllegalStateException("Deleting all grades with subject: " + subject + " failed");
+        }
+
+        boolean result = timetablesClient.deleteClassesBySubject(subject);
+        if (!result) {
+            throw new IllegalStateException("Deleting classes with subject: " + subject + " failed.");
         }
         return UserUtils.getFailedUserIds(updateResults);
     }

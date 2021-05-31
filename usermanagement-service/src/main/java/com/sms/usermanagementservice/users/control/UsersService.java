@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Scope("request")
@@ -48,6 +49,14 @@ public class UsersService {
 
     public Optional<UserDTO> getUser(String id) {
         return keycloakClient.getUser(id).map(UserMapper::toDTO);
+    }
+
+    public List<UserDTO> getUsers(Set<String> ids) {
+        List<UserRepresentation> allUsers = keycloakClient.getUsers(new UserSearchParams());
+        return allUsers.stream()
+                .filter(user -> ids.contains(user.getId()))
+                .map(UserMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public void createStudentWithParent(UserDTO user) {

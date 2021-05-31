@@ -2,12 +2,14 @@ package com.sms.clients;
 
 import com.sms.api.authlib.TokenDTO;
 import com.sms.clients.entity.UserSearchParams;
+import com.sms.context.SmsConfiguration;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -20,14 +22,10 @@ import java.util.*;
 @Scope("prototype")
 public class KeycloakClient {
 
-    private static final String HAPROXY_URL = "http://52.142.201.18:24020";
-    private static final String SMS_REALM = "sms";
-    private static final String KEYCLOAK_ADMIN_URL = HAPROXY_URL + "/auth/admin/realms/" + SMS_REALM;
-    private static final String ADMIN_CLIENT = "admin-cli";
-    private static final String ADMIN_ACCOUNT_NAME = "kcuser";
-    private static final String ADMIN_ACCOUNT_PASS = "kcuser";
+    private String KEYCLOAK_ADMIN_URL;
+    private String TOKEN_URL;
+
     private static final String BEARER = "Bearer ";
-    private static final String TOKEN_URL = HAPROXY_URL + "/auth/realms/master/protocol/openid-connect/token";
     private static final String AUTHORIZATION = "Authorization";
 
     private static final ExpirationTimer EXPIRATION_TIMER = ExpirationTimer.createStopped();
@@ -35,6 +33,20 @@ public class KeycloakClient {
 
     private final Client client = ClientBuilder.newClient(
             new ClientConfig().property(ClientProperties.SUPPRESS_HTTP_COMPLIANCE_VALIDATION, true));
+
+    public KeycloakClient() {
+    }
+
+    public KeycloakClient(String haproxyUrl, String realmName) {
+        KEYCLOAK_ADMIN_URL = haproxyUrl + "/auth/admin/realms/" + realmName;
+        TOKEN_URL = haproxyUrl + "/auth/realms/master/protocol/openid-connect/token";
+    }
+
+    @PostConstruct
+    private void init() {
+        KEYCLOAK_ADMIN_URL = SmsConfiguration.haproxyUrl + "/auth/admin/realms/" + SmsConfiguration.realmName;
+        TOKEN_URL = SmsConfiguration.haproxyUrl + "/auth/realms/master/protocol/openid-connect/token";
+    }
 
     // ################### USER API ###################
 
@@ -98,9 +110,9 @@ public class KeycloakClient {
     public TokenDTO obtainToken() {
         try {
             MultivaluedMap<String, String> content = new MultivaluedHashMap<>();
-            content.putSingle("username", ADMIN_ACCOUNT_NAME);
-            content.putSingle("password", ADMIN_ACCOUNT_PASS);
-            content.putSingle("client_id", ADMIN_CLIENT);
+            content.putSingle("username", SmsConfiguration.adminUsername);
+            content.putSingle("password", SmsConfiguration.adminPassword);
+            content.putSingle("client_id", SmsConfiguration.adminClient);
             content.putSingle("grant_type", "password");
 
             Response response = client.target(TOKEN_URL)
@@ -120,7 +132,7 @@ public class KeycloakClient {
     public TokenDTO refreshToken(String refreshToken) {
         try {
             MultivaluedMap<String, String> content = new MultivaluedHashMap<>();
-            content.putSingle("client_id", ADMIN_CLIENT);
+            content.putSingle("client_id", SmsConfiguration.adminClient);
             content.putSingle("grant_type", "refresh_token");
             content.putSingle("refresh_token", refreshToken);
 
