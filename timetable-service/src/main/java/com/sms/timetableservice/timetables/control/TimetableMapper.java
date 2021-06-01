@@ -6,8 +6,6 @@ import com.sms.api.timetables.LessonsDTO;
 import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.timetableservice.timetables.entity.ClassJPA;
-import com.sms.timetableservice.timetables.entity.LessonKey;
-import org.aopalliance.reflect.Class;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -136,4 +134,5 @@ public class TimetableMapper {
                 .teacherId(jpa.getTeacherId())
                 .build();
     }
+
 }

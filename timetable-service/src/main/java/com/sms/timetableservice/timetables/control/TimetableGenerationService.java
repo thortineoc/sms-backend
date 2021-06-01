@@ -17,10 +17,12 @@ import com.sms.timetableservice.timetables.entity.TeacherWithSubject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -130,4 +132,5 @@ public class TimetableGenerationService {
         return configResource.getConfigDTO()
                 .orElseThrow(() -> new BadRequestException("Cannot generate timetable if the timetable configuration doesn't exist"));
     }
+
 }

@@ -46,10 +46,24 @@ public class TimetableCommonService {
     void addConflictId(List<ClassJPA> jpa, Long id) {
         jpa.forEach(c -> {
             Set<Long> ids = getConflictIds(c);
+            if(ids.isEmpty()){
+                ids=new HashSet<>();
+            }
             ids.add(id);
             String newConflicts = getIdsAsString(ids);
             c.setConflicts(newConflicts);
         });
+    }
+
+    void addConflictId(ClassJPA jpa, Long id) {
+            Set<Long> ids = getConflictIds(jpa);
+            if(ids.isEmpty()){
+            ids=new HashSet<>();
+            }
+            ids.add(id);
+
+            String newConflicts = getIdsAsString(ids);
+            jpa.setConflicts(newConflicts);
     }
 
     public Set<Long> getConflictIds(List<ClassJPA> classes) {
