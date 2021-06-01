@@ -19,8 +19,5 @@ public interface TeacherInfoDTO {
 
     UserDTO getTeacher();
 
-    Integer getLessonCount();
-
-    List<LessonDTO> getConflicts();
-
+    Long getLessonCount();
 }

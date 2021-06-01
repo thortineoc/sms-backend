@@ -1,14 +1,11 @@
 package com.sms.timetableservice.timetables.control;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.sms.api.common.Util;
 import com.sms.api.timetables.LessonDTO;
 import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.timetableservice.timetables.entity.ClassJPA;
 import com.sms.timetableservice.timetables.entity.Lesson;
-import com.sms.timetableservice.timetables.entity.LessonKey;
 
 import java.util.*;
 import java.util.function.Function;
@@ -36,11 +33,6 @@ public class TimetableMapper {
         return classes.stream()
                 .map(Lesson::new)
                 .collect(Collectors.toMap(Lesson::getId, Function.identity()));
-    }
-
-    public static Multimap<LessonKey, Lesson> toLessonsByKey(List<ClassJPA> classes) {
-        List<Lesson> lessons = toLessons(classes);
-        return Multimaps.index(lessons, Lesson::getKey);
     }
 
     public static TimetableDTO toDTO(List<Lesson> lessons, Map<String, UserDTO> teachers, Map<Long, ClassJPA> conflicts) {
@@ -86,6 +78,12 @@ public class TimetableMapper {
                 .lessons(lessons)
                 .teachers(teachers)
                 .build();
+    }
+
+    public static List<LessonDTO> toDTOs(List<ClassJPA> classes) {
+        return classes.stream()
+                .map(TimetableMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     private static List<List<LessonDTO>> fillInEmptyLessons(Map<Integer, List<LessonDTO>> lessons) {

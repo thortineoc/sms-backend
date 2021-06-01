@@ -2,6 +2,7 @@ package com.sms.timetableservice.timetables.control;
 
 
 import com.google.common.collect.Sets;
+import com.sms.api.timetables.LessonDTO;
 import com.sms.api.timetables.TeacherInfoDTO;
 import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
@@ -9,7 +10,6 @@ import com.sms.context.UserContext;
 import com.sms.timetableservice.clients.UserManagementClient;
 import com.sms.timetableservice.timetables.entity.ClassJPA;
 import com.sms.timetableservice.timetables.entity.Lesson;
-import com.sms.timetableservice.timetables.entity.LessonKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -36,13 +36,19 @@ public class TimetableReadService {
 
     public List<TeacherInfoDTO> getTeacherInfo() {
         Map<String, UserDTO> teachers = getTeachersByIds();
-        Map<String, List<Lesson>> lessonsByTeacherId = timetableRepository.findAllByTeacherIdIn(teachers.keySet()).stream()
+        Map<String, Long> lessonsByTeacherId = timetableRepository.findAllByTeacherIdIn(teachers.keySet()).stream()
                 .map(Lesson::new)
-                .collect(Collectors.groupingBy(Lesson::getTeacherId));
-//        Map<String, List<Lesson>> conflictsByTeacherId = lessonsByTeacherId.entrySet().stream()
-//                .map(e -> getConflicts(e.getValue()))
-//                .collect(Collectors.toMap())
-        return Collections.emptyList();
+                .collect(Collectors.groupingBy(Lesson::getTeacherId, Collectors.counting()));
+        return teachers.keySet().stream()
+                .map(id -> TeacherInfoDTO.builder()
+                        .teacher(teachers.get(id))
+                        .lessonCount(lessonsByTeacherId.get(id))
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public List<LessonDTO> getConflictsGlobal() {
+        return TimetableMapper.toDTOs(timetableRepository.findAllConflicted());
     }
 
     public TimetableDTO getTimetableForGroup(String group) {
@@ -70,15 +76,6 @@ public class TimetableReadService {
         Map<Long, ClassJPA> conflicts = getConflictsByIds(conflictIds);
 
         return TimetableMapper.toDTO(lessons, Collections.singletonMap(teacherId, currentUser), conflicts);
-    }
-
-    private List<Lesson> getConflicts(List<Lesson> lessons) {
-        return lessons.stream()
-                .collect(Collectors.groupingBy(Lesson::getKey))
-                .values().stream()
-                .filter(l -> l.size() > 1)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
     }
 
     private Map<Long, ClassJPA> getConflictsByIds(Set<Long> ids) {

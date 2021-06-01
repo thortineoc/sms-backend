@@ -1,7 +1,6 @@
 package com.sms.timetableservice.timetables.control;
 
 import com.sms.timetableservice.timetables.entity.ClassJPA;
-import com.sms.timetableservice.timetables.entity.Lesson;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -16,9 +15,6 @@ public interface TimetableRepository extends CrudRepository<ClassJPA, Long> {
 
     List<ClassJPA> findAllByTeacherIdIn(Collection<String> teacherIds);
 
-    @Query("SELECT DISTINCT c FROM ClassJPA c WHERE c.teacherId = :teacherId")
-    List<ClassJPA> findAllByTeacherIdUnique(String teacherId);
-
     List<ClassJPA> findAllByTeacherId(String teacherId);
 
     List<ClassJPA> findAllByGroup(String group);
@@ -26,6 +22,9 @@ public interface TimetableRepository extends CrudRepository<ClassJPA, Long> {
     List<ClassJPA> findAllBySubject(String subject);
 
     List<ClassJPA> findAllByIdIn(Set<Long> ids);
+
+    @Query("SELECT c FROM ClassJPA c WHERE c.conflicts IS NOT NULL")
+    List<ClassJPA> findAllConflicted();
 
     @Query("SELECT c FROM ClassJPA c WHERE c.weekday = :weekday AND c.lesson = :lesson AND c.teacherId = :teacherId")
     List<ClassJPA> findConflicts(Integer weekday, Integer lesson, String teacherId);
