@@ -43,7 +43,7 @@ public class TimetableCommonService {
         return conflicts;
     }
 
-    private void addConflictId(List<ClassJPA> jpa, Long id) {
+    void addConflictId(List<ClassJPA> jpa, Long id) {
         jpa.forEach(c -> {
             Set<Long> ids = getConflictIds(c);
             ids.add(id);

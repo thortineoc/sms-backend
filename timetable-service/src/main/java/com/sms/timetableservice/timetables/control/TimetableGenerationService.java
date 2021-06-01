@@ -117,7 +117,10 @@ public class TimetableGenerationService {
     }
 
     public Map<String, Map<LessonKey, ClassJPA>> getPotentialConflicts(Multiset<TeacherWithSubject> teachers) {
-        List<String> teacherIds = teachers.stream().map(TeacherWithSubject::getTeacherId).collect(Collectors.toList());
+        List<String> teacherIds = teachers.stream()
+                .map(TeacherWithSubject::getTeacherId)
+                .distinct()
+                .collect(Collectors.toList());
         return timetableRepository.findAllByTeacherIdIn(teacherIds).stream()
                 .collect(Collectors.groupingBy(ClassJPA::getTeacherId,
                         Collectors.toMap(LessonKey::new, Function.identity())));

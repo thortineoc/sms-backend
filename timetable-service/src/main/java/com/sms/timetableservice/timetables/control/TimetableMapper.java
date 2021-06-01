@@ -102,7 +102,7 @@ public class TimetableMapper {
 
     public static List<LessonDTO> toDTO(LessonsDTO dto) {
         return dto.getLessons().stream()
-                .flatMap(List::stream)
+                .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
 

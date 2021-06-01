@@ -1,5 +1,8 @@
 package com.sms.timetableservice.timetables.control;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Multiset;
 import com.sms.api.common.NotFoundException;
 import com.sms.api.timetables.LessonDTO;
@@ -51,7 +54,7 @@ public class TimetableCreateService {
         timetableRepository.updateConflicts(jpa.getConflicts(), jpa.getId());
     }
 
-
+    @Transactional
     public TimetableDTO createClass(LessonsDTO timetableDTO) {
 
         List<LessonDTO> timetable = TimetableMapper.toDTO(timetableDTO);
@@ -59,24 +62,25 @@ public class TimetableCreateService {
 
         Multiset<TeacherWithSubject> teachersWithSubjects = generationService.convertToFlatList(timetable);
         Map<String, Map<LessonKey, ClassJPA>> conflicts = generationService.getPotentialConflicts(teachersWithSubjects);
-        List<ClassJPA> listOfConflicts = conflicts.values().stream().map(e -> new ArrayList<>(e.values())).collect(Collectors.toList()).stream().flatMap(List::stream).collect(Collectors.toList());
+        List<ClassJPA> listOfConflicts = conflicts.values().stream()
+                .flatMap(e -> new ArrayList<>(e.values()).stream())
+                .collect(Collectors.toList());
         Map<String, UserDTO> teachers = generationService.getTeachersById(teachersWithSubjects);
         List<ClassJPA> jpaList = TimetableMapper.toJPA(timetable);
 
         List<ClassJPA> saved = saveLessons(jpaList, listOfConflicts);
-        Set<Long> conflictedIDs = saveConflicted(saved, listOfConflicts);
-        Map<Long, ClassJPA> classMap =listOfConflicts.stream().collect(Collectors.toMap(ClassJPA::getId, Function.identity()));
-
-        return TimetableMapper.toDTO(saved, conflictedIDs, teachers, classMap);
+        saveConflicted(saved, listOfConflicts);
+        listOfConflicts.addAll(saved);
+        Map<Long, ClassJPA> classMap = listOfConflicts.stream().collect(Collectors.toMap(ClassJPA::getId, Function.identity()));
+        return TimetableMapper.toDTO(saved, classMap.keySet(), teachers, classMap);
     }
 
-    private Set<Long> saveConflicted(List<ClassJPA> savedList, List<ClassJPA> listOfConflicts) {
-        Set<Long> conflictsID = new HashSet<>();
+    private void saveConflicted(List<ClassJPA> savedList, List<ClassJPA> listOfConflicts) {
         for (ClassJPA jpa : savedList) {
             for (ClassJPA conflict : listOfConflicts) {
                 if (new LessonKey(jpa).equals(new LessonKey(conflict))) {
-                    conflict.setConflicts(jpa.getId().toString());
-                    conflictsID.add(jpa.getId());
+                    commonService.addConflictId(Collections.singletonList(conflict), jpa.getId());
+//                    conflict.setConflicts(jpa.getId().toString());
                 }
             }
         }
@@ -85,7 +89,6 @@ public class TimetableCreateService {
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-        return conflictsID;
     }
 
     private List<ClassJPA> saveLessons(List<ClassJPA> jpaList, List<ClassJPA> listOfConflicts) {
@@ -96,12 +99,11 @@ public class TimetableCreateService {
                 }
             }
         }
-        Iterable<ClassJPA> saved;
         try {
-            saved = timetableRepository.saveAll(jpaList); //we observed an increase of up to 60% on the saveAll() method.
+            Iterable<ClassJPA> saved = timetableRepository.saveAll(jpaList); //we observed an increase of up to 60% on the saveAll() method.
+            return Lists.newArrayList(saved);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-        return StreamSupport.stream(saved.spliterator(), false).collect(Collectors.toList());
     }
 }
