@@ -51,7 +51,7 @@ public class TimetableCreateService {
         timetableRepository.updateConflicts(jpa.getConflicts(), jpa.getId());
     }
 
-    @Transactional
+
     public TimetableDTO createClass(LessonsDTO timetableDTO) {
 
         List<LessonDTO> timetable = TimetableMapper.toDTO(timetableDTO);
@@ -65,8 +65,8 @@ public class TimetableCreateService {
 
         List<ClassJPA> saved = saveLessons(jpaList, listOfConflicts);
         Set<Long> conflictedIDs = saveConflicted(saved, listOfConflicts);
-        listOfConflicts.addAll(saved);
         Map<Long, ClassJPA> classMap =listOfConflicts.stream().collect(Collectors.toMap(ClassJPA::getId, Function.identity()));
+
         return TimetableMapper.toDTO(saved, conflictedIDs, teachers, classMap);
     }
 
