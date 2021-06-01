@@ -1,5 +1,7 @@
 package com.sms.timetableservice.timetables.boundary;
 
+import com.sms.api.timetables.LessonDTO;
+import com.sms.api.timetables.TeacherInfoDTO;
 import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.AuthRole;
@@ -13,6 +15,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -61,6 +64,24 @@ public class TimetableResource {
     public ResponseEntity<TimetableDTO> getTimetableForTeacher() {
         TimetableDTO timetable = timetableReadService.getTimetableForTeacher();
         return ResponseEntity.ok(timetable);
+    }
+
+    @GetMapping("/teacher/info")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<List<TeacherInfoDTO>> getTeacherInfo() {
+        List<TeacherInfoDTO> teacherInfo = timetableReadService.getTeacherInfo();
+        return ResponseEntity.ok(teacherInfo);
+    }
+
+    @GetMapping("/conflicts")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<List<LessonDTO>> getConflictInfo() {
+        List<LessonDTO> conflicts = timetableReadService.getConflictsGlobal();
+        if (conflicts.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(conflicts);
+        }
     }
 
     @PostMapping("/generate/{group}")

@@ -1,8 +1,8 @@
 package com.sms.timetableservice.timetables.control;
 
-import com.google.common.base.Strings;
 import com.sms.api.common.NotFoundException;
-import com.sms.timetableservice.timetables.entity.ClassJPA;
+import com.sms.api.common.Util;
+import com.sms.timetableservice.timetables.entity.Lesson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -23,61 +23,50 @@ public class TimetableDeleteService {
 
     @Transactional
     public void deleteTimetable(String group) {
-        List<ClassJPA> classes = timetableRepository.findAllByGroup(group);
-        List<ClassJPA> updatedConflicts = getAllUpdatedConflicts(classes);
-        if (!updatedConflicts.isEmpty()) {
-            timetableRepository.saveAll(updatedConflicts);
-        }
-
-        if (!classes.isEmpty()) {
-            timetableRepository.deleteAllByGroup(group);
-        }
+        List<Lesson> lessons = TimetableMapper.toLessons(timetableRepository.findAllByGroup(group));
+        List<Lesson> updatedConflicts = getAllUpdatedConflicts(lessons);
+        Util.ifNotEmpty(updatedConflicts, c -> timetableRepository.saveAll(TimetableMapper.toJPAs(c)));
+        Util.ifNotEmpty(lessons, l -> timetableRepository.deleteAllByGroup(group));
     }
 
     @Transactional
     public void deleteClassesBySubject(String subject) {
-        List<ClassJPA> classes = timetableRepository.findAllBySubject(subject);
-        List<ClassJPA> updatedConflicts = getAllUpdatedConflicts(classes);
-        if (!updatedConflicts.isEmpty()) {
-            timetableRepository.saveAll(updatedConflicts);
-        }
-
-        if (!classes.isEmpty()) {
-            timetableRepository.deleteAllBySubject(subject);
-        }
+        List<Lesson> lessons = TimetableMapper.toLessons(timetableRepository.findAllBySubject(subject));
+        List<Lesson> updatedConflicts = getAllUpdatedConflicts(lessons);
+        Util.ifNotEmpty(updatedConflicts, c -> timetableRepository.saveAll(TimetableMapper.toJPAs(c)));
+        Util.ifNotEmpty(lessons, l -> timetableRepository.deleteAllBySubject(subject));
     }
 
     @Transactional
     public void deleteLesson(Long id) {
-        Optional<ClassJPA> lesson = timetableRepository.findById(id);
-        if (!lesson.isPresent()) {
-            throw new NotFoundException("Lesson with ID: " + id + " doesn't exist");
-        }
-        List<ClassJPA> updatedConflicts = getUpdatedConflicts(lesson.get());
-        if (!updatedConflicts.isEmpty()) {
-            timetableRepository.saveAll(updatedConflicts);
-        }
+        Lesson lesson = getLesson(id);
+        List<Lesson> updatedConflicts = getUpdatedConflicts(lesson);
+        Util.ifNotEmpty(updatedConflicts, c -> timetableRepository.saveAll(TimetableMapper.toJPAs(c)));
         timetableRepository.deleteById(id);
     }
 
-    private List<ClassJPA> getAllUpdatedConflicts(List<ClassJPA> jpa) {
-        Set<Long> idsToRemove = jpa.stream().map(ClassJPA::getId).collect(Collectors.toSet());
-        Set<Long> conflictIds = commonService.getConflictIds(jpa);
+    private List<Lesson> getAllUpdatedConflicts(List<Lesson> lessons) {
+        Set<Long> idsToRemove = lessons.stream().map(Lesson::getId).collect(Collectors.toSet());
+        Set<Long> conflictIds = commonService.getAllConflicts(lessons);
         if (conflictIds.isEmpty()) {
             return Collections.emptyList();
         }
-        List<ClassJPA> conflicts = timetableRepository.findAllByIdIn(conflictIds);
-        conflicts.forEach(c -> commonService.removeConflictIds(c, idsToRemove));
+        List<Lesson> conflicts = TimetableMapper.toLessons(timetableRepository.findAllByIdIn(conflictIds));
+        commonService.removeFromConflicts(conflicts, idsToRemove);
         return conflicts;
     }
 
-    private List<ClassJPA> getUpdatedConflicts(ClassJPA jpa) {
-        if (Strings.isNullOrEmpty(jpa.getConflicts())) {
+    private List<Lesson> getUpdatedConflicts(Lesson lesson) {
+        if (lesson.getConflicts().isEmpty()) {
             return Collections.emptyList();
         }
-        Set<Long> conflictIds = commonService.getConflictIds(jpa);
-        List<ClassJPA> conflicts = timetableRepository.findAllByIdIn(conflictIds);
-        conflicts.forEach(c -> commonService.removeConflictIds(c, Collections.singleton(jpa.getId())));
+        List<Lesson> conflicts = TimetableMapper.toLessons(timetableRepository.findAllByIdIn(lesson.getConflicts()));
+        commonService.removeFromConflicts(conflicts, lesson.getId());
         return conflicts;
+    }
+
+    private Lesson getLesson(Long id) {
+        return new Lesson(timetableRepository.findById(id).orElseThrow(
+                () -> new NotFoundException("Lesson with ID: " + id + " doesn't exist")));
     }
 }

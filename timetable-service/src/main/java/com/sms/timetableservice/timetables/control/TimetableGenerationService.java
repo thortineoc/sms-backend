@@ -71,21 +71,23 @@ public class TimetableGenerationService {
         validateSubjects(realSubjects, teachers, info);
     }
 
-    void validateSubjects(Set<String> realSubjects, Map<String, UserDTO> teachers, Map<String, Map<String, Integer>> info) {
-        if (!teachers.keySet().equals(info.keySet())) {
+    void validateSubjects(Set<String> realSubjects, Map<String, UserDTO> realTeachers, Map<String, Map<String, Integer>> info) {
+        if (!realTeachers.keySet().equals(info.keySet())) {
             throw new IllegalStateException("Some of the teachers don't exist");    // TODO: why is this 500 and not 400?
         }
 
-        info.forEach((teacher, subjects) -> {
-            if (!realSubjects.containsAll(subjects.keySet())) {
-                throw new BadRequestException("Subjects: " + Sets.symmetricDifference(subjects.keySet(), realSubjects) + " don't exist");
-            }
+        info.forEach((teacher, subjects) -> validateTeacherWithSubjects(realSubjects, realTeachers, teacher, subjects));
+    }
 
-            Set<String> teacherSubjects = new HashSet<>(teachers.get(teacher).getCustomAttributes().getSubjects());
-            if (!teacherSubjects.containsAll(subjects.keySet())) {
-                throw new BadRequestException("Teacher: " + teacher + " does not teach subjects: " + Sets.symmetricDifference(subjects.keySet(), teacherSubjects));
-            }
-        });
+    void validateTeacherWithSubjects(Set<String> realSubjects, Map<String, UserDTO> realTeachers, String teacher, Map<String, Integer> subjects) {
+        if (!realSubjects.containsAll(subjects.keySet())) {
+            throw new BadRequestException("Subjects: " + Sets.symmetricDifference(subjects.keySet(), realSubjects) + " don't exist");
+        }
+
+        Set<String> teacherSubjects = new HashSet<>(realTeachers.get(teacher).getCustomAttributes().getSubjects());
+        if (!teacherSubjects.containsAll(subjects.keySet())) {
+            throw new BadRequestException("Teacher: " + teacher + " does not teach subjects: " + Sets.symmetricDifference(subjects.keySet(), teacherSubjects));
+        }
     }
 
     private void validateGroup(Set<String> realGroups, String group) {
