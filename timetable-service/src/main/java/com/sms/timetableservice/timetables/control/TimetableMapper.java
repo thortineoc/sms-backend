@@ -38,8 +38,8 @@ public class TimetableMapper {
     public static TimetableDTO toDTO(List<Lesson> lessons, Map<String, UserDTO> teachers, Map<Long, ClassJPA> conflicts) {
         Map<Integer, List<LessonDTO>> lessonsByWeekday = lessons.stream()
                 .map(c -> toDTO(c, conflicts))
-                .sorted(Comparator.comparing(LessonDTO::getWeekDay))
-                .collect(Collectors.groupingBy(LessonDTO::getWeekDay, LinkedHashMap::new,
+                .sorted(Comparator.comparing(LessonDTO::getWeekday))
+                .collect(Collectors.groupingBy(LessonDTO::getWeekday, LinkedHashMap::new,
                         Util.collectSorted(Comparator.comparing(LessonDTO::getLesson))));
         List<List<LessonDTO>> filledList = fillInEmptyLessons(lessonsByWeekday);
 
@@ -62,15 +62,15 @@ public class TimetableMapper {
                 .teacherId(lesson.getTeacherId())
                 .conflicts(realConflicts)
                 .room(Optional.ofNullable(lesson.getRoom()))
-                .weekDay(lesson.getKey().getWeekday())
+                .weekday(lesson.getKey().getWeekday())
                 .build();
     }
 
     public static TimetableDTO toDTO(List<ClassJPA> classes, Map<String, UserDTO> teachers) {
         Map<Integer, List<LessonDTO>> lessonsByWeekday = classes.stream()
                 .map(TimetableMapper::toDTO)
-                .sorted(Comparator.comparing(LessonDTO::getWeekDay))
-                .collect(Collectors.groupingBy(LessonDTO::getWeekDay, LinkedHashMap::new,
+                .sorted(Comparator.comparing(LessonDTO::getWeekday))
+                .collect(Collectors.groupingBy(LessonDTO::getWeekday, LinkedHashMap::new,
                         Util.collectSorted(Comparator.comparing(LessonDTO::getLesson))));
         List<List<LessonDTO>> lessons = fillInEmptyLessons(lessonsByWeekday);
 
@@ -116,7 +116,7 @@ public class TimetableMapper {
                 .subject(jpa.getSubject())
                 .teacherId(jpa.getTeacherId())
                 .room(Optional.ofNullable(jpa.getRoom()))
-                .weekDay(jpa.getWeekday())
+                .weekday(jpa.getWeekday())
                 .build();
     }
 }

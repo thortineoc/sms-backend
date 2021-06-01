@@ -71,15 +71,15 @@ public class TimetableGenerationService {
         validateSubjects(realSubjects, teachers, info);
     }
 
-    void validateSubjects(Set<String> realSubjects, Map<String, UserDTO> teachers, Map<String, Map<String, Integer>> info) {
-        if (!teachers.keySet().equals(info.keySet())) {
+    void validateSubjects(Set<String> realSubjects, Map<String, UserDTO> realTeachers, Map<String, Map<String, Integer>> info) {
+        if (!realTeachers.keySet().equals(info.keySet())) {
             throw new IllegalStateException("Some of the teachers don't exist");    // TODO: why is this 500 and not 400?
         }
 
-        info.forEach((teacher, subjects) -> validateSubjects(realSubjects, teachers, teacher, subjects));
+        info.forEach((teacher, subjects) -> validateTeacherWithSubjects(realSubjects, realTeachers, teacher, subjects));
     }
 
-    void validateSubjects(Set<String> realSubjects, Map<String, UserDTO> realTeachers, String teacher, Map<String, Integer> subjects) {
+    void validateTeacherWithSubjects(Set<String> realSubjects, Map<String, UserDTO> realTeachers, String teacher, Map<String, Integer> subjects) {
         if (!realSubjects.containsAll(subjects.keySet())) {
             throw new BadRequestException("Subjects: " + Sets.symmetricDifference(subjects.keySet(), realSubjects) + " don't exist");
         }

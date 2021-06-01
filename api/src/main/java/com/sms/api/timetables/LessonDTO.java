@@ -27,7 +27,7 @@ public interface LessonDTO {
 
     Optional<String> getTeacherId();
 
-    Integer getWeekDay();
+    Integer getWeekday();
 
     Optional<String> getRoom();
 
