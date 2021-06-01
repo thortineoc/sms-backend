@@ -76,16 +76,18 @@ public class TimetableGenerationService {
             throw new IllegalStateException("Some of the teachers don't exist");    // TODO: why is this 500 and not 400?
         }
 
-        info.forEach((teacher, subjects) -> {
-            if (!realSubjects.containsAll(subjects.keySet())) {
-                throw new BadRequestException("Subjects: " + Sets.symmetricDifference(subjects.keySet(), realSubjects) + " don't exist");
-            }
+        info.forEach((teacher, subjects) -> validateSubjects(realSubjects, teachers, teacher, subjects));
+    }
 
-            Set<String> teacherSubjects = new HashSet<>(teachers.get(teacher).getCustomAttributes().getSubjects());
-            if (!teacherSubjects.containsAll(subjects.keySet())) {
-                throw new BadRequestException("Teacher: " + teacher + " does not teach subjects: " + Sets.symmetricDifference(subjects.keySet(), teacherSubjects));
-            }
-        });
+    void validateSubjects(Set<String> realSubjects, Map<String, UserDTO> realTeachers, String teacher, Map<String, Integer> subjects) {
+        if (!realSubjects.containsAll(subjects.keySet())) {
+            throw new BadRequestException("Subjects: " + Sets.symmetricDifference(subjects.keySet(), realSubjects) + " don't exist");
+        }
+
+        Set<String> teacherSubjects = new HashSet<>(realTeachers.get(teacher).getCustomAttributes().getSubjects());
+        if (!teacherSubjects.containsAll(subjects.keySet())) {
+            throw new BadRequestException("Teacher: " + teacher + " does not teach subjects: " + Sets.symmetricDifference(subjects.keySet(), teacherSubjects));
+        }
     }
 
     private void validateGroup(Set<String> realGroups, String group) {

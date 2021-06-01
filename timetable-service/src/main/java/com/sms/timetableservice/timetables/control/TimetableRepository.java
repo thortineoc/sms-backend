@@ -1,18 +1,23 @@
 package com.sms.timetableservice.timetables.control;
 
 import com.sms.timetableservice.timetables.entity.ClassJPA;
+import com.sms.timetableservice.timetables.entity.Lesson;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import javax.transaction.Transactional;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 @Transactional
 public interface TimetableRepository extends CrudRepository<ClassJPA, Long> {
 
-    List<ClassJPA> findAllByTeacherIdIn(List<String> teacherIds);
+    List<ClassJPA> findAllByTeacherIdIn(Collection<String> teacherIds);
+
+    @Query("SELECT DISTINCT c FROM ClassJPA c WHERE c.teacherId = :teacherId")
+    List<ClassJPA> findAllByTeacherIdUnique(String teacherId);
 
     List<ClassJPA> findAllByTeacherId(String teacherId);
 
@@ -22,7 +27,8 @@ public interface TimetableRepository extends CrudRepository<ClassJPA, Long> {
 
     List<ClassJPA> findAllByIdIn(Set<Long> ids);
 
-    List<ClassJPA> findAllByWeekdayAndLessonAndTeacherId(Integer weekday, Integer lesson, String teacherId);
+    @Query("SELECT c FROM ClassJPA c WHERE c.weekday = :weekday AND c.lesson = :lesson AND c.teacherId = :teacherId")
+    List<ClassJPA> findConflicts(Integer weekday, Integer lesson, String teacherId);
 
     @Modifying
     @Query("UPDATE ClassJPA c SET c.weekday = :day, c.lesson = :lesson WHERE c.id = :id")

@@ -2,13 +2,15 @@ package com.sms.timetableservice.timetables.control;
 
 import com.sms.api.common.NotFoundException;
 import com.sms.timetableservice.timetables.entity.ClassJPA;
+import com.sms.timetableservice.timetables.entity.Lesson;
+import com.sms.timetableservice.timetables.entity.LessonKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Scope("request")
@@ -21,20 +23,38 @@ public class TimetableCreateService {
     TimetableCommonService commonService;
 
     @Transactional
-    public void moveLesson(Long id, Integer day, Integer lesson) {
-        ClassJPA jpa = timetableRepository.findById(id).orElseThrow(
-                () -> new NotFoundException("Lesson with id: " + id + " doesn't exist."));
+    public void moveLesson(Long id, Integer day, Integer lessonNumber) {
+        Lesson lesson = getLesson(id);
 
-        if (jpa.getWeekday().equals(day) && jpa.getLesson().equals(lesson)) {
+        if (lesson.getKey().equals(new LessonKey(day, lessonNumber))) {
             return;
         }
-        Set<ClassJPA> classesToUpdate = new HashSet<>(commonService.removeFromConflicts(jpa));
-        if (1 != timetableRepository.moveClass(id, day, lesson)) {
+        Map<Long, Lesson> conflictsBefore = TimetableMapper.toLessonsById(timetableRepository.findAllByIdIn(lesson.getConflicts()));
+        commonService.removeFromConflicts(conflictsBefore.values(), lesson.getId());
+
+        if (1 != timetableRepository.moveClass(id, day, lessonNumber)) {
             throw new IllegalStateException("Couldn't move lesson with id: "
                     + id + " to day: " + day + " and lesson: " + lesson);
         }
-        classesToUpdate.addAll(commonService.addToConflicts(jpa));
-        timetableRepository.saveAll(classesToUpdate);
-        timetableRepository.updateConflicts(jpa.getConflicts(), jpa.getId());
+        Map<Long, Lesson> conflictsAfter = calculateConflicts(id);
+
+        conflictsAfter.putAll(conflictsBefore);
+        List<ClassJPA> updatedConflicts = conflictsAfter.values().stream().map(Lesson::toJPA).collect(Collectors.toList());
+        timetableRepository.saveAll(updatedConflicts);
+    }
+
+    private Map<Long, Lesson> calculateConflicts(Long id) {
+        Lesson lesson = getLesson(id);
+        Map<Long, Lesson> conflictsAfter = TimetableMapper.toLessonsById(
+                timetableRepository.findConflicts(lesson.getKey().getWeekday(), lesson.getKey().getLesson(), lesson.getTeacherId()));
+        commonService.addToConflicts(conflictsAfter.values(), lesson.getId());
+        lesson.getConflicts().addAll(conflictsAfter.keySet());
+        timetableRepository.save(lesson.toJPA());
+        return conflictsAfter;
+    }
+
+    private Lesson getLesson(Long id) {
+        return new Lesson(timetableRepository.findById(id).orElseThrow(
+                () -> new NotFoundException("Lesson with id: " + id + " doesn't exist.")));
     }
 }
