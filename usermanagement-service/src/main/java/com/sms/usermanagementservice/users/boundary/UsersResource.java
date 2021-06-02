@@ -1,15 +1,14 @@
 package com.sms.usermanagementservice.users.boundary;
 
+import com.sms.api.common.BadRequestException;
 import com.sms.context.AuthRole;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.api.usermanagement.UsersFiltersDTO;
 import com.sms.usermanagementservice.users.control.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -36,7 +35,7 @@ public class UsersResource {
                 usersService.createUser(data);
                 break;
             default:
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                throw new BadRequestException("Cannot create user with role: " + data.getRole());
         }
 
         return ResponseEntity.noContent().build();

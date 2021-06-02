@@ -1,6 +1,5 @@
 package com.sms.model.homework;
 
-import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;

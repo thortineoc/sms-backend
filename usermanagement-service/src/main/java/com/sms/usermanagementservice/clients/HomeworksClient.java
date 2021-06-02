@@ -20,13 +20,22 @@ public class HomeworksClient {
     private static final String HOMEWORKS = "homework-service";
 
     public boolean deleteAnswers(String id) {
-        Response response = serviceClient.target(HOMEWORKS) // add ` overrideHaproxyUrl("http://localhost:24026") `
-                .path("answer")    // to test locally
+        Response response = serviceClient.target(HOMEWORKS) // add `overrideHaproxyUrl("http://localhost:24026")`
+                .path("answer")                             // to test locally
                 .path("user")
                 .path(id)
                 .request(MediaType.TEXT_PLAIN_TYPE)
                 .delete();
+        return response.getStatus() == HttpStatus.NO_CONTENT.value();
+    }
 
+    public boolean deleteFilesByOwnerId(String id) {
+        Response response = serviceClient.target(HOMEWORKS)
+                .path("files")
+                .path("owner")
+                .path(id)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .delete();
         return response.getStatus() == HttpStatus.NO_CONTENT.value();
     }
 }

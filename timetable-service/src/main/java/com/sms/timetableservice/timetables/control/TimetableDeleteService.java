@@ -24,7 +24,7 @@ public class TimetableDeleteService {
     @Transactional
     public void deleteTimetable(String group) {
         List<Lesson> lessons = TimetableMapper.toLessons(timetableRepository.findAllByGroup(group));
-        List<Lesson> updatedConflicts = getAllUpdatedConflicts(lessons);
+        List<Lesson> updatedConflicts = getConflictsWithRemovedIds(lessons);
         Util.ifNotEmpty(updatedConflicts, c -> timetableRepository.saveAll(TimetableMapper.toJPAs(c)));
         Util.ifNotEmpty(lessons, l -> timetableRepository.deleteAllByGroup(group));
     }
@@ -32,9 +32,16 @@ public class TimetableDeleteService {
     @Transactional
     public void deleteClassesBySubject(String subject) {
         List<Lesson> lessons = TimetableMapper.toLessons(timetableRepository.findAllBySubject(subject));
-        List<Lesson> updatedConflicts = getAllUpdatedConflicts(lessons);
+        List<Lesson> updatedConflicts = getConflictsWithRemovedIds(lessons);
         Util.ifNotEmpty(updatedConflicts, c -> timetableRepository.saveAll(TimetableMapper.toJPAs(c)));
         Util.ifNotEmpty(lessons, l -> timetableRepository.deleteAllBySubject(subject));
+    }
+
+    @Transactional
+    public void deleteLessonsByTeacherId(String teacherId) {
+        // Conflicts exist only in the context of teachers, so deleting all
+        // lessons by teacher ID means conflicts will be deleted as well
+        timetableRepository.deleteAllByTeacherId(teacherId);
     }
 
     @Transactional
@@ -45,7 +52,7 @@ public class TimetableDeleteService {
         timetableRepository.deleteById(id);
     }
 
-    private List<Lesson> getAllUpdatedConflicts(List<Lesson> lessons) {
+    private List<Lesson> getConflictsWithRemovedIds(List<Lesson> lessons) {
         Set<Long> idsToRemove = lessons.stream().map(Lesson::getId).collect(Collectors.toSet());
         Set<Long> conflictIds = commonService.getAllConflicts(lessons);
         if (conflictIds.isEmpty()) {
