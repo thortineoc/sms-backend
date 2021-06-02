@@ -24,18 +24,26 @@ public class TimetablesClient {
                 .path(group)
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .delete();
-
         return response.getStatus() == 204;
     }
 
-    public boolean deleteClassesBySubject(String subject) {
+    public boolean deleteLessonsBySubject(String subject) {
         Response response = serviceClient.target(TIMETABLES)
                 .path("timetables")
                 .path("subject")
                 .path(subject)
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .delete();
+        return response.getStatus() == 204;
+    }
 
+    public boolean deleteLessonsByTeacherId(String teacherId) {
+        Response response = serviceClient.overrideHaproxyUrl("http://localhost:24030").target(TIMETABLES)
+                .path("timetables")
+                .path("teacher")
+                .path(teacherId)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .delete();
         return response.getStatus() == 204;
     }
 }

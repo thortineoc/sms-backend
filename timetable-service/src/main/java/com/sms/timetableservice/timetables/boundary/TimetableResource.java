@@ -120,4 +120,11 @@ public class TimetableResource {
         timetableDeleteService.deleteClassesBySubject(subject);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/teacher/{teacherId}")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<Object> deleteLessonsByTeacherId(@PathVariable("teacherId") String teacherId) {
+        timetableDeleteService.deleteLessonsByTeacherId(teacherId);
+        return ResponseEntity.noContent().build();
+    }
 }

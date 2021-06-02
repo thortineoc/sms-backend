@@ -34,7 +34,7 @@ public class FileMapper {
     }
 
     public static FileJPA toJPA(MultipartFile file, Long id, FileLinkDTO.Type type, String ownerId) throws IOException {
-        FileJPA jpa= new FileJPA();
+        FileJPA jpa = new FileJPA();
         jpa.setFilename(StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename())));
         jpa.setSize(file.getSize());
         jpa.setFile(file.getBytes());

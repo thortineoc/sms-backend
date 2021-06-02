@@ -23,6 +23,6 @@ public interface FileLinkDTO {
     String getUri();
 
     enum Type {
-        HOMEWORK, ANSWER
+        HOMEWORK, ANSWER, PROFILE
     }
 }

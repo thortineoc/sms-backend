@@ -25,12 +25,11 @@ public class FileResource {
     FileService fileService;
 
     @PostMapping("/upload/{id}/{type}")
-    @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.TEACHER})
+    @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.TEACHER, UserDTO.Role.ADMIN})
     public ResponseEntity<FileLinkDTO> uploadFile(@PathVariable("id") Long id, @PathVariable("type") FileLinkDTO.Type type, @RequestParam("file") MultipartFile file) throws IOException {
         return ResponseEntity.ok(fileService.store(file, id, type));
     }
 
-    @AuthRole({UserDTO.Role.STUDENT, UserDTO.Role.TEACHER, UserDTO.Role.ADMIN})
     @GetMapping(value = "/id/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<ByteArrayResource> getFile(@PathVariable Long id) {
         return fileService.getFile(id).map(this::buildFileResponse).orElse(ResponseEntity.noContent().build());
@@ -40,6 +39,12 @@ public class FileResource {
     @AuthRole({UserDTO.Role.TEACHER, UserDTO.Role.STUDENT, UserDTO.Role.ADMIN})
     public ResponseEntity<Object> deleteFile(@PathVariable("id") Long id) {
         fileService.deleteFile(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/owner/{id}")
+    public ResponseEntity<Object> deleteFileByOwnerId(@PathVariable("id") String id) {
+        fileService.deleteFilesByOwnerId(id);
         return ResponseEntity.noContent().build();
     }
 

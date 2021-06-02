@@ -41,5 +41,8 @@ public interface TimetableRepository extends CrudRepository<ClassJPA, Long> {
     int deleteAllByGroup(String group);
 
     @Modifying
+    int deleteAllByTeacherId(String teacherId);
+
+    @Modifying
     int deleteAllBySubject(String subject);
 }
