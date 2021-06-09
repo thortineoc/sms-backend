@@ -16,5 +16,5 @@ public interface LessonsDTO {
         return new ImmutableLessonsDTO.Builder();
     }
 
-    List<List<LessonDTO>> getLessons();
+    List<LessonDTO> getLessons();
 }
