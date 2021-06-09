@@ -1,5 +1,7 @@
 package com.sms.usermanagementservice.users.control;
 
+import com.sms.api.common.BadRequestException;
+import com.sms.api.common.NotFoundException;
 import com.sms.clients.KeycloakClient;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.context.UserContext;
@@ -8,6 +10,7 @@ import com.sms.api.usermanagement.UserDTO;
 import com.sms.api.usermanagement.UsersFiltersDTO;
 import com.sms.usermanagementservice.clients.GradesClient;
 import com.sms.usermanagementservice.clients.HomeworksClient;
+import com.sms.usermanagementservice.clients.TimetablesClient;
 import com.sms.usermanagementservice.users.entity.CustomFilterParams;
 import com.sms.usermanagementservice.users.entity.KeyCloakFilterParams;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -39,6 +42,8 @@ public class UsersService {
     @Autowired
     HomeworksClient homeworksClient;
 
+    @Autowired
+    TimetablesClient timetablesClient;
 
     public List<UserDTO> filterUserByParameters(UsersFiltersDTO filterParamsDTO) {
         CustomFilterParams customFilterParams = UserMapper.mapCustomFilterParams(filterParamsDTO);
@@ -70,8 +75,7 @@ public class UsersService {
     }
 
     public void createUser(UserDTO user) {
-        UserRepresentation userRep = UserMapper
-                .toUserRepresentation(user, calculateUsername(user), calculatePassword(user));
+        UserRepresentation userRep = UserMapper.toUserRepresentation(user, calculateUsername(user), calculatePassword(user));
 
         if (!keycloakClient.createUser(userRep)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
@@ -80,17 +84,27 @@ public class UsersService {
 
     public void deleteUser(String userId) {
         if (context.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("You can't delete yourself!");
         }
         UserRepresentation userRepresentation = keycloakClient.getUser(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException("User with id: " + userId + " doesn't exist"));
 
-        if (gradesClient.deleteGrades(userRepresentation.getId()) && homeworksClient.deleteAnswers(userRepresentation.getId())) {
-            Boolean isDeleted = deleteRelatedUser(userRepresentation);
-            if (!(keycloakClient.deleteUser(userId) && isDeleted)) {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        boolean gradesDeleted = gradesClient.deleteGrades(userId);
+        boolean answersDeleted = homeworksClient.deleteAnswers(userId);
+        boolean relatedUserDeleted = deleteRelatedUser(userRepresentation);
+        boolean userDeleted = keycloakClient.deleteUser(userId);
+        boolean filesDeleted = homeworksClient.deleteFilesByOwnerId(userId);
+        boolean lessonsDeleted = true;
+        if (context.getSmsRole() == UserDTO.Role.TEACHER) {
+            lessonsDeleted = timetablesClient.deleteLessonsByTeacherId(userId);
         }
+
+        if (!lessonsDeleted) throw new IllegalStateException("Couldn't delete lessons.");
+        if (!filesDeleted) throw new IllegalStateException("Couldn't delete user files.");
+        if (!gradesDeleted) throw new IllegalStateException("Couldn't delete user grades.");
+        if (!answersDeleted) throw new IllegalStateException("Couldn't delete homework answers.");
+        if (!relatedUserDeleted) throw new IllegalStateException("Couldn't delete related user.");
+        if (!userDeleted) throw new IllegalStateException("Couldn't delete user.");
     }
 
     private void createParent(UserDTO user, UserRepresentation createdStudent) {
@@ -149,11 +163,11 @@ public class UsersService {
     }
 
     private Boolean deleteRelatedUser(UserRepresentation userRepresentation) {
-        Map<String, List<String>> userAttributes = new HashMap<>(userRepresentation.getAttributes());
+        Map<String, List<String>> userAttributes = userRepresentation.getAttributes();
         String role = userAttributes.get("role").stream()
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("User without role"));
-        if (role.equals("PARENT") || role.equals("STUDENT")) {
+        if (role.equals(UserDTO.Role.PARENT.toString()) || role.equals(UserDTO.Role.STUDENT.toString())) {
             String relatedUserId = userAttributes.get("relatedUser").stream()
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("User does not have related user"));
@@ -165,8 +179,8 @@ public class UsersService {
     public void updateUser(UserDTO userDTO) {
         //find user
         Optional<UserRepresentation> user = keycloakClient.getUser(userDTO.getId());
-        if(!user.isPresent()){
-            throw new IllegalStateException("User does not exist");
+        if (!user.isPresent()){
+            throw new IllegalStateException("User does not exist"); //FIXME: should be NotFoundException
         }
         UserRepresentation userRep = user.get();
 
@@ -188,7 +202,7 @@ public class UsersService {
         attributesDTO.getPhoneNumber().ifPresent(value -> userRep.singleAttribute("phoneNumber", value));
         attributesDTO.getMiddleName().ifPresent(value -> userRep.singleAttribute("middleName", value));
         attributesDTO.getGroup().ifPresent(value -> userRep.singleAttribute("group", value));
-        if(userDTO.getRole()== UserDTO.Role.TEACHER){
+        if (userDTO.getRole() == UserDTO.Role.TEACHER) {
             userRep.singleAttribute("subjects", String.join(",", attributesDTO.getSubjects()));
         }
     }

@@ -14,11 +14,9 @@ import com.sms.model.homework.HomeworkJPA;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
@@ -72,26 +70,34 @@ public class FileService {
             if (!userContext.getUserId().equals(homework.getTeacherId())) {
                 throw new ForbiddenException("Teacher: " + userContext.getUserId() + " does not own homework: " + relationId);
             }
-        } else {
-            throw new IllegalStateException("Incorrect file type: " + type);
+        } else if (type != FileLinkDTO.Type.PROFILE) {
+            throw new IllegalArgumentException("Incorrect file type: " + type);
         }
+    }
+
+    @Transactional
+    public void deleteFilesByOwnerId(String id) {
+        validateOwnership(id);
+        fileRepository.deleteAllByOwnerId(id);
     }
 
     @Transactional
     public void deleteFile(Long id) {
         try {
-            Optional<FileJPA> file = fileRepository.findById(id);
-            if (!file.isPresent()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File: " + id + " does not exist.");
-            }
-            if (UserDTO.Role.ADMIN != userContext.getSmsRole() && !userContext.getUserId().equals(file.get().getOwnerId())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of file: " + id);
-            }
+            FileJPA file = fileRepository.findById(id)
+                    .orElseThrow(() -> new NotFoundException("File: " + id + " does not exist."));
+            validateOwnership(file.getOwnerId());
             fileRepository.deleteById(id);
         } catch (ConstraintViolationException e) {
             throw new IllegalArgumentException("Deleting file: " + id + " violated database constraints: " + e.getConstraintName());
         } catch (EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File with ID: " + id + " does not exist, can't delete");
+            throw new NotFoundException("File with ID: " + id + " does not exist, can't delete");
+        }
+    }
+
+    private void validateOwnership(String id) {
+        if (UserDTO.Role.ADMIN != userContext.getSmsRole() && !userContext.getUserId().equals(id)) {
+            throw new ForbiddenException("You are not the owner of file: " + id);
         }
     }
 }

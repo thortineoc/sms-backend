@@ -6,13 +6,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import javax.transaction.Transactional;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 @Transactional
 public interface TimetableRepository extends CrudRepository<ClassJPA, Long> {
 
-    List<ClassJPA> findAllByTeacherIdIn(List<String> teacherIds);
+    List<ClassJPA> findAllByTeacherIdIn(Collection<String> teacherIds);
 
     List<ClassJPA> findAllByTeacherId(String teacherId);
 
@@ -22,7 +23,11 @@ public interface TimetableRepository extends CrudRepository<ClassJPA, Long> {
 
     List<ClassJPA> findAllByIdIn(Set<Long> ids);
 
-    List<ClassJPA> findAllByWeekdayAndLessonAndTeacherId(Integer weekday, Integer lesson, String teacherId);
+    @Query("SELECT c FROM ClassJPA c WHERE c.conflicts IS NOT NULL")
+    List<ClassJPA> findAllConflicted();
+
+    @Query("SELECT c FROM ClassJPA c WHERE c.weekday = :weekday AND c.lesson = :lesson AND c.teacherId = :teacherId")
+    List<ClassJPA> findConflicts(Integer weekday, Integer lesson, String teacherId);
 
     @Modifying
     @Query("UPDATE ClassJPA c SET c.weekday = :day, c.lesson = :lesson WHERE c.id = :id")
@@ -34,6 +39,9 @@ public interface TimetableRepository extends CrudRepository<ClassJPA, Long> {
 
     @Modifying
     int deleteAllByGroup(String group);
+
+    @Modifying
+    int deleteAllByTeacherId(String teacherId);
 
     @Modifying
     int deleteAllBySubject(String subject);

@@ -1,6 +1,7 @@
 package com.sms.api.common;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
@@ -9,6 +10,20 @@ import java.util.stream.Collectors;
 public class Util {
 
     private Util() {
+    }
+
+    public static <V> void ifNotEmpty(Collection<V> collection, Consumer<Collection<V>> consumer) {
+        if (!collection.isEmpty()) {
+            consumer.accept(collection);
+        }
+    }
+
+    public static <K, V> List<V> getAll(Map<K, V> map, Set<K> keys) {
+        List<V> list = new ArrayList<>();
+        for (K key : keys) {
+            list.add(map.get(key));
+        }
+        return list;
     }
 
     public static <K, V> Map<K, V> index(Collection<V> collection, Function<V, K> keyFunction) {

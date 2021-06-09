@@ -2,6 +2,7 @@ package com.sms.timetableservice.timetables.control;
 
 import com.google.common.collect.Sets;
 import com.sms.timetableservice.timetables.entity.ClassJPA;
+import com.sms.timetableservice.timetables.entity.Lesson;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -16,13 +17,13 @@ class TimetableReadServiceTest {
     @Test
     void shouldReturnConflictsByIds() {
         // GIVEN
-        List<ClassJPA> classes = Arrays.asList(getLesson(1L, "2,3,4"),
+        List<Lesson> classes = TimetableMapper.toLessons(Arrays.asList(getLesson(1L, "2,3,4"),
                 getLesson(2L, "1,3,4"),
                 getLesson(3L, "1,2,4"),
-                getLesson(4L, "1,2,3"));
+                getLesson(4L, "1,2,3")));
 
         // WHEN
-        Set<Long> ids = service.getConflictIds(classes);
+        Set<Long> ids = service.getAllConflicts(classes);
 
         // THEN
         Assertions.assertThat(ids).isEqualTo(Sets.newHashSet(1L, 2L, 3L, 4L));
@@ -30,6 +31,8 @@ class TimetableReadServiceTest {
 
     private ClassJPA getLesson(Long id, String conflicts) {
         ClassJPA jpa = new ClassJPA();
+        jpa.setWeekday(0);
+        jpa.setLesson(0);
         jpa.setConflicts(conflicts);
         jpa.setId(id);
         return jpa;

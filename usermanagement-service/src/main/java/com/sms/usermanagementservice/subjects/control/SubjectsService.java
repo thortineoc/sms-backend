@@ -60,7 +60,7 @@ public class SubjectsService {
             throw new IllegalStateException("Deleting all grades with subject: " + subject + " failed");
         }
 
-        boolean result = timetablesClient.deleteClassesBySubject(subject);
+        boolean result = timetablesClient.deleteLessonsBySubject(subject);
         if (!result) {
             throw new IllegalStateException("Deleting classes with subject: " + subject + " failed.");
         }

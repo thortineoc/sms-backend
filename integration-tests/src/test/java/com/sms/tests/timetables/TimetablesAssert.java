@@ -71,6 +71,6 @@ public class TimetablesAssert {
     }
 
     private String getLessonKey(LessonDTO lesson) {
-        return lesson.getWeekDay() + ":" + lesson.getLesson();
+        return lesson.getWeekday() + ":" + lesson.getLesson();
     }
 }

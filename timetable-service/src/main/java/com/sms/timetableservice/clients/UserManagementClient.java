@@ -1,12 +1,14 @@
 package com.sms.timetableservice.clients;
 
 import com.sms.api.usermanagement.UserDTO;
+import com.sms.api.usermanagement.UsersFiltersDTO;
 import com.sms.clients.ServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -55,6 +57,22 @@ public class UserManagementClient {
             return response.readEntity(new GenericType<Set<String>>() {});
         } else {
             return Collections.emptySet();
+        }
+    }
+
+    public List<UserDTO> getAllTeachers() {
+        UsersFiltersDTO filters = UsersFiltersDTO.builder()
+                .role(UserDTO.Role.TEACHER.toString())
+                .build();
+        Response response = serviceClient.target(USERMANAGEMENT)
+                .path("users")
+                .path("filter")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity(filters, MediaType.APPLICATION_JSON));
+        if (response.getStatus() == HttpStatus.OK.value()) {
+            return Arrays.asList(response.readEntity(UserDTO[].class));
+        } else {
+            return Collections.emptyList();
         }
     }
 

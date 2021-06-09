@@ -132,12 +132,12 @@ public class HomeworkService {
     public void deleteHomework(Long id) {
         Optional<HomeworkJPA> homework = homeworkRepository.findById(id);
         if (!homework.isPresent()) {
-            throw new IllegalStateException("Homework " + id + "doesn't exist");
+            throw new IllegalStateException("Homework " + id + " doesn't exist");    // FIXME: NotFoundException
         }
 
         if (UserDTO.Role.TEACHER == userContext.getSmsRole()) {
             String teacherId = userContext.getUserId();
-            if (!teacherId.equals(homework.get().getTeacherId())) {
+            if (!teacherId.equals(homework.get().getTeacherId())) { // FIXME: ForbiddenException
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of homework with ID: " + id);
             }
         }

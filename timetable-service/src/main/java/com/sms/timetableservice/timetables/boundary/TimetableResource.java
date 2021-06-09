@@ -1,6 +1,7 @@
 package com.sms.timetableservice.timetables.boundary;
 
-import com.sms.api.timetables.LessonsDTO;
+import com.sms.api.timetables.LessonDTO;
+import com.sms.api.timetables.TeacherInfoDTO;
 import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.AuthRole;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -64,6 +66,24 @@ public class TimetableResource {
         return ResponseEntity.ok(timetable);
     }
 
+    @GetMapping("/teacher/info")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<List<TeacherInfoDTO>> getTeacherInfo() {
+        List<TeacherInfoDTO> teacherInfo = timetableReadService.getTeacherInfo();
+        return ResponseEntity.ok(teacherInfo);
+    }
+
+    @GetMapping("/conflicts")
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<List<LessonDTO>> getConflictInfo() {
+        List<LessonDTO> conflicts = timetableReadService.getConflictsGlobal();
+        if (conflicts.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(conflicts);
+        }
+    }
+
     @PostMapping("/generate/{group}")
     @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<TimetableDTO> generateTimetable(@PathVariable("group") String group,
@@ -101,10 +121,10 @@ public class TimetableResource {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/teacher/{teacherId}")
     @AuthRole(UserDTO.Role.ADMIN)
-    @PostMapping()
-    public ResponseEntity<TimetableDTO> createClass(@RequestBody LessonsDTO dto){
-        TimetableDTO timetableDTO = timetableCreateService.createClass(dto);
-        return ResponseEntity.ok(timetableDTO);
+    public ResponseEntity<Object> deleteLessonsByTeacherId(@PathVariable("teacherId") String teacherId) {
+        timetableDeleteService.deleteLessonsByTeacherId(teacherId);
+        return ResponseEntity.noContent().build();
     }
 }

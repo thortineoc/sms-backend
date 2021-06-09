@@ -40,7 +40,7 @@ public class FileBaseJPA {
 
     private String type;
 
-    @Column(name = "relation_id")
+    @Column(name = "relation_id", nullable = false)
     private Long relationId;
 
     public String getOwnerId() {
@@ -51,7 +51,7 @@ public class FileBaseJPA {
         this.ownerId = ownerId;
     }
 
-    @Column(name= "owner_id")
+    @Column(name = "owner_id")
     private String ownerId;
 
 

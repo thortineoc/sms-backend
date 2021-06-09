@@ -18,8 +18,10 @@ public interface FileRepository extends CrudRepository<FileJPA, Long> {
 
     Optional<FileJPA> findById(Long id);
 
+    @Modifying
     void deleteAllByRelationIdAndType(Long id, String type);
 
+    @Modifying
     void deleteAllByOwnerId(String id);
 
     @Modifying
