@@ -1,6 +1,8 @@
 package com.sms.timetableservice.timetables.control;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Multiset;
 import com.sms.api.common.NotFoundException;
 import com.sms.api.timetables.LessonDTO;
@@ -63,6 +65,8 @@ public class TimetableCreateService {
                 .flatMap(e -> new ArrayList<>(e.values()).stream())
                 .collect(Collectors.toList());
 
+        Multimap<LessonKey, ClassJPA> multimap= Multimaps.index(listOfConflicts, LessonKey::new);
+        multimap.isEmpty();
         List<ClassJPA> jpaList = TimetableMapper.toJPA(timetable);
         List<ClassJPA> saved = saveLessons(jpaList, listOfConflicts);
         saveConflicted(saved, listOfConflicts);

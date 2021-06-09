@@ -102,7 +102,7 @@ public class TimetableResource {
     }
 
     @AuthRole(UserDTO.Role.ADMIN)
-    @PutMapping()
+    @PostMapping()
     public ResponseEntity<TimetableDTO> createClass(@RequestBody LessonsDTO dto){
         TimetableDTO timetableDTO = timetableCreateService.createClass(dto);
         return ResponseEntity.ok(timetableDTO);
