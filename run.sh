@@ -1,14 +1,19 @@
 #!/bin/bash
 
+PID=""
+running() {
+        PID=$(ps aux | grep "java.*keycloak" | grep -v "grep" | awk '{print $2}')
+        [[ $PID == "" ]]
+}
+
 case $1 in
 	start)
-	  (cd docker && \
-    docker-compose up && \
-    docker exec -i postgres pg_restore -U sms -v -d sms < db_dump_text) &
+	(cd docker/linux && docker-compose up) &
+	sleep 20
+	(cd docker && docker exec -i postgres psql -U sms -d sms < db_dump_text) &
 		;;
 	stop)
-	  (cd docker && \
-	  docker-compose down)
+	  (cd docker/linux && docker-compose down)
 		;;
 	status)
 		;;

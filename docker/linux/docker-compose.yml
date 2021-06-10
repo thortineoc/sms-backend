@@ -1,0 +1,21 @@
+version: "3.3"  # optional since v1.27.0
+services:
+        #haproxy:
+        #image: stadryniak/sms-haproxy-linux
+        #container_name: "haproxy"
+        #network_mode: host
+    sms-postgres:
+        image: postgres
+        container_name: "postgres"
+        network_mode: host
+        environment: 
+            - POSTGRES_PASSWORD=sms
+            - POSTGRES_USER=sms
+            - POSTGRES_DB=sms
+              #keycloak:
+              #image: stadryniak/kc-sms
+              #container_name: "keycloak"
+              #network_mode: host
+              #environment: # WARNING: DO NOT CHANGE
+              #- DB_ADDR=postgres
+              #- DB_VENDOR=POSTGRES
