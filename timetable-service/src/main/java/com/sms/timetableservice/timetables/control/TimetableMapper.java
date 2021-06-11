@@ -93,7 +93,6 @@ public class TimetableMapper {
             }
         }
         return lessons.values().stream()
-                .filter(e -> !e.isEmpty())
                 .map(dailyLessons -> Stream.concat(
                         IntStream.range(0, findMinLesson(dailyLessons)).mapToObj(i -> null),
                         dailyLessons.stream()
@@ -105,7 +104,7 @@ public class TimetableMapper {
         return lessons.stream()
                 .min(Comparator.comparing(LessonDTO::getLesson))
                 .map(LessonDTO::getLesson)
-                .orElseThrow(() -> new IllegalStateException("None of the lessons: " + lessons + " had a lesson number."));
+                .orElse(0);
     }
 
     public static LessonDTO toDTO(ClassJPA jpa) {
