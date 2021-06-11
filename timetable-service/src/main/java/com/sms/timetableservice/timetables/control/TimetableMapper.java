@@ -2,7 +2,6 @@ package com.sms.timetableservice.timetables.control;
 
 import com.sms.api.common.Util;
 import com.sms.api.timetables.LessonDTO;
-import com.sms.api.timetables.LessonsDTO;
 import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.timetableservice.timetables.entity.ClassJPA;
@@ -141,16 +140,5 @@ public class TimetableMapper {
         return jpa;
     }
 
-    public static LessonDTO toDto(ClassJPA jpa) {
-        return LessonDTO.builder()
-                .id(jpa.getId())
-                .group(jpa.getGroup())
-                .subject(jpa.getSubject())
-                .lesson(jpa.getLesson())
-                .room(jpa.getRoom())
-                .weekday(jpa.getWeekday())
-                .teacherId(jpa.getTeacherId())
-                .build();
-    }
 
 }

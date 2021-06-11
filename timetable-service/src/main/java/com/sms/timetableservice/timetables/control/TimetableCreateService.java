@@ -8,13 +8,13 @@ import com.sms.api.timetables.TimetableDTO;
 import com.sms.timetableservice.timetables.entity.ClassJPA;
 import com.sms.timetableservice.timetables.entity.Lesson;
 import com.sms.timetableservice.timetables.entity.LessonKey;
-import org.aopalliance.reflect.Class;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -74,9 +74,7 @@ public class TimetableCreateService {
     public TimetableDTO createLessons(LessonsDTO lessonsDTO){
         List<LessonDTO> lessonDTOS = lessonsDTO.getLessons();
         lessonDTOS.forEach( e -> {
-            if(e.getId().isPresent()){
-                deleteService.deleteLesson(e.getId().get());
-            }
+            e.getId().ifPresent(deleteService::deleteLesson);
         });
         List<ClassJPA> savedLessons = Lists.newArrayList(timetableRepository.saveAll(TimetableMapper.toJPA(lessonDTOS)));
         for(ClassJPA jpa : savedLessons){

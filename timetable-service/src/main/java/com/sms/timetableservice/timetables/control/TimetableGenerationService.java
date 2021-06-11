@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.sms.api.common.BadRequestException;
-import com.sms.api.timetables.LessonDTO;
 import com.sms.api.timetables.TimetableConfigDTO;
 import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
@@ -106,12 +105,6 @@ public class TimetableGenerationService {
                                 .mapToObj(i -> subjects.getKey()))
                         .map(subject -> new TeacherWithSubject(entry.getKey(), subject)))
                 .collect(Collectors.toCollection(HashMultiset::create));
-    }
-
-    public Multiset<TeacherWithSubject> convertToFlatList(List<LessonDTO> lessons){
-        List<TeacherWithSubject> list = lessons.stream().
-               map(e -> new TeacherWithSubject(e.getTeacherId().get(), e.getSubject())).collect(Collectors.toList());
-        return HashMultiset.create(list);
     }
 
     public Map<String, UserDTO> getTeachersById(Multiset<TeacherWithSubject> subjects) {
