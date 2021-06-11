@@ -1,5 +1,8 @@
 package com.sms.timetableservice.timetables.entity;
 
+import com.sms.api.timetables.LessonDTO;
+import com.sms.api.timetables.LessonsDTO;
+
 import java.util.Objects;
 
 public class LessonKey {
@@ -13,6 +16,11 @@ public class LessonKey {
     }
 
     public LessonKey(ClassJPA c) {
+        this.weekday = c.getWeekday();
+        this.lesson = c.getLesson();
+    }
+
+    public LessonKey(LessonDTO c) {
         this.weekday = c.getWeekday();
         this.lesson = c.getLesson();
     }

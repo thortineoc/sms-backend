@@ -18,7 +18,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -53,7 +56,6 @@ public class TimetableGenerationService {
 
         Map<String, UserDTO> teachers = getTeachersById(teachersWithSubjects);
         validateRequest(group, teachers, info);
-
         Map<String, Map<LessonKey, ClassJPA>> potentialConflicts = getPotentialConflicts(teachersWithSubjects);
 
         deleteService.deleteTimetable(group);
@@ -105,14 +107,17 @@ public class TimetableGenerationService {
                 .collect(Collectors.toCollection(HashMultiset::create));
     }
 
-    private Map<String, UserDTO> getTeachersById(Multiset<TeacherWithSubject> subjects) {
+    public Map<String, UserDTO> getTeachersById(Multiset<TeacherWithSubject> subjects) {
         Set<String> ids = subjects.stream().map(TeacherWithSubject::getTeacherId).collect(Collectors.toSet());
         return userManagementClient.getUsers(ids).stream()
                 .collect(Collectors.toMap(UserDTO::getId, Function.identity()));
     }
 
-    private Map<String, Map<LessonKey, ClassJPA>> getPotentialConflicts(Multiset<TeacherWithSubject> teachers) {
-        List<String> teacherIds = teachers.stream().map(TeacherWithSubject::getTeacherId).collect(Collectors.toList());
+    public Map<String, Map<LessonKey, ClassJPA>> getPotentialConflicts(Multiset<TeacherWithSubject> teachers) {
+        List<String> teacherIds = teachers.stream()
+                .map(TeacherWithSubject::getTeacherId)
+                .distinct()
+                .collect(Collectors.toList());
         return timetableRepository.findAllByTeacherIdIn(teacherIds).stream()
                 .collect(Collectors.groupingBy(ClassJPA::getTeacherId,
                         Collectors.toMap(LessonKey::new, Function.identity())));
@@ -122,4 +127,5 @@ public class TimetableGenerationService {
         return configResource.getConfigDTO()
                 .orElseThrow(() -> new BadRequestException("Cannot generate timetable if the timetable configuration doesn't exist"));
     }
+
 }

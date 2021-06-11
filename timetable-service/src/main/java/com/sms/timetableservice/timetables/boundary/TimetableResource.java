@@ -1,6 +1,7 @@
 package com.sms.timetableservice.timetables.boundary;
 
 import com.sms.api.timetables.LessonDTO;
+import com.sms.api.timetables.LessonsDTO;
 import com.sms.api.timetables.TeacherInfoDTO;
 import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
@@ -126,5 +127,13 @@ public class TimetableResource {
     public ResponseEntity<Object> deleteLessonsByTeacherId(@PathVariable("teacherId") String teacherId) {
         timetableDeleteService.deleteLessonsByTeacherId(teacherId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping()
+    @AuthRole(UserDTO.Role.ADMIN)
+    public ResponseEntity<TimetableDTO> createLessons(@RequestBody LessonsDTO lessons){
+        List<LessonDTO> les = lessons.getLessons();
+        TimetableDTO timetable = timetableCreateService.createLessons(lessons);
+        return ResponseEntity.ok(timetable);
     }
 }

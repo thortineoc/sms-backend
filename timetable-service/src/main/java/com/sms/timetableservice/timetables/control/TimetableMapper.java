@@ -119,4 +119,26 @@ public class TimetableMapper {
                 .weekday(jpa.getWeekday())
                 .build();
     }
+
+
+    public static List<ClassJPA> toJPA(List<LessonDTO> list) {
+        return list.stream()
+                .map(TimetableMapper::toJPA)
+                .collect(Collectors.toList());
+    }
+
+    public static ClassJPA toJPA(LessonDTO dto) {
+        dto.getRoom();
+        ClassJPA jpa = new ClassJPA();
+        dto.getId().ifPresent(jpa::setId);
+        jpa.setGroup(dto.getGroup());
+        jpa.setTeacherId(dto.getTeacherId().get());
+        jpa.setLesson(dto.getLesson());
+        jpa.setRoom(dto.getRoom().get());
+        jpa.setWeekday(dto.getWeekday());
+        jpa.setSubject(dto.getSubject());
+        return jpa;
+    }
+
+
 }
