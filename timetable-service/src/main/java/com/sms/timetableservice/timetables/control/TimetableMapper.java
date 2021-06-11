@@ -121,11 +121,6 @@ public class TimetableMapper {
                 .build();
     }
 
-    public static List<LessonDTO> toDTO(LessonsDTO dto) {
-        return dto.getLessons().stream()
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-    }
 
     public static List<ClassJPA> toJPA(List<LessonDTO> list) {
         return list.stream()
@@ -141,7 +136,7 @@ public class TimetableMapper {
         jpa.setTeacherId(dto.getTeacherId().get());
         jpa.setLesson(dto.getLesson());
         jpa.setRoom(dto.getRoom().get());
-        jpa.setWeekday(dto.getWeekDay());
+        jpa.setWeekday(dto.getWeekday());
         jpa.setSubject(dto.getSubject());
         return jpa;
     }
@@ -153,7 +148,7 @@ public class TimetableMapper {
                 .subject(jpa.getSubject())
                 .lesson(jpa.getLesson())
                 .room(jpa.getRoom())
-                .weekDay(jpa.getWeekday())
+                .weekday(jpa.getWeekday())
                 .teacherId(jpa.getTeacherId())
                 .build();
     }

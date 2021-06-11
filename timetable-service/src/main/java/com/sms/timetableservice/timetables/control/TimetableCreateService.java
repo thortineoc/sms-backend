@@ -1,9 +1,14 @@
 package com.sms.timetableservice.timetables.control;
 
+import com.google.common.collect.Lists;
 import com.sms.api.common.NotFoundException;
+import com.sms.api.timetables.LessonDTO;
+import com.sms.api.timetables.LessonsDTO;
+import com.sms.api.timetables.TimetableDTO;
 import com.sms.timetableservice.timetables.entity.ClassJPA;
 import com.sms.timetableservice.timetables.entity.Lesson;
 import com.sms.timetableservice.timetables.entity.LessonKey;
+import org.aopalliance.reflect.Class;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -21,6 +26,12 @@ public class TimetableCreateService {
 
     @Autowired
     TimetableCommonService commonService;
+
+    @Autowired
+    TimetableDeleteService deleteService;
+
+    @Autowired
+    TimetableReadService readService;
 
     @Transactional
     public void moveLesson(Long id, Integer day, Integer lessonNumber) {
@@ -47,6 +58,7 @@ public class TimetableCreateService {
         Lesson lesson = getLesson(id);
         Map<Long, Lesson> conflictsAfter = TimetableMapper.toLessonsById(
                 timetableRepository.findConflicts(lesson.getKey().getWeekday(), lesson.getKey().getLesson(), lesson.getTeacherId()));
+        conflictsAfter.values().removeIf(v -> v.getId().equals(id));
         commonService.addToConflicts(conflictsAfter.values(), lesson.getId());
         lesson.getConflicts().addAll(conflictsAfter.keySet());
         timetableRepository.save(lesson.toJPA());
@@ -57,4 +69,22 @@ public class TimetableCreateService {
         return new Lesson(timetableRepository.findById(id).orElseThrow(
                 () -> new NotFoundException("Lesson with id: " + id + " doesn't exist.")));
     }
+
+    @Transactional
+    public TimetableDTO createLessons(LessonsDTO lessonsDTO){
+        List<LessonDTO> lessonDTOS = lessonsDTO.getLessons();
+        lessonDTOS.forEach( e -> {
+            if(e.getId().isPresent()){
+                deleteService.deleteLesson(e.getId().get());
+            }
+        });
+        List<ClassJPA> savedLessons = Lists.newArrayList(timetableRepository.saveAll(TimetableMapper.toJPA(lessonDTOS)));
+        for(ClassJPA jpa : savedLessons){
+            Map<Long, Lesson> conflictsAfter = calculateConflicts(jpa.getId());
+            List<ClassJPA> updatedConflicts = conflictsAfter.values().stream().map(Lesson::toJPA).collect(Collectors.toList());
+            timetableRepository.saveAll(updatedConflicts);
+        }
+       return readService.getTimetableForGroup(lessonDTOS.get(0).getGroup());
+    }
+
 }

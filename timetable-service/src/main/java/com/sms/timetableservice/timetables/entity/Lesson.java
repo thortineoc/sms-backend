@@ -80,9 +80,10 @@ public class Lesson {
         if (!Strings.isNullOrEmpty(conflicts)) {
             return Arrays.stream(conflicts.split(",")).map(Long::valueOf).collect(Collectors.toSet());
         } else {
-            return Collections.emptySet();
+            return new HashSet<>();
         }
     }
+
 
     @Override
     public boolean equals(Object o) {

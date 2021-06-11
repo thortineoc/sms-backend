@@ -21,7 +21,7 @@ public class LessonKey {
     }
 
     public LessonKey(LessonDTO c) {
-        this.weekday = c.getWeekDay();
+        this.weekday = c.getWeekday();
         this.lesson = c.getLesson();
     }
 
