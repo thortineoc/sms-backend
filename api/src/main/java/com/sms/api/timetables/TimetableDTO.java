@@ -18,7 +18,7 @@ public interface TimetableDTO {
         return new ImmutableTimetableDTO.Builder();
     }
 
-    List<List<LessonDTO>> getLessons();
+    List<LessonDTO> getLessons();
 
     Map<String, UserDTO> getTeachers();
 

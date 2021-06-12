@@ -73,16 +73,13 @@ public class TimetableCreateService {
     @Transactional
     public TimetableDTO createLessons(LessonsDTO lessonsDTO){
         List<LessonDTO> lessonDTOS = lessonsDTO.getLessons();
-        lessonDTOS.forEach( e -> {
-            e.getId().ifPresent(deleteService::deleteLesson);
-        });
+        lessonDTOS.forEach(e -> e.getId().ifPresent(deleteService::deleteLesson));
         List<ClassJPA> savedLessons = Lists.newArrayList(timetableRepository.saveAll(TimetableMapper.toJPA(lessonDTOS)));
-        for(ClassJPA jpa : savedLessons){
+        for (ClassJPA jpa : savedLessons) {
             Map<Long, Lesson> conflictsAfter = calculateConflicts(jpa.getId());
             List<ClassJPA> updatedConflicts = conflictsAfter.values().stream().map(Lesson::toJPA).collect(Collectors.toList());
             timetableRepository.saveAll(updatedConflicts);
         }
        return readService.getTimetableForGroup(lessonDTOS.get(0).getGroup());
     }
-
 }

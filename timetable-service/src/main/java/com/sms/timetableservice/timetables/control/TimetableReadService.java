@@ -36,13 +36,14 @@ public class TimetableReadService {
 
     public List<TeacherInfoDTO> getTeacherInfo() {
         Map<String, UserDTO> teachers = getTeachersByIds();
-        Map<String, Long> lessonsByTeacherId = timetableRepository.findAllByTeacherIdIn(teachers.keySet()).stream()
+        Map<String, Map<String, Long>> lessonsByTeacherId = timetableRepository.findAllByTeacherIdIn(teachers.keySet()).stream()
                 .map(Lesson::new)
-                .collect(Collectors.groupingBy(Lesson::getTeacherId, Collectors.counting()));
+                .collect(Collectors.groupingBy(Lesson::getTeacherId,
+                        Collectors.groupingBy(Lesson::getSubject, Collectors.counting())));
         return teachers.keySet().stream()
                 .map(id -> TeacherInfoDTO.builder()
                         .teacher(teachers.get(id))
-                        .lessonCount(lessonsByTeacherId.get(id))
+                        .lessonCount(lessonsByTeacherId.getOrDefault(id, Collections.emptyMap()))
                         .build())
                 .collect(Collectors.toList());
     }

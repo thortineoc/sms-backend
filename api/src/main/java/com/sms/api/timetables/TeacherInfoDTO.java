@@ -6,6 +6,7 @@ import com.sms.api.usermanagement.UserDTO;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Map;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -19,5 +20,5 @@ public interface TeacherInfoDTO {
 
     UserDTO getTeacher();
 
-    Long getLessonCount();
+    Map<String, Long> getLessonCount();
 }

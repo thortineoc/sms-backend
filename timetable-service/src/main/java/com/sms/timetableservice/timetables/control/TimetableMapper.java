@@ -10,8 +10,6 @@ import com.sms.timetableservice.timetables.entity.Lesson;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class TimetableMapper {
 
@@ -36,15 +34,12 @@ public class TimetableMapper {
     }
 
     public static TimetableDTO toDTO(List<Lesson> lessons, Map<String, UserDTO> teachers, Map<Long, ClassJPA> conflicts) {
-        Map<Integer, List<LessonDTO>> lessonsByWeekday = lessons.stream()
-                .map(c -> toDTO(c, conflicts))
-                .sorted(Comparator.comparing(LessonDTO::getWeekday))
-                .collect(Collectors.groupingBy(LessonDTO::getWeekday, LinkedHashMap::new,
-                        Util.collectSorted(Comparator.comparing(LessonDTO::getLesson))));
-        List<List<LessonDTO>> filledList = fillInEmptyLessons(lessonsByWeekday);
+        List<LessonDTO> dtos = lessons.stream()
+                .map(l -> toDTO(l, conflicts))
+                .collect(Collectors.toList());
 
         return TimetableDTO.builder()
-                .lessons(filledList)
+                .lessons(dtos)
                 .teachers(teachers)
                 .build();
     }
@@ -67,15 +62,9 @@ public class TimetableMapper {
     }
 
     public static TimetableDTO toDTO(List<ClassJPA> classes, Map<String, UserDTO> teachers) {
-        Map<Integer, List<LessonDTO>> lessonsByWeekday = classes.stream()
-                .map(TimetableMapper::toDTO)
-                .sorted(Comparator.comparing(LessonDTO::getWeekday))
-                .collect(Collectors.groupingBy(LessonDTO::getWeekday, LinkedHashMap::new,
-                        Util.collectSorted(Comparator.comparing(LessonDTO::getLesson))));
-        List<List<LessonDTO>> lessons = fillInEmptyLessons(lessonsByWeekday);
-
+        List<LessonDTO> dtos = classes.stream().map(TimetableMapper::toDTO).collect(Collectors.toList());
         return TimetableDTO.builder()
-                .lessons(lessons)
+                .lessons(dtos)
                 .teachers(teachers)
                 .build();
     }
@@ -84,27 +73,6 @@ public class TimetableMapper {
         return classes.stream()
                 .map(TimetableMapper::toDTO)
                 .collect(Collectors.toList());
-    }
-
-    private static List<List<LessonDTO>> fillInEmptyLessons(Map<Integer, List<LessonDTO>> lessons) {
-        for (int day = 0; day < 5; day++) {
-            if (!lessons.containsKey(day)) {
-                lessons.put(day, Collections.emptyList());
-            }
-        }
-        return lessons.values().stream()
-                .map(dailyLessons -> Stream.concat(
-                        IntStream.range(0, findMinLesson(dailyLessons)).mapToObj(i -> null),
-                        dailyLessons.stream()
-                ).collect(Collectors.toList()))
-                .collect(Collectors.toList());
-    }
-
-    private static int findMinLesson(List<LessonDTO> lessons) {
-        return lessons.stream()
-                .min(Comparator.comparing(LessonDTO::getLesson))
-                .map(LessonDTO::getLesson)
-                .orElse(0);
     }
 
     public static LessonDTO toDTO(ClassJPA jpa) {
@@ -119,7 +87,6 @@ public class TimetableMapper {
                 .build();
     }
 
-
     public static List<ClassJPA> toJPA(List<LessonDTO> list) {
         return list.stream()
                 .map(TimetableMapper::toJPA)
@@ -130,14 +97,12 @@ public class TimetableMapper {
         dto.getRoom();
         ClassJPA jpa = new ClassJPA();
         dto.getId().ifPresent(jpa::setId);
+        dto.getTeacherId().ifPresent(jpa::setTeacherId);
+        dto.getRoom().ifPresent(jpa::setRoom);
         jpa.setGroup(dto.getGroup());
-        jpa.setTeacherId(dto.getTeacherId().get());
         jpa.setLesson(dto.getLesson());
-        jpa.setRoom(dto.getRoom().get());
         jpa.setWeekday(dto.getWeekday());
         jpa.setSubject(dto.getSubject());
         return jpa;
     }
-
-
 }
