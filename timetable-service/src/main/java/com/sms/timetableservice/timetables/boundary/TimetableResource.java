@@ -7,6 +7,7 @@ import com.sms.api.timetables.TimetableDTO;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.context.AuthRole;
 import com.sms.context.UserContext;
+import com.sms.timetableservice.clients.UserManagementClient;
 import com.sms.timetableservice.timetables.control.TimetableCreateService;
 import com.sms.timetableservice.timetables.control.TimetableDeleteService;
 import com.sms.timetableservice.timetables.control.TimetableReadService;
@@ -26,6 +27,7 @@ import java.util.Map;
 public class TimetableResource {
 
     private static final String GROUP = "group";
+    private static final String RELATED_USER = "relatedUser";
 
     @Autowired
     UserContext userContext;
@@ -42,6 +44,9 @@ public class TimetableResource {
     @Autowired
     TimetableCreateService timetableCreateService;
 
+    @Autowired
+    UserManagementClient userManagementClient;
+
     @GetMapping("/{group}")
     @AuthRole(UserDTO.Role.ADMIN)
     public ResponseEntity<TimetableDTO> getTimetableForGroup(@PathVariable("group") String group) {
@@ -52,12 +57,24 @@ public class TimetableResource {
     @GetMapping("/student")
     @AuthRole({UserDTO.Role.PARENT, UserDTO.Role.STUDENT})
     public ResponseEntity<TimetableDTO> getTimetableForStudent() {
-        String group = (String) userContext.getCustomAttributes().get(GROUP);
-        if (group == null) {
-            throw new IllegalStateException("User: " + userContext.getUserName() + " doesn't have a group assigned.");
-        }
-        TimetableDTO timetable = timetableReadService.getTimetableForGroup(group);
+        TimetableDTO timetable = timetableReadService.getTimetableForGroup(getGroup());
         return ResponseEntity.ok(timetable);
+    }
+
+    private String getGroup() {
+        switch (userContext.getSmsRole()) {
+            case STUDENT: return (String) userContext.getCustomAttributes().get(GROUP);
+            case PARENT:
+                String relatedUserId = (String) userContext.getCustomAttributes().get(RELATED_USER);
+                if (relatedUserId == null) {
+                    throw new IllegalStateException("User doesn't have a related user.");
+                }
+                UserDTO relatedUser = userManagementClient.getUser(relatedUserId)
+                        .orElseThrow(() -> new IllegalStateException("User does not have a related user."));
+                return relatedUser.getCustomAttributes().getGroup()
+                        .orElseThrow(() -> new IllegalStateException("Related user does not have a group assigned."));
+            default: throw new IllegalStateException("You shouldn't be here!!!");
+        }
     }
 
     @GetMapping("/teacher")
