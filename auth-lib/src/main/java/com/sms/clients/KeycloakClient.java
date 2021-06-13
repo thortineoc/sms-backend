@@ -1,6 +1,7 @@
 package com.sms.clients;
 
 import com.sms.api.authlib.TokenDTO;
+import com.sms.clients.entity.KcResult;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.context.SmsConfiguration;
 import org.glassfish.jersey.client.ClientConfig;
@@ -50,7 +51,7 @@ public class KeycloakClient {
 
     // ################### USER API ###################
 
-    public boolean createUser(UserRepresentation user) {
+    public KcResult<Object> createUser(UserRepresentation user) {
         checkToken();
         user.setEnabled(true);
         Response response = client.target(KEYCLOAK_ADMIN_URL + "/users")
@@ -58,51 +59,68 @@ public class KeycloakClient {
                 .header(AUTHORIZATION, BEARER + adminToken.getAccessToken())
                 .post(Entity.entity(user, MediaType.APPLICATION_JSON));
 
-        return isResponseSuccessful(response);
+        if (isResponseSuccessful(response)) {
+            return KcResult.ok(null);
+        } else {
+            return KcResult.fail(response.getStatus());
+        }
     }
 
-    public boolean updateUser(String userId, UserRepresentation user) {
+    public KcResult<Object> updateUser(String userId, UserRepresentation user) {
         checkToken();
         Response response = client.target(KEYCLOAK_ADMIN_URL + "/users/" + userId)
                 .request(MediaType.APPLICATION_JSON)
                 .header(AUTHORIZATION, BEARER + adminToken.getAccessToken())
                 .put(Entity.entity(user, MediaType.APPLICATION_JSON));
 
-        return isResponseSuccessful(response);
+        if (isResponseSuccessful(response)) {
+            return KcResult.ok(null);
+        } else {
+            return KcResult.fail(response.getStatus());
+        }
     }
 
-    public Optional<UserRepresentation> getUser(String userId) {
+    public KcResult<UserRepresentation> getUser(String userId) {
         checkToken();
         Response response = client.target(KEYCLOAK_ADMIN_URL + "/users/" + userId)
                 .request(MediaType.APPLICATION_JSON)
                 .header(AUTHORIZATION, BEARER + adminToken.getAccessToken())
                 .get();
+        // KC returns 404 on non existent user, we return 204
         if (isResponseSuccessful(response)) {
-            return Optional.of(response.readEntity(UserRepresentation.class));
+            return KcResult.ok(response.readEntity(UserRepresentation.class));
+        } else if (response.getStatus() == 404) {
+            return KcResult.ok(null);
         } else {
-            return Optional.empty();
+            return KcResult.fail(response.getStatus());
         }
     }
 
-    public boolean deleteUser(String userId) {
+    public KcResult<Object> deleteUser(String userId) {
         checkToken();
         Response response = client.target(KEYCLOAK_ADMIN_URL + "/users/" + userId)
                 .request(MediaType.APPLICATION_JSON)
                 .header(AUTHORIZATION, BEARER + adminToken.getAccessToken())
                 .delete();
-        return isResponseSuccessful(response);
+
+        if (isResponseSuccessful(response)) {
+            return KcResult.ok(null);
+        } {
+            return KcResult.fail(response.getStatus());
+        }
     }
 
-    public List<UserRepresentation> getUsers(UserSearchParams searchParams) {
+    public KcResult<List<UserRepresentation>> getUsers(UserSearchParams searchParams) {
         checkToken();
         WebTarget target = searchParams.addParams(client.target(KEYCLOAK_ADMIN_URL + "/users"));
         Response response = target.request(MediaType.APPLICATION_JSON)
                 .header(AUTHORIZATION, BEARER + adminToken.getAccessToken())
                 .get();
         if (isResponseSuccessful(response)) {
-            return Arrays.asList(response.readEntity(UserRepresentation[].class));
+            List<UserRepresentation> users = Arrays.asList(response.readEntity(UserRepresentation[].class));
+            return KcResult.ok(users);
         } else {
-            return Collections.emptyList();
+            return KcResult.fail(response.getStatus());
         }
     }
 

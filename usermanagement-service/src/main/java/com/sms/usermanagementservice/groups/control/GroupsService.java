@@ -1,6 +1,8 @@
 package com.sms.usermanagementservice.groups.control;
 
 import com.sms.clients.KeycloakClient;
+import com.sms.clients.entity.KcException;
+import com.sms.clients.entity.KcResult;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.usermanagementservice.clients.TimetablesClient;
@@ -51,7 +53,7 @@ public class GroupsService {
         groupRepository.deleteById(name);
         Map<Boolean, List<UserRepresentation>> updateResults = getStudentsWithGroups(name).stream()
                 .map(this::removeGroup)
-                .collect(Collectors.groupingBy(student -> keycloakClient.updateUser(student.getId(), student)));
+                .collect(Collectors.groupingBy(student -> keycloakClient.updateUser(student.getId(), student).isOk()));
         boolean timetableIsDeleted = timetablesClient.deleteTimetable(name);
         if (!timetableIsDeleted) {
             throw new IllegalStateException("Timetable for group: " + name + " couldn't be deleted.");
@@ -67,7 +69,14 @@ public class GroupsService {
     }
 
     private List<UserRepresentation> getStudentsWithGroups(String group) {
-        return keycloakClient.getUsers(new UserSearchParams()).stream()
+        KcResult<List<UserRepresentation>> result = keycloakClient.getUsers(new UserSearchParams());
+        if (!result.isOk()) {
+            throw new KcException(result, "Couldn't fetch users from keycloak.");
+        }
+        if (!result.getContent().isPresent()) {
+            return Collections.emptyList();
+        }
+        return result.getContent().get().stream()
                 .filter(user -> UserUtils.isRoleAndHasAttribute(user, UserDTO.Role.STUDENT, GROUP, group))
                 .collect(Collectors.toList());
     }

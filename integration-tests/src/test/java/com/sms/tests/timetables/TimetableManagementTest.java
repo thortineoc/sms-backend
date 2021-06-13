@@ -45,9 +45,9 @@ class TimetableManagementTest {
         SubjectUtils.createSubject(PHYSICS).then().statusCode(204);
         SubjectUtils.createSubject(BIOLOGY).then().statusCode(204);
 
-        STUDENT = createStudent("Tomasz", GROUP);
-        FIRST_TEACHER = createTeacher("Pawel", MATHS, PHYSICS);
-        SECOND_TEACHER = createTeacher("Zdzislaw", BIOLOGY);
+        STUDENT = createStudent("Tomasz", "Wojna", GROUP);
+        FIRST_TEACHER = createTeacher("Pawel", "Oleksik", MATHS, PHYSICS);
+        SECOND_TEACHER = createTeacher("Zdzislaw", "Oleksik", BIOLOGY);
     }
 
     @AfterAll
@@ -58,11 +58,7 @@ class TimetableManagementTest {
             SubjectUtils.deleteSubject(MATHS);
             SubjectUtils.deleteSubject(PHYSICS);
             SubjectUtils.deleteSubject(BIOLOGY);
-        }, () -> {
-            UserUtils.deleteUser(STUDENT.getId());
-            UserUtils.deleteUser(FIRST_TEACHER.getId());
-            UserUtils.deleteUser(SECOND_TEACHER.getId());
-        }, () -> {
+        }, UserUtils::deleteTestUsers, () -> {
             if (OLD_CONFIG == null) {
                 CONFIG_CLIENT.deleteConfig();
             } else {
@@ -213,15 +209,15 @@ class TimetableManagementTest {
                         {0, 0, 0, 0, 0}});
     }
 
-    private static TimetablesTeacherClient createTeacher(String firstName, String... subjects) {
-        UserDTO user = UserUtils.getTeacherDTO(firstName, subjects);
+    private static TimetablesTeacherClient createTeacher(String firstName, String lastName, String... subjects) {
+        UserDTO user = UserUtils.getTeacherDTO(firstName, lastName, subjects);
         UserUtils.createUser(user).then().statusCode(204);
         UserDTO savedUser = UserUtils.getUsers(ImmutableMap.of("email", user.getEmail().orElse(""))).as(UserDTO[].class)[0];
         return new TimetablesTeacherClient(savedUser);
     }
 
-    private static TimetablesStudentClient createStudent(String firstName, String group) {
-        UserDTO user = UserUtils.getStudentDTO(firstName, firstName, group);
+    private static TimetablesStudentClient createStudent(String firstName, String lastName, String group) {
+        UserDTO user = UserUtils.getStudentDTO(firstName, lastName, group);
         UserUtils.createUser(user).then().statusCode(204);
         UserDTO savedUser = UserUtils.getUsers(ImmutableMap.of("email", user.getEmail().orElse(""))).as(UserDTO[].class)[0];
         return new TimetablesStudentClient(savedUser);

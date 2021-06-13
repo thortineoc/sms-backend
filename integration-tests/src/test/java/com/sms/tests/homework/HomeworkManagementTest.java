@@ -53,9 +53,9 @@ class HomeworkManagementTest {
         // CREATE USERS
         firstTeacher = createTeacher("Zdzislaw", FIRST_SUBJECT, SECOND_SUBJECT);
         secondTeacher = createTeacher("Grzegorz", FIRST_SUBJECT);
-        firstStudent = createStudent("Mateusz", FIRST_GROUP);
-        secondStudent = createStudent("Tomasz", SECOND_GROUP);
-        thirdStudent = createStudent("Ela", FIRST_GROUP);
+        firstStudent = createStudent("Mateusz", "Medon", FIRST_GROUP);
+        secondStudent = createStudent("Tomasz", "Wojna", SECOND_GROUP);
+        thirdStudent = createStudent("Ela", "Kubicka", FIRST_GROUP);
 
         firstHomework = HomeworkClient.getSimpleHomeworkDTO("Add two numbers", FIRST_GROUP, FIRST_SUBJECT, true,
                 LocalDateTime.now().plusDays(10));
@@ -332,15 +332,15 @@ class HomeworkManagementTest {
                 .toString();
     }
 
-    private static TeacherHomeworkClient createTeacher(String firstName, String... subjects) {
-        UserDTO user = UserUtils.getTeacherDTO(firstName, subjects);
+    private static TeacherHomeworkClient createTeacher(String firstName, String lastName, String... subjects) {
+        UserDTO user = UserUtils.getTeacherDTO(firstName, lastName, subjects);
         UserUtils.createUser(user).then().statusCode(204);
         UserDTO savedUser = UserUtils.getUsers(ImmutableMap.of("email", user.getEmail().orElse(""))).as(UserDTO[].class)[0];
         return new TeacherHomeworkClient(savedUser);
     }
 
-    private static StudentHomeworkClient createStudent(String firstName, String group) {
-        UserDTO user = UserUtils.getStudentDTO(firstName, firstName, group);
+    private static StudentHomeworkClient createStudent(String firstName, String lastName, String group) {
+        UserDTO user = UserUtils.getStudentDTO(firstName, lastName, group);
         UserUtils.createUser(user).then().statusCode(204);
         UserDTO savedUser = UserUtils.getUsers(ImmutableMap.of("email", user.getEmail().orElse(""))).as(UserDTO[].class)[0];
         return new StudentHomeworkClient(savedUser);

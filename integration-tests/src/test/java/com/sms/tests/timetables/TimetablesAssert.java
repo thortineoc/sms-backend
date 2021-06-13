@@ -29,7 +29,6 @@ public class TimetablesAssert {
         response.then().statusCode(200);
         TimetableDTO timetable = response.as(TimetableDTO.class);
         lessons = timetable.getLessons().stream()
-                .flatMap(Collection::stream)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(this::getLessonKey, Function.identity()));
         teachers = timetable.getTeachers();

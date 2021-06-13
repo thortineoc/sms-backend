@@ -3,6 +3,7 @@ package com.sms.tests.authlib;
 import com.sms.api.authlib.TokenDTO;
 import com.sms.clients.Environment;
 import com.sms.clients.KeycloakClient;
+import com.sms.clients.entity.KcResult;
 import com.sms.clients.entity.UserSearchParams;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,8 +31,11 @@ class KeycloakClientTest {
     @AfterAll
     static void cleanup() {
         UserSearchParams params = new UserSearchParams().username(TEST_USERNAME);
-        Optional<UserRepresentation> testUser = CLIENT.getUsers(params).stream().findFirst();
-        testUser.ifPresent(userRepresentation -> CLIENT.deleteUser(userRepresentation.getId()));
+        KcResult<List<UserRepresentation>> result = CLIENT.getUsers(params);
+        if (result.isOk()) {
+            result.getContent().orElse(Collections.emptyList()).stream().findFirst()
+                    .map(UserRepresentation::getId).ifPresent(CLIENT::deleteUser);
+        }
     }
 
     @Test
@@ -64,33 +68,34 @@ class KeycloakClientTest {
                 TEST_USERNAME + "@" + TEST_USERNAME, "2g", "TEACHER");
 
         // CREATE THE USER
-        boolean result = CLIENT.createUser(user);
+        boolean result = CLIENT.createUser(user).isOk();
 
         // USER SHOULD BE CREATED IN KEYCLOAK
         assertTrue(result);
 
         UserSearchParams params = new UserSearchParams().username(TEST_USERNAME);
-        UserRepresentation createdUser = CLIENT.getUsers(params).get(0);
+        UserRepresentation createdUser = CLIENT.getUsers(params).getContent().orElse(Collections.emptyList()).get(0);
         assertUsersAreEqual(user, createdUser);
 
-        UserRepresentation userQueriedById = CLIENT.getUser(createdUser.getId()).get();
+        UserRepresentation userQueriedById = CLIENT.getUser(createdUser.getId()).getContent().get();
         assertUsersAreEqual(user, userQueriedById);
 
         // UPDATE USER DETAILS
-        result = CLIENT.updateUser(createdUser.getId(), updatedUser);
+        result = CLIENT.updateUser(createdUser.getId(), updatedUser).isOk();
 
         // THE USER DETAILS SHOULD BE UPDATED
         assertTrue(result);
-        UserRepresentation updatedSavedUser = CLIENT.getUser(createdUser.getId()).get();
+        UserRepresentation updatedSavedUser = CLIENT.getUser(createdUser.getId()).getContent().get();
         assertUsersAreEqual(updatedUser, updatedSavedUser);
 
         // DELETE THE USER
-        result = CLIENT.deleteUser(createdUser.getId());
+        result = CLIENT.deleteUser(createdUser.getId()).isOk();
         assertTrue(result);
 
         // THE USER SHOULD BE DELETED
-        Optional<UserRepresentation> deletedUser = CLIENT.getUser(createdUser.getId());
-        assertFalse(deletedUser.isPresent());
+        KcResult<UserRepresentation> deleteResult = CLIENT.getUser(createdUser.getId());
+        assertTrue(deleteResult.isOk());
+        assertFalse(deleteResult.getContent().isPresent());
     }
 
     private UserRepresentation createUserRep(String username, String password, String firstName, String lastName,

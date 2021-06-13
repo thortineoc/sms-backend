@@ -1,6 +1,7 @@
 package com.sms.tests.grades;
 
 import com.google.common.collect.ImmutableMap;
+import com.sms.api.common.Util;
 import com.sms.clients.WebClient;
 import com.sms.api.grades.GradeDTO;
 import com.sms.tests.usermanagement.groups.GroupUtils;
@@ -11,9 +12,7 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.sms.tests.grades.GradeUtils.*;
@@ -87,39 +86,36 @@ class GradesManagementTest {
         FIRST_PARENT_CLIENT = new WebClient(firstParent.getUserName(), "JohnFort");
 
         // SET UP TEACHERS
-        UserUtils.createUser(UserUtils.getTeacherDTO("first-teacher", MATH, PHYSICS, BIOLOGY)).then().statusCode(204);
-        UserDTO teacher = UserUtils.getUsers(ImmutableMap.of("middleName", TEST_PREFIX + "first-teacher"))
+        UserUtils.createUser(UserUtils.getTeacherDTO("Damian", "Gwizdz", MATH, PHYSICS, BIOLOGY)).then().statusCode(204);
+        UserDTO teacher = UserUtils.getUsers(ImmutableMap.of("middleName", TEST_PREFIX + "Damian"))
                 .as(UserDTO[].class)[0];
-        WebClient FIRST_TEACHER = new WebClient(teacher.getUserName(), "firsfirs");
+        WebClient FIRST_TEACHER = new WebClient(teacher.getUserName(), "DamiGwiz");
 
         useTeacher(FIRST_TEACHER);
     }
 
     @AfterAll
     static void cleanup() {
-
-        if (FIRST_USER != null && SECOND_USER != null && THIRD_USER != null && FOURTH_USER != null) {
-            deleteUserGrades(FIRST_USER.getId());
-            deleteUserGrades(SECOND_USER.getId());
-            deleteUserGrades(THIRD_USER.getId());
-            deleteUserGrades(FOURTH_USER.getId());
-        }
-        deleteUsersSubjectsAndGroups();
+        Util.runAll(() -> {
+            if (FIRST_USER != null && SECOND_USER != null && THIRD_USER != null && FOURTH_USER != null) {
+                deleteUserGrades(FIRST_USER.getId());
+                deleteUserGrades(SECOND_USER.getId());
+                deleteUserGrades(THIRD_USER.getId());
+                deleteUserGrades(FOURTH_USER.getId());
+            }
+        }, GradesManagementTest::deleteUsersSubjectsAndGroups);
     }
 
     private static void deleteUsersSubjectsAndGroups() {
-        SubjectUtils.deleteSubject(MATH);
-        SubjectUtils.deleteSubject(PHYSICS);
-        SubjectUtils.deleteSubject(BIOLOGY);
-
-        GroupUtils.deleteGroup(GROUP_1A);
-        GroupUtils.deleteGroup(GROUP_2B);
-        GroupUtils.deleteGroup(GROUP_3C);
-
-        Response response = UserUtils.getUsers(ImmutableMap.of("middleName", TEST_PREFIX));
-        if (response.statusCode() == 200) {
-            Arrays.stream(response.as(UserDTO[].class)).map(UserDTO::getId).forEach(UserUtils::deleteUser);
-        }
+        Util.runAll(() -> {
+            SubjectUtils.deleteSubject(MATH);
+            SubjectUtils.deleteSubject(PHYSICS);
+            SubjectUtils.deleteSubject(BIOLOGY);
+        }, () -> {
+            GroupUtils.deleteGroup(GROUP_1A);
+            GroupUtils.deleteGroup(GROUP_2B);
+            GroupUtils.deleteGroup(GROUP_3C);
+        }, UserUtils::deleteTestUsers);
     }
 
     @Test

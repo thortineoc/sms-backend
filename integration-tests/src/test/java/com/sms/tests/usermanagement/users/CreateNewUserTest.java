@@ -5,13 +5,11 @@ import com.google.common.collect.Lists;
 import com.sms.clients.WebClient;
 import com.sms.api.usermanagement.CustomAttributesDTO;
 import com.sms.api.usermanagement.UserDTO;
-import io.restassured.response.Response;
 import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 
 import javax.ws.rs.core.MediaType;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 import static com.sms.tests.usermanagement.TestUtils.TEST_PREFIX;
@@ -26,10 +24,7 @@ class CreateNewUserTest {
     @BeforeAll
     @AfterAll
     static void cleanup() {
-        Response response = UserUtils.getUsers(ImmutableMap.of("middleName", TEST_PREFIX));
-        if (response.statusCode() == 200) {
-            Arrays.stream(response.as(UserDTO[].class)).map(UserDTO::getId).forEach(UserUtils::deleteUser);
-        }
+        UserUtils.deleteTestUsers();
     }
 
     @Test

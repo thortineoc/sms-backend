@@ -3,6 +3,8 @@ package com.sms.usermanagementservice.users.control;
 import com.sms.api.common.BadRequestException;
 import com.sms.api.common.NotFoundException;
 import com.sms.clients.KeycloakClient;
+import com.sms.clients.entity.KcException;
+import com.sms.clients.entity.KcResult;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.context.UserContext;
 import com.sms.api.usermanagement.CustomAttributesDTO;
@@ -53,12 +55,20 @@ public class UsersService {
     }
 
     public Optional<UserDTO> getUser(String id) {
-        return keycloakClient.getUser(id).map(UserMapper::toDTO);
+        KcResult<UserRepresentation> result = keycloakClient.getUser(id);
+        if (result.isOk()) {
+            return result.getContent().map(UserMapper::toDTO);
+        } else {
+            throw new KcException(result, "Couldn't fetch user " + id + " from keycloak.");
+        }
     }
 
     public List<UserDTO> getUsers(Set<String> ids) {
-        List<UserRepresentation> allUsers = keycloakClient.getUsers(new UserSearchParams());
-        return allUsers.stream()
+        KcResult<List<UserRepresentation>> result = keycloakClient.getUsers(new UserSearchParams());
+        if (!result.isOk()) {
+            throw new KcException(result, "Couldn't fetch users: " + ids + " from keycloak.");
+        }
+        return result.getContent().orElse(Collections.emptyList()).stream()
                 .filter(user -> ids.contains(user.getId()))
                 .map(UserMapper::toDTO)
                 .collect(Collectors.toList());
@@ -68,7 +78,11 @@ public class UsersService {
         createUser(user);
 
         UserSearchParams params = new UserSearchParams().username(calculateUsername(user));
-        UserRepresentation createdStudent = keycloakClient.getUsers(params)
+        KcResult<List<UserRepresentation>> result = keycloakClient.getUsers(params);
+        if (!result.isOk()) {
+            throw new KcException(result, "Couldn't fetch user from keycloak.");
+        }
+        UserRepresentation createdStudent = result.getContent().orElse(Collections.emptyList())
                 .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
 
         createParent(user, createdStudent);
@@ -76,9 +90,18 @@ public class UsersService {
 
     public void createUser(UserDTO user) {
         UserRepresentation userRep = UserMapper.toUserRepresentation(user, calculateUsername(user), calculatePassword(user));
+        KcResult<List<UserRepresentation>> result = keycloakClient.getUsers(new UserSearchParams().username(userRep.getUsername()));
+        if (!result.isOk()) {
+            throw new KcException(result, "Couldn't fetch users from keycloak.");
+        }
+        boolean userExists = !result.getContent().orElse(Collections.emptyList()).isEmpty();
+        if (userExists) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User: " + user.getFirstName() + " " + user.getLastName() + " already exists");
+        }
 
-        if (!keycloakClient.createUser(userRep)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        KcResult<Object> creationResult = keycloakClient.createUser(userRep);
+        if (!creationResult.isOk()) {
+            throw new KcException(creationResult, "Creating user " + user.getFirstName() + " " + user.getLastName() + " failed");
         }
     }
 
@@ -86,25 +109,32 @@ public class UsersService {
         if (context.getUserId().equals(userId)) {
             throw new BadRequestException("You can't delete yourself!");
         }
-        UserRepresentation userRepresentation = keycloakClient.getUser(userId)
+        KcResult<UserRepresentation> result = keycloakClient.getUser(userId);
+        if (!result.isOk()) {
+            throw new KcException(result, "Couldn't fetch user with id: " + userId + " from keycloak.");
+        }
+        UserRepresentation userRepresentation = result.getContent()
                 .orElseThrow(() -> new NotFoundException("User with id: " + userId + " doesn't exist"));
 
         boolean gradesDeleted = gradesClient.deleteGrades(userId);
         boolean answersDeleted = homeworksClient.deleteAnswers(userId);
         boolean relatedUserDeleted = deleteRelatedUser(userRepresentation);
-        boolean userDeleted = keycloakClient.deleteUser(userId);
         boolean filesDeleted = homeworksClient.deleteFilesByOwnerId(userId);
         boolean lessonsDeleted = true;
         if (context.getSmsRole() == UserDTO.Role.TEACHER) {
             lessonsDeleted = timetablesClient.deleteLessonsByTeacherId(userId);
         }
 
+        keycloakClient.deleteUser(userId);
+        KcResult<UserRepresentation> deleteResult = keycloakClient.getUser(userId);
+
+        if (!deleteResult.isOk()) throw new KcException(deleteResult, "Error while fetching user from keycloak.");
+        if (deleteResult.getContent().isPresent()) throw new IllegalStateException("Couldn't delete user with ID: " + userId);
         if (!lessonsDeleted) throw new IllegalStateException("Couldn't delete lessons.");
         if (!filesDeleted) throw new IllegalStateException("Couldn't delete user files.");
         if (!gradesDeleted) throw new IllegalStateException("Couldn't delete user grades.");
         if (!answersDeleted) throw new IllegalStateException("Couldn't delete homework answers.");
         if (!relatedUserDeleted) throw new IllegalStateException("Couldn't delete related user.");
-        if (!userDeleted) throw new IllegalStateException("Couldn't delete user.");
     }
 
     private void createParent(UserDTO user, UserRepresentation createdStudent) {
@@ -115,9 +145,20 @@ public class UsersService {
         parentAttributes.put("relatedUser", Collections.singletonList(createdStudent.getId()));
         parent.setAttributes(parentAttributes);
 
-        if (!keycloakClient.createUser(parent)) {
+        KcResult<Object> result = keycloakClient.createUser(parent);
+        if (!result.isOk()) {
             keycloakClient.deleteUser(createdStudent.getId());
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
+            throw new KcException(result, "Error creating parent user in keycloak.");
+        }
+        KcResult<List<UserRepresentation>> parentResult = keycloakClient.getUsers(new UserSearchParams().username(parent.getUsername()));
+        if (!parentResult.isOk()) {
+            keycloakClient.deleteUser(createdStudent.getId());
+            throw new KcException(parentResult, "Error fetching parent user from keycloak.");
+        }
+        Optional<UserRepresentation> createdParent = parentResult.getContent().orElse(Collections.emptyList()).stream().findFirst();
+        if (!createdParent.isPresent()) {
+            keycloakClient.deleteUser(createdStudent.getId());
+            throw new IllegalStateException("Creating parent user failed.");
         }
 
         updateStudentRelatedUser(createdStudent, calculateParentUsernameFromStudent(user));
@@ -126,17 +167,22 @@ public class UsersService {
     private void updateStudentRelatedUser(UserRepresentation createdStudent, String parentUsername) {
 
         UserSearchParams params = new UserSearchParams().username(parentUsername);
-        UserRepresentation createdParent = keycloakClient.getUsers(params)
+        KcResult<List<UserRepresentation>> result = keycloakClient.getUsers(params);
+        if (!result.isOk()) {
+            throw new KcException(result, "Couldn't fetch users from keycloak.");
+        }
+        UserRepresentation createdParent = result.getContent().orElse(Collections.emptyList())
                 .stream().findFirst().orElseThrow(() -> new IllegalStateException("User was not created"));
 
         Map<String, List<String>> studentAttributes = new HashMap<>(createdStudent.getAttributes());
         studentAttributes.put("relatedUser", Collections.singletonList(createdParent.getId()));
         createdStudent.setAttributes(studentAttributes);
 
-        if (!keycloakClient.updateUser(createdStudent.getId(), createdStudent)) {
+        KcResult<Object> updateResult = keycloakClient.updateUser(createdStudent.getId(), createdStudent);
+        if (!updateResult.isOk()) {
             keycloakClient.deleteUser(createdStudent.getId());
             keycloakClient.deleteUser(createdParent.getId());
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
+            throw new KcException(updateResult, "Updating user: " + createdStudent.getId() + " failed.");
         }
     }
 
@@ -154,7 +200,7 @@ public class UsersService {
             case TEACHER:
                 return "t_" + user.getPesel();
             default:
-                throw new IllegalStateException();
+                throw new IllegalStateException("Unexpected user role: " + user.getRole() + ", available roles: " + Arrays.toString(UserDTO.Role.values()));
         }
     }
 
@@ -164,32 +210,48 @@ public class UsersService {
 
     private Boolean deleteRelatedUser(UserRepresentation userRepresentation) {
         Map<String, List<String>> userAttributes = userRepresentation.getAttributes();
-        String role = userAttributes.get("role").stream()
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("User without role"));
-        if (role.equals(UserDTO.Role.PARENT.toString()) || role.equals(UserDTO.Role.STUDENT.toString())) {
-            String relatedUserId = userAttributes.get("relatedUser").stream()
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("User does not have related user"));
-            return keycloakClient.deleteUser(relatedUserId);
+        List<String> roles = userAttributes.get("role");
+        if (roles == null) {
+            // We have to return true here so deleting the user doesn't get interrupted,
+            // even though users with no role aren't allowed
+            return true;
+        }
+        UserDTO.Role role = UserDTO.Role.valueOf(roles.get(0));
+        if (role == UserDTO.Role.PARENT || role == UserDTO.Role.STUDENT) {
+            List<String> relatedUsers = userAttributes.get("relatedUser");
+            if (relatedUsers == null) {
+                // We have to return true here so deleting the user doesn't get interrupted,
+                // even though users with no role aren't allowed
+                return true;
+            }
+            String relatedUserId = relatedUsers.get(0);
+            keycloakClient.deleteUser(relatedUserId);
+
+            KcResult<UserRepresentation> deleteResult = keycloakClient.getUser(relatedUserId);
+            if (!deleteResult.isOk()) {
+                return false;
+            }
+            return !deleteResult.getContent().isPresent();
         }
         return true;
     }
 
     public void updateUser(UserDTO userDTO) {
         //find user
-        Optional<UserRepresentation> user = keycloakClient.getUser(userDTO.getId());
-        if (!user.isPresent()){
-            throw new IllegalStateException("User does not exist"); //FIXME: should be NotFoundException
+        KcResult<UserRepresentation> result = keycloakClient.getUser(userDTO.getId());
+        if (!result.isOk()) {
+            throw new KcException(result, "Error fetching user: " + userDTO.getId() + " from keycloak.");
         }
-        UserRepresentation userRep = user.get();
+        UserRepresentation userRep = result.getContent().orElseThrow(
+                () -> new IllegalStateException("User does not exist")); //FIXME: should be NotFoundException
 
         //set new values
         setNewValues(userDTO, userRep);
 
         //save in keycloak
-        if (!keycloakClient.updateUser(userRep.getId(), userRep)) {
-            throw new IllegalStateException("Could not update user");
+        KcResult<Object> updateResult = keycloakClient.updateUser(userRep.getId(), userRep);
+        if (!updateResult.isOk()) {
+            throw new KcException(updateResult, "Updating user: " + userRep.getId() + " failed.");
         }
     }
 

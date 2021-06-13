@@ -1,6 +1,8 @@
 package com.sms.usermanagementservice.subjects.control;
 
 import com.sms.clients.KeycloakClient;
+import com.sms.clients.entity.KcException;
+import com.sms.clients.entity.KcResult;
 import com.sms.clients.entity.UserSearchParams;
 import com.sms.api.usermanagement.UserDTO;
 import com.sms.usermanagementservice.clients.GradesClient;
@@ -54,7 +56,7 @@ public class SubjectsService {
 
         Map<Boolean, List<UserRepresentation>> updateResults = getTeachersWithSubject(subject).stream()
                 .map(teacher -> removeSubject(teacher, subject))
-                .collect(Collectors.groupingBy(teacher -> keycloakClient.updateUser(teacher.getId(), teacher)));
+                .collect(Collectors.groupingBy(teacher -> keycloakClient.updateUser(teacher.getId(), teacher).isOk()));
 
         if (!gradesClient.deleteGradesBySubject(subject)) {
             throw new IllegalStateException("Deleting all grades with subject: " + subject + " failed");
@@ -84,7 +86,11 @@ public class SubjectsService {
     }
 
     private List<UserRepresentation> getTeachersWithSubject(String subject) {
-        return keycloakClient.getUsers(new UserSearchParams()).stream()
+        KcResult<List<UserRepresentation>> result = keycloakClient.getUsers(new UserSearchParams());
+        if (!result.isOk()) {
+            throw new KcException(result, "Couldn't fetch users from keycloak");
+        }
+        return keycloakClient.getUsers(new UserSearchParams()).getContent().orElse(Collections.emptyList()).stream()
                 .filter(user -> UserUtils.isRoleAndHasAttribute(user, UserDTO.Role.TEACHER, SUBJECTS, subject))
                 .collect(Collectors.toList());
     }

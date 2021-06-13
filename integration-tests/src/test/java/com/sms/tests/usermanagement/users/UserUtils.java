@@ -1,5 +1,6 @@
 package com.sms.tests.usermanagement.users;
 
+import com.google.common.collect.ImmutableMap;
 import com.sms.api.usermanagement.ImmutableUsersFiltersDTO;
 import com.sms.clients.WebClient;
 import com.sms.api.usermanagement.CustomAttributesDTO;
@@ -18,6 +19,14 @@ import static com.sms.tests.usermanagement.TestUtils.USER_MANAGEMENT;
 public class UserUtils {
 
     public static final WebClient ADMIN = new WebClient("smsadmin", "smsadmin");
+
+    public static void deleteTestUsers() {
+        Response response = getUsers(ImmutableMap.of("middleName", TEST_PREFIX));
+        if (response.statusCode() == 200) {
+            UserDTO[] users = response.as(UserDTO[].class);
+            Arrays.stream(users).map(UserDTO::getId).forEach(UserUtils::deleteUser);
+        }
+    }
 
     public static void assertUsersDontExist(Response response, String... notLookingFor) {
         response.then().statusCode(200);
@@ -179,8 +188,8 @@ public class UserUtils {
                 .build();
     }
 
-    public static UserDTO getTeacherDTO(String name, String... subjects) {
-        return UserUtils.getTeacherDTO(name, name, TEST_PREFIX + name,
+    public static UserDTO getTeacherDTO(String firstName, String lastName, String... subjects) {
+        return UserUtils.getTeacherDTO(firstName, lastName, TEST_PREFIX + firstName,
                 UUID.randomUUID().toString() + "@" + UUID.randomUUID().toString() + ".com", Arrays.asList(subjects));
     }
 
