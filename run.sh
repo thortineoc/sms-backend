@@ -8,8 +8,9 @@ running() {
 
 case $1 in
 	start)
+	mvn clean install -Pbuild
 	(cd docker/linux && docker-compose up) &
-	sleep 20
+	while ! timeout 1 bash -c "echo > /dev/tcp/localhost/5432"; do echo "Waiting for server..."; sleep 1; done
 	(cd docker && docker exec -i postgres psql -U sms -d sms < db_dump_text) &
 		;;
 	stop)
